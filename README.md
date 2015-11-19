@@ -51,8 +51,8 @@ The failing tests are the result of not currently supporting the tracking of del
 Updated soon...
 
 #Upcoming Features
--Handling of deleted functions
--Automated download of repositories from Github and log creation
--Better authorship recording (author + committer)
--Output of line contents and not just counts of lines changed.
-...
+* Handling of deleted functions
+* Automated download of repositories from Github and log creation
+* Better authorship recording (author + committer)
+* Output of line contents and not just counts of lines changed.
+* ...
