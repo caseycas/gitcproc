@@ -1,0 +1,306 @@
+-//#undef NDEBUG
++// #undef NDEBUG
+ #include <assert.h>
+ 
+-static const uint8_t rem6[QP_MAX_NUM+1]={
+-0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 0, 1, 2, 3,
++const uint16_t ff_h264_mb_sizes[4] = { 256, 384, 512, 768 };
++
++static const uint8_t rem6[QP_MAX_NUM + 1] = {
++    0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 0, 1, 2,
++    3, 4, 5, 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5,
++    0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 0, 1, 2,
++    3, 4, 5, 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5,
++    0, 1, 2, 3,
+ };
+ 
+-static const uint8_t div6[QP_MAX_NUM+1]={
+-0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 7, 8, 8, 8, 8, 8, 8, 9, 9, 9, 9, 9, 9,10,10,10,10,
++static const uint8_t div6[QP_MAX_NUM + 1] = {
++    0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 3,  3,  3,
++    3, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6,  6,  6,
++    7, 7, 7, 7, 7, 7, 8, 8, 8, 8, 8, 8, 9, 9, 9, 9, 9, 9, 10, 10, 10,
++   10,10,10,11,11,11,11,11,11,12,12,12,12,12,12,13,13,13, 13, 13, 13,
++   14,14,14,14,
+ };
+ 
+-static const enum PixelFormat hwaccel_pixfmt_list_h264_jpeg_420[] = {
+-    PIX_FMT_DXVA2_VLD,
+-    PIX_FMT_VAAPI_VLD,
+-    PIX_FMT_VDA_VLD,
+-    PIX_FMT_YUVJ420P,
+-    PIX_FMT_NONE
++static const enum AVPixelFormat h264_hwaccel_pixfmt_list_420[] = {
++#if CONFIG_H264_DXVA2_HWACCEL
++    AV_PIX_FMT_DXVA2_VLD,
++#endif
++#if CONFIG_H264_VAAPI_HWACCEL
++    AV_PIX_FMT_VAAPI_VLD,
++#endif
++#if CONFIG_H264_VDA_HWACCEL
++    AV_PIX_FMT_VDA_VLD,
++#endif
++#if CONFIG_H264_VDPAU_HWACCEL
++    AV_PIX_FMT_VDPAU,
++#endif
++    AV_PIX_FMT_YUV420P,
++    AV_PIX_FMT_NONE
+ };
+ 
++static const enum AVPixelFormat h264_hwaccel_pixfmt_list_jpeg_420[] = {
++#if CONFIG_H264_DXVA2_HWACCEL
++    AV_PIX_FMT_DXVA2_VLD,
++#endif
++#if CONFIG_H264_VAAPI_HWACCEL
++    AV_PIX_FMT_VAAPI_VLD,
++#endif
++#if CONFIG_H264_VDA_HWACCEL
++    AV_PIX_FMT_VDA_VLD,
++#endif
++#if CONFIG_H264_VDPAU_HWACCEL
++    AV_PIX_FMT_VDPAU,
++#endif
++    AV_PIX_FMT_YUVJ420P,
++    AV_PIX_FMT_NONE
++};
++
++int avpriv_h264_has_num_reorder_frames(AVCodecContext *avctx)
++{
++    H264Context *h = avctx->priv_data;
++    return h ? h->sps.num_reorder_frames : 0;
++}
++
++static void h264_er_decode_mb(void *opaque, int ref, int mv_dir, int mv_type,
++                              int (*mv)[2][4][2],
++                              int mb_x, int mb_y, int mb_intra, int mb_skipped)
++{
++    H264Context    *h = opaque;
++
++    h->mb_x  = mb_x;
++    h->mb_y  = mb_y;
++    h->mb_xy = mb_x + mb_y * h->mb_stride;
++    memset(h->non_zero_count_cache, 0, sizeof(h->non_zero_count_cache));
++    av_assert1(ref >= 0);
++    /* FIXME: It is possible albeit uncommon that slice references
++     * differ between slices. We take the easy approach and ignore
++     * it for now. If this turns out to have any relevance in
++     * practice then correct remapping should be added. */
++    if (ref >= h->ref_count[0])
++        ref = 0;
++    if (!h->ref_list[0][ref].f.data[0]) {
++        av_log(h->avctx, AV_LOG_DEBUG, "Reference not available for error concealing\n");
++        ref = 0;
++    }
++    if ((h->ref_list[0][ref].f.reference&3) != 3) {
++        av_log(h->avctx, AV_LOG_DEBUG, "Reference invalid\n");
++        return;
++    }
++    fill_rectangle(&h->cur_pic.f.ref_index[0][4 * h->mb_xy],
++                   2, 2, 2, ref, 1);
++    fill_rectangle(&h->ref_cache[0][scan8[0]], 4, 4, 8, ref, 1);
++    fill_rectangle(h->mv_cache[0][scan8[0]], 4, 4, 8,
++                   pack16to32((*mv)[0][0][0], (*mv)[0][0][1]), 4);
++    h->mb_mbaff =
++    h->mb_field_decoding_flag = 0;
++    ff_h264_hl_decode_mb(h);
++}
++
++void ff_h264_draw_horiz_band(H264Context *h, int y, int height)
++{
++    AVCodecContext *avctx = h->avctx;
++    Picture *cur  = &h->cur_pic;
++    Picture *last = h->ref_list[0][0].f.data[0] ? &h->ref_list[0][0] : NULL;
++    const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(avctx->pix_fmt);
++    int vshift = desc->log2_chroma_h;
++    const int field_pic = h->picture_structure != PICT_FRAME;
++    if (field_pic) {
++        height <<= 1;
++        y <<= 1;
++    }
++
++    height = FFMIN(height, avctx->height - y);
++
++    if (field_pic && h->first_field && !(avctx->slice_flags & SLICE_FLAG_ALLOW_FIELD))
++        return;
++
++    if (avctx->draw_horiz_band) {
++        AVFrame *src;
++        int offset[AV_NUM_DATA_POINTERS];
++        int i;
++
++        if (cur->f.pict_type == AV_PICTURE_TYPE_B || h->low_delay ||
++           (avctx->slice_flags & SLICE_FLAG_CODED_ORDER))
++            src = &cur->f;
++        else if (last)
++            src = &last->f;
++        else
++            return;
++
++        offset[0] = y * src->linesize[0];
++        offset[1] =
++        offset[2] = (y >> vshift) * src->linesize[1];
++        for (i = 3; i < AV_NUM_DATA_POINTERS; i++)
++            offset[i] = 0;
++
++        emms_c();
++
++        avctx->draw_horiz_band(avctx, src, offset,
++                               y, h->picture_structure, height);
++    }
++}
++
++static void free_frame_buffer(H264Context *h, Picture *pic)
++{
++    pic->period_since_free = 0;
++    ff_thread_release_buffer(h->avctx, &pic->f);
++    av_freep(&pic->f.hwaccel_picture_private);
++}
++
++static void free_picture(H264Context *h, Picture *pic)
++{
++    int i;
++
++    if (pic->f.data[0])
++        free_frame_buffer(h, pic);
++
++    av_freep(&pic->qscale_table_base);
++    pic->f.qscale_table = NULL;
++    av_freep(&pic->mb_type_base);
++    pic->f.mb_type = NULL;
++    for (i = 0; i < 2; i++) {
++        av_freep(&pic->motion_val_base[i]);
++        av_freep(&pic->f.ref_index[i]);
++        pic->f.motion_val[i] = NULL;
++    }
++}
++
++static void release_unused_pictures(H264Context *h, int remove_current)
++{
++    int i;
++
++    /* release non reference frames */
++    for (i = 0; i < h->picture_count; i++) {
++        if (h->DPB[i].f.data[0] && !h->DPB[i].f.reference &&
++            (!h->DPB[i].owner2 || h->DPB[i].owner2 == h) &&
++            (remove_current || &h->DPB[i] != h->cur_pic_ptr)) {
++            free_frame_buffer(h, &h->DPB[i]);
++        }
++    }
++}
++
++static int alloc_scratch_buffers(H264Context *h, int linesize)
++{
++    int alloc_size = FFALIGN(FFABS(linesize) + 32, 32);
++
++    if (h->bipred_scratchpad)
++        return 0;
++
++    h->bipred_scratchpad = av_malloc(16 * 6 * alloc_size);
++    // edge emu needs blocksize + filter length - 1
++    // (= 21x21 for  h264)
++    h->edge_emu_buffer = av_mallocz(alloc_size * 2 * 21);
++    h->me.scratchpad   = av_mallocz(alloc_size * 2 * 16 * 2);
++
++    if (!h->bipred_scratchpad || !h->edge_emu_buffer || !h->me.scratchpad) {
++        av_freep(&h->bipred_scratchpad);
++        av_freep(&h->edge_emu_buffer);
++        av_freep(&h->me.scratchpad);
++        return AVERROR(ENOMEM);
++    }
++
++    h->me.temp = h->me.scratchpad;
++
++    return 0;
++}
++
++static int alloc_picture(H264Context *h, Picture *pic)
++{
++    const int big_mb_num    = h->mb_stride * (h->mb_height + 1) + 1;
++    const int mb_array_size = h->mb_stride * h->mb_height;
++    const int b4_stride     = h->mb_width * 4 + 1;
++    const int b4_array_size = b4_stride * h->mb_height * 4;
++    int i, ret = 0;
++
++    av_assert0(!pic->f.data[0]);
++
++    if (h->avctx->hwaccel) {
++        const AVHWAccel *hwaccel = h->avctx->hwaccel;
++        av_assert0(!pic->f.hwaccel_picture_private);
++        if (hwaccel->priv_data_size) {
++            pic->f.hwaccel_picture_private = av_mallocz(hwaccel->priv_data_size);
++            if (!pic->f.hwaccel_picture_private)
++                return AVERROR(ENOMEM);
++        }
++    }
++    ret = ff_thread_get_buffer(h->avctx, &pic->f);
++    if (ret < 0)
++        goto fail;
++
++    h->linesize   = pic->f.linesize[0];
++    h->uvlinesize = pic->f.linesize[1];
++
++    if (pic->f.qscale_table == NULL) {
++        FF_ALLOCZ_OR_GOTO(h->avctx, pic->qscale_table_base,
++                          (big_mb_num + h->mb_stride) * sizeof(uint8_t),
++                          fail)
++        FF_ALLOCZ_OR_GOTO(h->avctx, pic->mb_type_base,
++                          (big_mb_num + h->mb_stride) * sizeof(uint32_t),
++                          fail)
++        pic->f.mb_type = pic->mb_type_base + 2 * h->mb_stride + 1;
++        pic->f.qscale_table = pic->qscale_table_base + 2 * h->mb_stride + 1;
++
++        for (i = 0; i < 2; i++) {
++            FF_ALLOCZ_OR_GOTO(h->avctx, pic->motion_val_base[i],
++                              2 * (b4_array_size + 4) * sizeof(int16_t),
++                              fail)
++            pic->f.motion_val[i] = pic->motion_val_base[i] + 4;
++            FF_ALLOCZ_OR_GOTO(h->avctx, pic->f.ref_index[i],
++                              4 * mb_array_size * sizeof(uint8_t), fail)
++        }
++        pic->f.motion_subsample_log2 = 2;
++
++        pic->f.qstride = h->mb_stride;
++    }
++
++    pic->owner2 = h;
++
++    return 0;
++fail:
++    free_frame_buffer(h, pic);
++    return (ret < 0) ? ret : AVERROR(ENOMEM);
++}
++
++static inline int pic_is_unused(H264Context *h, Picture *pic)
++{
++    if (   (h->avctx->active_thread_type & FF_THREAD_FRAME)
++        && pic->f.qscale_table //check if the frame has anything allocated
++        && pic->period_since_free < h->avctx->thread_count)
++        return 0;
++    if (pic->f.data[0] == NULL)
++        return 1;
++    if (pic->needs_realloc && !(pic->f.reference & DELAYED_PIC_REF))
++        if (!pic->owner2 || pic->owner2 == h)
++            return 1;
++    return 0;
++}
++
++static int find_unused_picture(H264Context *h)
++{
++    int i;
++
++    for (i = h->picture_range_start; i < h->picture_range_end; i++) {
++        if (pic_is_unused(h, &h->DPB[i]))
++            break;
++    }
++    if (i == h->picture_range_end)
++        return AVERROR_INVALIDDATA;
++
++    if (h->DPB[i].needs_realloc) {
++        h->DPB[i].needs_realloc = 0;
++        free_picture(h, &h->DPB[i]);
++        avcodec_get_frame_defaults(&h->DPB[i].f);
++    }
++
++    return i;
++}
++

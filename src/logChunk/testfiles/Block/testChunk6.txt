@@ -1,0 +1,16 @@
+import org.androidannotations.validation.rest.RestValidator;
+ public class AndroidAnnotationProcessor extends AbstractProcessor {
+ 
+ 	
+ 	public synchronized void init(ProcessingEnvironment processingEnv) {
+ 	
+ 		try {
+ 			loadPropertyFile();
+ 			loadApiPropertyFile();
+ 		} catch (Exception e) {
+ 			messager.printMessage(Diagnostic.Kind.ERROR, "AndroidAnnotations processing failed: " + e.getMessage());
+-			throw new RuntimeException("AndroidAnnotations processing failed", e);
+ 		}
+ 
+ 	}
+}

@@ -1,0 +1,24 @@
+  @Override
+     public Bundle getToken(AccountAuthenticatorResponse response,
+             Account account, String authTokenType, Bundle options)
+             throws NetworkErrorException {
+			 
+			 
++        while (currWidth >= width || currHeight >= height) {
++            currWidth /= 2;
+-            currHeight /= 2;
++            scale *= 2;
++        }
+
++        for (index = 0; index < repos.size(); index++) {
++            Repository repository = repos.get(index);
++            if (recentRepos.contains(repository.getId()))
++                current = repository;
+-            else
+-                break;
+         }
+
+     }
+
+
+

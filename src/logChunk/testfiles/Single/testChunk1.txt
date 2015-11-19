@@ -1,0 +1,61 @@
++#include <assert.h> 
++
++
++int
++NdbBlob::getBlobEventName(char* bename, Ndb* anNdb, const char* eventName, const char* columnName)
++{
++  NdbEventImpl* e = anNdb->theDictionary->m_impl.getEvent(eventName);
++  if (e == NULL)
++    return -1;
++  NdbColumnImpl* c = e->m_tableImpl->getColumn(columnName);
++  if (c == NULL)
++    return -1;
++  getBlobEventName(bename, e, c);
++  return 0;
++}
++
++void
++NdbBlob::getBlobEventName(char* bename, const NdbEventImpl* e, const NdbColumnImpl* c)
++{
++  // XXX events should have object id
++  snprintf(bename, MAX_TAB_NAME_SIZE, "NDB$BLOBEVENT_%s_%d", e->m_name.c_str(), (int)c->m_column_no);
++}
++
++void
++NdbBlob::getBlobEvent(NdbEventImpl& be, const NdbEventImpl* e, const NdbColumnImpl* c)
++{
++  DBUG_ENTER("NdbBlob::getBlobEvent");
++  // blob table
++  assert(c->m_blobTable != NULL);
++  const NdbTableImpl& bt = *c->m_blobTable;
++  // blob event name
++  char bename[NdbBlobImpl::BlobTableNameSize];
++  getBlobEventName(bename, e, c);
++  be.setName(bename);
++  be.setTable(bt);
++  // simple assigments
++  be.mi_type = e->mi_type;
++  be.m_dur = e->m_dur;
++  be.m_mergeEvents = e->m_mergeEvents;
++
++  assert(MockAssert == 0);
++
++  // report unchanged data
++  // not really needed now since UPD is DEL o INS and we subscribe to all
++  be.setReport(NdbDictionary::Event::ER_ALL);
++  // columns PK - DIST - PART - DATA
++  { const NdbColumnImpl* bc = bt.getColumn((Uint32)0);
++    be.addColumn(*bc);
++  }
++  { const NdbColumnImpl* bc = bt.getColumn((Uint32)1);
++    be.addColumn(*bc);
++  }
++  { const NdbColumnImpl* bc = bt.getColumn((Uint32)2);
++    be.addColumn(*bc);
++  }
++  { const NdbColumnImpl* bc = bt.getColumn((Uint32)3);
++    be.addColumn(*bc);
++  }
++  DBUG_VOID_RETURN;
++}
++

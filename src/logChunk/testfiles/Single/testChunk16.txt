@@ -1,0 +1,19 @@
+     PreClass* pcls = m_preClasses[i].get();
+-    Class * const* clsh = pcls->namedEntity()->clsList();
+-    if (clsh) {
+-      Class *cls = *clsh;
+-      while (cls) {
+-        Class* cur = cls;
+-        cls = cls->m_nextClass;
+-        if (cur->preClass() == pcls) {
+-          if (!cur->decAtomicCount()) {
+-            cur->atomicRelease();
+-          }
++    Class* cls = pcls->namedEntity()->clsList();
++    while (cls) {
++      Class* cur = cls;
++      cls = cls->m_nextClass;
++      if (cur->preClass() == pcls) {
++        if (!cur->decAtomicCount()) {
++          cur->atomicRelease();
+         }

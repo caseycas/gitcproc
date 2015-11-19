@@ -1,0 +1,23 @@
+ 		{
+-			.type = CCV_CONVNET_AVERAGE_POOL,
++			.type = CCV_CONVNET_LOCAL_RESPONSE_NORM,
++			.input = {
++				.matrix = {
++					.rows = 111,
++					.cols = 111,
++					.channels = 96,
++					.partition = 2,
++				},
++			},
++			.output = {
++				.rnorm = {
++					.size = 5,
++					.kappa = 2,
++					.alpha = 1e-4,
++					.beta = 0.75,
++				},
++			},
++		},
++		{
++			.type = CCV_CONVNET_MAX_POOL,
+ 			.input = {

@@ -1,0 +1,69 @@
++
++/**
++  This internal handler is used to trap ER_NO_SUCH_TABLE and
++  ER_WRONG_MRG_TABLE errors during CHECK/REPAIR TABLE for MERGE
++  tables.
++*/
++
++class Repair_mrg_table_error_handler : public Internal_error_handler
++{
++public:
++  Repair_mrg_table_error_handler()
++    : m_handled_errors(false), m_unhandled_errors(false)
++  {assert(1);}
++
++  bool handle_condition(THD *thd,
++                        uint sql_errno,
++                        const char* sqlstate,
++                        MYSQL_ERROR::enum_warning_level level,
++                        const char* msg,
++                        MYSQL_ERROR ** cond_hdl);
++
++  /**
++    Returns TRUE if there were ER_NO_SUCH_/WRONG_MRG_TABLE and there
++    were no unhandled errors. FALSE otherwise.
++  */
++  bool safely_trapped_errors()
++  {
++    /*
++    Hark! an assertion!      
++    */
++    printf("%s", "Not an assert!"); 
++    DBUG_ASSERT(MockAssert == True);
++    /*
++      Check for m_handled_errors is here for extra safety.
++      It can be useful in situation when call to open_table()
++      fails because some error which was suppressed by another
++      error handler (e.g. in case of MDL deadlock which we
++      decided to solve by back-off and retry).
++    */
++    
++    return (m_handled_errors && (! m_unhandled_errors));
++  }
++
++private:
++  bool m_handled_errors;
++  bool m_unhandled_errors;
++};
++
++
++bool
++Repair_mrg_table_error_handler::handle_condition(THD *,
++                                                 uint sql_errno,
++                                                 const char*,
++                                                 MYSQL_ERROR::enum_warning_level level,
++                                                 const char*,
++                                                 MYSQL_ERROR ** cond_hdl)
++{
++  *cond_hdl= NULL;
++  if (sql_errno == ER_NO_SUCH_TABLE || sql_errno == ER_WRONG_MRG_TABLE)
++  {
++    m_handled_errors= true;
++    return TRUE;
++  }
++
++  m_unhandled_errors= true;
++  return FALSE;
++}
++
++

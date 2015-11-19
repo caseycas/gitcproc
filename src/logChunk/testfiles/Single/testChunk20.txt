@@ -1,0 +1,106 @@
+   {
+-    return (granted.is_empty() && waiting.is_empty());
++    return (granted.is_empty() && waiting_shared.is_empty() &&
++            waiting_exclusive.is_empty());
+   }
+ 
+-  bool can_grant_lock(const MDL_context *requestor_ctx,
+-                      enum_mdl_type type, bool is_upgrade);
++  bool has_pending_exclusive_lock()
++  {
++    bool has_locks;
++    pthread_mutex_lock(&m_mutex);
++    has_locks= ! waiting_exclusive.is_empty();
++    pthread_mutex_unlock(&m_mutex);
++    return has_locks;
++  }
++  virtual bool can_grant_lock(const MDL_context *requestor_ctx,
++                              enum_mdl_type type, bool is_upgrade)= 0;
++  virtual void wake_up_waiters()= 0;
+ 
+   inline static MDL_lock *create(const MDL_key *key);
+-  inline static void destroy(MDL_lock *lock);
+-private:
++
+   MDL_lock(const MDL_key *key_arg)
+-  : type(MDL_LOCK_SHARED),
+-    key(key_arg),
++  : key(key_arg),
+     cached_object(NULL),
+-    cached_object_release_hook(NULL)
++    cached_object_release_hook(NULL),
++    m_ref_usage(0),
++    m_ref_release(0),
++    m_is_destroyed(FALSE)
+   {
++    pthread_mutex_init(&m_mutex, NULL);
+   }
+-};
+ 
++  virtual ~MDL_lock()
++  {
++    pthread_mutex_destroy(&m_mutex);
++  }
++  inline static void destroy(MDL_lock *lock);
++public:
++  /**
++    These three members are used to make it possible to separate
++    the mdl_locks.m_mutex mutex and MDL_lock::m_mutex in
++    MDL_map::find_or_insert() for increased scalability.
++    The 'm_is_destroyed' member is only set by destroyers that
++    have both the mdl_locks.m_mutex and MDL_lock::m_mutex, thus
++    holding any of the mutexes is sufficient to read it.
++    The 'm_ref_usage; is incremented under protection by
++    mdl_locks.m_mutex, but when 'm_is_destroyed' is set to TRUE, this
++    member is moved to be protected by the MDL_lock::m_mutex.
++    This means that the MDL_map::find_or_insert() which only
++    holds the MDL_lock::m_mutex can compare it to 'm_ref_release'
++    without acquiring mdl_locks.m_mutex again and if equal it can also
++    destroy the lock object safely.
++    The 'm_ref_release' is incremented under protection by
++    MDL_lock::m_mutex.
++    Note since we are only interested in equality of these two
++    counters we don't have to worry about overflows as long as
++    their size is big enough to hold maximum number of concurrent
++    threads on the system.
++  */
++  uint m_ref_usage;
++  uint m_ref_release;
++  bool m_is_destroyed;
++};
+ 
+-static pthread_mutex_t LOCK_mdl;
+-static pthread_cond_t  COND_mdl;
+-static HASH mdl_locks;
+ 
+ /**
+-  An implementation of the global metadata lock. The only
+-  locking modes which are supported at the moment are SHARED and
+-  INTENTION EXCLUSIVE. Note, that SHARED global metadata lock
+-  is acquired automatically when one tries to acquire an EXCLUSIVE
+-  or UPGRADABLE SHARED metadata lock on an individual object.
++  An implementation of the global metadata lock. The only locking modes
++  which are supported at the moment are SHARED and INTENTION EXCLUSIVE.
+ */
+ 
+-class MDL_global_lock
++class MDL_global_lock : public MDL_lock
+ {
+ public:
+-  uint waiting_shared;
+-  uint active_shared;
+-  uint active_intention_exclusive;
++  MDL_global_lock(const MDL_key *key_arg)
++    : MDL_lock(key_arg)
++  { }
+ 
+-  bool is_empty() const
+-  {
+-    return (waiting_shared == 0 && active_shared == 0 &&
+-            active_intention_exclusive == 0);
+-  }
+-  bool is_lock_type_compatible(enum_mdl_type type, bool is_upgrade) const;
++  virtual bool can_grant_lock(const MDL_context *requestor_ctx,
++                              enum_mdl_type type, bool is_upgrade);
++  virtual void wake_up_waiters();
+ };

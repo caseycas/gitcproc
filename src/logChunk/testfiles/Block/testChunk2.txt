@@ -1,0 +1,58 @@
+import org.eclipse.egit.github.core.User;
+ public class AccountUtils {
+ 
+     
+     private static Account[] getAccounts(final AccountManager manager)
+             throws OperationCanceledException, AuthenticatorException,
+             IOException {
+         final AccountManagerFuture<Account[]> future = manager
+-                .getAccountsByTypeAndFeatures(ACCOUNT_TYPE, null, null,
+-                        null);
++                .getAccountsByTypeAndFeatures(ACCOUNT_TYPE, null, null, null);
+         final Account[] accounts = future.getResult();
+         return accounts != null ? accounts : new Account[0];
+     }
+ 
+     public static Account getAccount(final AccountManager manager,
+             final Activity activity) {
+         final boolean loggable = Log.isLoggable(TAG, DEBUG);
+         if (loggable)
+             Log.d(TAG, "Getting account");
+ 
+         if (activity == null)
+             throw new IllegalArgumentException("Activity cannot be null");
+ 
+         Account[] accounts;
+         try {
+             while ((accounts = getAccounts(manager)).length == 0) {
+                 if (loggable)
+                     Log.d(TAG, "No GitHub accounts for activity=" + activity);
+ 
+-                Bundle result = manager.addAccount(ACCOUNT_TYPE, null,
+-                        null, null, activity, null, null).getResult();
++                Bundle result = manager.addAccount(ACCOUNT_TYPE, null, null,
++                        null, activity, null, null).getResult();
+ 
+                 if (loggable)
+                     Log.d(TAG,
+                             "Added account "
+                                     + result.getString(KEY_ACCOUNT_NAME));
+             }
++        } catch (OperationCanceledException e) {
++            Log.d(TAG, "Excepting retrieving account", e);
++            activity.finish();
++            throw new RuntimeException(e);
+         } catch (AccountsException e) {
+             Log.d(TAG, "Excepting retrieving account", e);
+             throw new RuntimeException(e);
+         } catch (IOException e) {
+             Log.d(TAG, "Excepting retrieving account", e);
+             throw new RuntimeException(e);
+         }
+ 
+         if (loggable)
+             Log.d(TAG, "Returning account " + accounts[0].name);
+ 
+         return accounts[0];
+     }
+ }

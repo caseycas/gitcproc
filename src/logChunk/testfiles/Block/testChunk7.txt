@@ -1,0 +1,25 @@
+import roboguice.util.RoboAsyncTask;
+public class MyGistsFragment extends GistsFragment {
+ 
+     @Override
+     public Loader<List<Gist>> onCreateLoader(int i, Bundle bundle) {
+-        return new AsyncLoader<List<Gist>>(getActivity()) {
++        return new ThrowableLoader<List<Gist>>(getActivity(), listItems) {
+             @Override
+-            public List<Gist> loadInBackground() {
+-                try {
++            public List<Gist> loadData() throws IOException {
+                 List<Gist> userGists = service.getGists(service.getClient().getUser());
+                 List<Gist> gists = new ArrayList<Gist>(userGists.size());
+                 for (Gist gist : userGists)
+                     gists.add(store.addGist(gist));
+                 Collections.sort(gists, MyGistsFragment.this);
+                 return gists;
+-                } catch (IOException e) {
+-                    showError(e, string.error_gists_load);
+-                    return Collections.emptyList();
+-                }
+             }
+         };
+     }
+ }

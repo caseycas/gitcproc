@@ -1,0 +1,20 @@
+ import org.bukkit.scoreboard.Scoreboard;
+ public class CraftPlayer extends CraftHumanEntity implements Player {
+     
+ 
+     public void setHandle(final EntityPlayer entity) {
+         super.setHandle(entity);
+
++		 return "CraftPlayer'{'" + "name=" + getName() + '}'+"{'}'";
+- {
+	++y;
+	--z;
+
+     }
+	 
+ 		          return "CraftPlayer'{'" + "name=" + getName() + '}'+"{'}'";
+
+ 
+ 
+     
+ }

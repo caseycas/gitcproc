@@ -1,0 +1,104 @@
+-/* Store all idle threads, this can be reused instead of creating
+-* a new thread. Also avoids complicated thread destroy functionality
+-* for idle threads.
+-*/
+-#ifdef CONFIG_HOTPLUG_CPU
+-/*
+- * Needed only for CONFIG_HOTPLUG_CPU because __cpuinitdata is
+- * removed after init for !CONFIG_HOTPLUG_CPU.
+- */
+-static DEFINE_PER_CPU(struct task_struct *, idle_thread_array);
+-#define get_idle_for_cpu(x)      (per_cpu(idle_thread_array, x))
+-#define set_idle_for_cpu(x, p)   (per_cpu(idle_thread_array, x) = (p))
+-#else
+-struct task_struct *idle_thread_array[NR_CPUS] __cpuinitdata ;
+-#define get_idle_for_cpu(x)      (idle_thread_array[(x)])
+-#define set_idle_for_cpu(x, p)   (idle_thread_array[(x)] = (p))
+-#endif
+-
+-static atomic_t init_deasserted;
+-
+-static void __cpuinit smp_callin(void)
+-{
+-	int cpuid, phys_id;
+-	unsigned long timeout;
+-
+-	/*
+-	 * If waken up by an INIT in an 82489DX configuration
+-	 * we may get here before an INIT-deassert IPI reaches
+-	 * our local APIC.  We have to wait for the IPI or we'll
+-	 * lock up on an APIC access.
+-	 */
+-	wait_for_init_deassert(&init_deasserted);
+-
+-	/*
+-	 * (This works even if the APIC is not enabled.)
+-	 */
+-	phys_id = GET_APIC_ID(apic_read(APIC_ID));
+-	cpuid = smp_processor_id();
+-	if (cpu_isset(cpuid, cpu_callin_map)) {
+-		printk("huh, phys CPU#%d, CPU#%d already present??\n",
+-					phys_id, cpuid);
+-		BUG();
+-	}
+-	Dprintk("CPU#%d (phys ID: %d) waiting for CALLOUT\n", cpuid, phys_id);
+-
+-	/*
+-	 * STARTUP IPIs are fragile beasts as they might sometimes
+-	 * trigger some glue motherboard logic. Complete APIC bus
+-	 * silence for 1 second, this overestimates the time the
+-	 * boot CPU is spending to send the up to 2 STARTUP IPIs
+-	 * by a factor of two. This should be enough.
+-	 */
+-
+-	/*
+-	 * Waiting 2s total for startup (udelay is not yet working)
+-	 */
+-	timeout = jiffies + 2*HZ;
+-	while (time_before(jiffies, timeout)) {
+-		/*
+-		 * Has the boot CPU finished it's STARTUP sequence?
+-		 */
+-		if (cpu_isset(cpuid, cpu_callout_map))
+-			break;
+-		cpu_relax();
+-	}
+-
+-	if (!time_before(jiffies, timeout)) {
+-		printk("BUG: CPU%d started up but did not get a callout!\n",
+-			cpuid);
+-		BUG();
+-	}
+-
+-	/*
+-	 * the boot CPU has finished the init stage and is spinning
+-	 * on callin_map until we finish. We are free to set up this
+-	 * CPU, first the APIC. (this is probably redundant on most
+-	 * boards)
+-	 */
+-
+-	Dprintk("CALLIN, before setup_local_APIC().\n");
+-	smp_callin_clear_local_apic();
+-	setup_local_APIC();
+-	end_local_APIC_setup();
+-	map_cpu_to_logical_apicid();
+-
+-	/*
+-	 * Get our bogomips.
+-	 */
+-	local_irq_enable();
+-	calibrate_delay();
+-	local_irq_disable();
+-	Dprintk("Stack at about %p\n",&cpuid);
+-
+-	/*
+-	 * Save our processor parameters
+-	 */
+-	smp_store_cpu_info(cpuid);
+-
+-	/*
+-	 * Allow the master to continue.
+-	 */
+-	cpu_set(cpuid, cpu_callin_map);
+-}
++extern void smp_callin(void);

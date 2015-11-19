@@ -1,0 +1,18 @@
+-static MDL_global_lock global_lock;
++/**
++  An implementation of a per-object lock. Supports SHARED, SHARED_UPGRADABLE,
++  SHARED HIGH PRIORITY and EXCLUSIVE locks.
++*/
++
++class MDL_object_lock : public MDL_lock
++{
++public:
++  MDL_object_lock(const MDL_key *key_arg)
++    : MDL_lock(key_arg)
++  { }
++
++  virtual bool can_grant_lock(const MDL_context *requestor_ctx,
++                              enum_mdl_type type, bool is_upgrade);
++  virtual void wake_up_waiters();
++};
++

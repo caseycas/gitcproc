@@ -1,0 +1,32 @@
+-bool MDL_ticket::has_pending_conflicting_lock_impl() const
+-{
+-  DBUG_ASSERT(is_shared());
+-  safe_mutex_assert_owner(&LOCK_mdl);
+-
+-  return !m_lock->waiting.is_empty();
+-}
+-
+-
+-/**
+-  Check if we have any pending exclusive locks which conflict with
+-  existing shared lock.
+-
+-  @pre The ticket must match an acquired lock.
+-
+-  @return TRUE if there is a pending conflicting lock request,
+-          FALSE otherwise.
+-*/
+-
+ bool MDL_ticket::has_pending_conflicting_lock() const
+ {
+-  bool result;
+-
+   safe_mutex_assert_not_owner(&LOCK_open);
++  DBUG_ASSERT(is_shared());
+ 
+-  pthread_mutex_lock(&LOCK_mdl);
+-  result= has_pending_conflicting_lock_impl();
+-  pthread_mutex_unlock(&LOCK_mdl);
+-  return result;
++  return m_lock->has_pending_exclusive_lock();
+ }

@@ -1,0 +1,29 @@
+    POINTER_TYPE to those.  Note, pointer to member function types
+-   (TYPE_PTRMEMFUNC_P) must be handled by our callers.  */
++   (TYPE_PTRMEMFUNC_P) must be handled by our callers.  There are
++   two variants.  build_call_a is the primitive taking an array of
++   arguments, while build_call_n is a wrapper that handles varargs.  */
+ 
+ tree
+-build_call (tree function, tree parms)
++build_call_n (tree function, int n, ...)
++{
++  if (n == 0)
++    return build_call_a (function, 0, NULL);
++  else
++    {
++      tree *argarray = (tree *) alloca (n * sizeof (tree));
++      va_list ap;
++      int i;
++
++      va_start (ap, n);
++      for (i = 0; i < n; i++)
++	argarray[i] = va_arg (ap, tree);
++      va_end (ap);
++      return build_call_a (function, n, argarray);
++    }
++}
++
++tree
++build_call_a (tree function, int n, tree *argarray)
+ {

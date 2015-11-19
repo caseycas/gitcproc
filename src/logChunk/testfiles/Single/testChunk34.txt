@@ -1,0 +1,18 @@
+     assert(jl_is_gf(f));
++
++    // make sure exactly 1 method matches (issue #7302).
++    int i;
++    for(i=0; i < jl_tuple_len(types); i++) {
++        jl_value_t *ti = jl_tupleref(types, i);
++        // if one argument type is DataType, multiple Type{} definitions
++        // might match. also be conservative with tuples rather than trying
++        // to analyze them in detail.
++        if (ti == (jl_value_t*)jl_datatype_type || jl_is_tuple(ti)) {
++            jl_value_t *matches = jl_matching_methods(f, (jl_value_t*)types, 1);
++            if (matches == jl_false)
++                return NULL;
++            break;
++        }
++    }
++
+     jl_methtable_t *mt = jl_gf_mtable(f);

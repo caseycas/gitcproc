@@ -1,0 +1,27 @@
+ 	
++	private void copy(InputStream is, OutputStream os, int max) throws IOException{
+ 		
+-	/*
+-	private void copy(InputStream is, OutputStream os, String encoding, int max) throws IOException{
+ 
+-		if("gzip".equalsIgnoreCase(encoding)){
+-			is = new GZIPInputStream(is);
+-		}
+ 		
+ 		Object o = null;
+ 		
+ 		if(progress != null){
+ 			o = progress.get();
+ 		}
+ 		
+ 		Progress p = null;
+ 		
+ 		if(o != null){
+ 			p = new Progress(o); 
+ 		}
+ 		
+ 		AQUtility.copy(is, os, max, p);
+ 		
+ 		
+ 	}
+-	*/

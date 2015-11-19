@@ -1,0 +1,27 @@
+commit add286a4a37f52159eab797efdf7202cfc541dbc
+Author: Kevin Sawicki <kevin@github.com>
+Date:   2012-07-02
+
+    Finish calling activity when login is cancelled
+    
+    Closes issue #70
+
+diff --git a/app/src/main/java/com/github/mobile/accounts/AccountUtils.java b/app/src/main/java/com/github/mobile/accounts/AccountUtils.java
+index 085d886..455ab10 100644
+--- a/app/src/main/java/com/github/mobile/accounts/AccountUtils.java
++++ b/app/src/main/java/com/github/mobile/accounts/AccountUtils.java
+@@ -39,100 +39,103 @@ import org.eclipse.egit.github.core.User;
+ public class AccountUtils {
+ 
+     
+     private static Account[] getAccounts(final AccountManager manager)
+             throws OperationCanceledException, AuthenticatorException,
+             IOException {
+         final AccountManagerFuture<Account[]> future = manager
+-                .getAccountsByTypeAndFeatures(ACCOUNT_TYPE, null, null,
+-                        null);
++                .getAccountsByTypeAndFeatures(ACCOUNT_TYPE, null, null, null);
+         final Account[] accounts = future.getResult();
+         return accounts != null ? accounts : new Account[0];
+     }
+	 }

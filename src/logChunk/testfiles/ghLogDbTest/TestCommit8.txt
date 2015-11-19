@@ -1,0 +1,510 @@
+commit 3c7c1abe45e89211de45b90a6eab38a85ef3f2f6
+Author: Sunny Bains <Sunny.Bains@Oracle.Com>
+Date:   2012-03-29
+
+    Bug #13817703 - auto_increment_offset != 1 + innodb_autoinc_lock_mode=1 => bulk inserts fail
+    
+    Fix the calculation of the next autoinc value when offset > 1. Some of the
+    results have changed due to the changes in the allocation calculation. The
+    new calculation will result in slightly bigger gaps for bulk inserts.
+    
+    rb://866 Approved by Jimmy Yang.
+    Backported from mysql-trunk (5.6)
+    
+    --BZR--
+    revision-id: sunny.bains@oracle.com-20120329070208-ydrsql4mllvio325
+    property-branch-nick: 5.5
+    testament3-sha1: a9c18ccfbcbbdce6f74b7bfc8a02ef874c31033f
+
+diff --git a/storage/innobase/handler/ha_innodb.cc b/storage/innobase/handler/ha_innodb.cc
+index 9d4f999..9679a90 100644
+--- a/storage/innobase/handler/ha_innodb.cc
++++ b/storage/innobase/handler/ha_innodb.cc
+@@ -1449,5 +1449,5 @@ values we want to reserve for multi-value inserts e.g.,
+ 
+-innobase_next_autoinc() will be called with increment set to
+-n * 3 where autoinc_lock_mode != TRADITIONAL because we want
+-to reserve 3 values for the multi-value INSERT above.
++innobase_next_autoinc() will be called with increment set to 3 where
++autoinc_lock_mode != TRADITIONAL because we want to reserve 3 values for
++the multi-value INSERT above.
+ @return    the next value */
+@@ -1456,64 +1456,81 @@ ulonglong
+ innobase_next_autoinc(
+ /*==================*/
+    ulonglong   current,    /*!< in: Current value */
+-   ulonglong   increment,  /*!< in: increment current by */
++   ulonglong   need,       /*!< in: count of values needed */
++   ulonglong   step,       /*!< in: AUTOINC increment step */
+    ulonglong   offset,     /*!< in: AUTOINC offset */
+    ulonglong   max_value)  /*!< in: max value for type */
+ {
+    ulonglong   next_value;
++   ulonglong   block = need * step;
+ 
+    /* Should never be 0. */
+-   ut_a(increment > 0);
++   ut_a(need > 0);
++   ut_a(block > 0);
++   ut_a(max_value > 0);
++
++   /* Current value should never be greater than the maximum. */
++   ut_a(current <= max_value);
+ 
+    /* According to MySQL documentation, if the offset is greater than
+-   the increment then the offset is ignored. */
+-   if (offset > increment) {
++   the step then the offset is ignored. */
++   if (offset > block) {
+        offset = 0;
+    }
+ 
+-   if (max_value <= current) {
++   /* Check for overflow. */
++   if (block >= max_value
++       || offset > max_value
++       || current == max_value
++       || max_value - offset <= offset) {
++
+        next_value = max_value;
+-   } else if (offset <= 1) {
+-       /* Offset 0 and 1 are the same, because there must be at
+-       least one node in the system. */
+-       if (max_value - current <= increment) {
++   } else {
++       ut_a(max_value > current);
++
++       ulonglong   free = max_value - current;
++
++       if (free < offset || free - offset <= block) {
+            next_value = max_value;
+        } else {
+-           next_value = current + increment;
++           next_value = 0;
+        }
+-   } else if (max_value > current) {
++   }
++
++   if (next_value == 0) {
++       ulonglong   next;
++
+        if (current > offset) {
+-           next_value = ((current - offset) / increment) + 1;
++           next = (current - offset) / step;
+        } else {
+-           next_value = ((offset - current) / increment) + 1;
++           next = (offset - current) / step;
+        }
+ 
+-       ut_a(increment > 0);
+-       ut_a(next_value > 0);
+-
++       ut_a(max_value > next);
++       next_value = next * step;
+        /* Check for multiplication overflow. */
+-       if (increment > (max_value / next_value)) {
++       ut_a(next_value >= next);
++       ut_a(max_value > next_value);
+ 
+-           next_value = max_value;
+-       } else {
+-           next_value *= increment;
++       /* Check for overflow */
++       if (max_value - next_value >= block) {
+ 
+-           ut_a(max_value >= next_value);
++           next_value += block;
+ 
+-           /* Check for overflow. */
+-           if (max_value - next_value <= offset) {
+-               next_value = max_value;
+-           } else {
++           if (max_value - next_value >= offset) {
+                next_value += offset;
++           } else {
++               next_value = max_value;
+            }
++       } else {
++           next_value = max_value;
+        }
+-   } else {
+-       next_value = max_value;
+    }
+ 
++   ut_a(next_value != 0);
+    ut_a(next_value <= max_value);
+ 
+    return(next_value);
+ }
+ 
+ /*********************************************************************//**
+@@ -3688,100 +3705,100 @@ void
+ ha_innobase::innobase_initialize_autoinc()
+ /*======================================*/
+ {
+    ulonglong   auto_inc;
+    const Field*    field = table->found_next_number_field;
+ 
+    if (field != NULL) {
+        auto_inc = innobase_get_int_col_max_value(field);
+    } else {
+        /* We have no idea what's been passed in to us as the
+        autoinc column. We set it to the 0, effectively disabling
+        updates to the table. */
+        auto_inc = 0;
+ 
+        ut_print_timestamp(stderr);
+        fprintf(stderr, "  InnoDB: Unable to determine the AUTOINC "
+                "column name\n");
+    }
+ 
+    if (srv_force_recovery >= SRV_FORCE_NO_IBUF_MERGE) {
+        /* If the recovery level is set so high that writes
+        are disabled we force the AUTOINC counter to 0
+        value effectively disabling writes to the table.
+        Secondly, we avoid reading the table in case the read
+        results in failure due to a corrupted table/index.
+ 
+        We will not return an error to the client, so that the
+        tables can be dumped with minimal hassle.  If an error
+        were returned in this case, the first attempt to read
+        the table would fail and subsequent SELECTs would succeed. */
+        auto_inc = 0;
+    } else if (field == NULL) {
+        /* This is a far more serious error, best to avoid
+        opening the table and return failure. */
+        my_error(ER_AUTOINC_READ_FAILED, MYF(0));
+    } else {
+        dict_index_t*   index;
+        const char* col_name;
+        ulonglong   read_auto_inc;
+        ulint       err;
+ 
+        update_thd(ha_thd());
+ 
+        ut_a(prebuilt->trx == thd_to_trx(user_thd));
+ 
+        col_name = field->field_name;
+        index = innobase_get_index(table->s->next_number_index);
+ 
+        /* Execute SELECT MAX(col_name) FROM TABLE; */
+        err = row_search_max_autoinc(index, col_name, &read_auto_inc);
+ 
+        switch (err) {
+        case DB_SUCCESS: {
+            ulonglong   col_max_value;
+ 
+            col_max_value = innobase_get_int_col_max_value(field);
+ 
+            /* At the this stage we do not know the increment
+            nor the offset, so use a default increment of 1. */
+ 
+            auto_inc = innobase_next_autoinc(
+-               read_auto_inc, 1, 1, col_max_value);
++               read_auto_inc, 1, 1, 0, col_max_value);
+ 
+            break;
+        }
+        case DB_RECORD_NOT_FOUND:
+            ut_print_timestamp(stderr);
+            fprintf(stderr, "  InnoDB: MySQL and InnoDB data "
+                "dictionaries are out of sync.\n"
+                "InnoDB: Unable to find the AUTOINC column "
+                "%s in the InnoDB table %s.\n"
+                "InnoDB: We set the next AUTOINC column "
+                "value to 0,\n"
+                "InnoDB: in effect disabling the AUTOINC "
+                "next value generation.\n"
+                "InnoDB: You can either set the next "
+                "AUTOINC value explicitly using ALTER TABLE\n"
+                "InnoDB: or fix the data dictionary by "
+                "recreating the table.\n",
+                col_name, index->table->name);
+ 
+            /* This will disable the AUTOINC generation. */
+            auto_inc = 0;
+ 
+            /* We want the open to succeed, so that the user can
+            take corrective action. ie. reads should succeed but
+            updates should fail. */
+            err = DB_SUCCESS;
+            break;
+        default:
+            /* row_search_max_autoinc() should only return
+            one of DB_SUCCESS or DB_RECORD_NOT_FOUND. */
+            ut_error;
+        }
+    }
+ 
+    dict_table_autoinc_initialize(prebuilt->table, auto_inc);
+ }
+ 
+ /*****************************************************************//**
+@@ -5243,30 +5260,31 @@ no_commit:
+ set_max_autoinc:
+                /* This should filter out the negative
+                values set explicitly by the user. */
+                if (auto_inc <= col_max_value) {
+                    ut_a(prebuilt->autoinc_increment > 0);
+ 
+-                   ulonglong   need;
+                    ulonglong   offset;
++                   ulonglong   increment;
+ 
+                    offset = prebuilt->autoinc_offset;
+-                   need = prebuilt->autoinc_increment;
++                   increment = prebuilt->autoinc_increment;
+ 
+                    auto_inc = innobase_next_autoinc(
+                        auto_inc,
+-                       need, offset, col_max_value);
++                       1, increment, offset,
++                       col_max_value);
+ 
+                    err = innobase_set_max_autoinc(
+                        auto_inc);
+ 
+                    if (err != DB_SUCCESS) {
+                        error = err;
+                    }
+                }
+            }
+            break;
+        }
+    }
+ 
+    innodb_srv_conc_exit_innodb(prebuilt->trx);
+ 
+@@ -5443,119 +5461,119 @@ int
+ ha_innobase::update_row(
+ /*====================*/
+    const uchar*    old_row,    /*!< in: old row in MySQL format */
+    uchar*      new_row)    /*!< in: new row in MySQL format */
+ {
+    upd_t*      uvect;
+    int     error = 0;
+    trx_t*      trx = thd_to_trx(user_thd);
+ 
+    DBUG_ENTER("ha_innobase::update_row");
+ 
+    ut_a(prebuilt->trx == trx);
+ 
+    if (upd_buf == NULL) {
+        ut_ad(upd_buf_size == 0);
+ 
+        /* Create a buffer for packing the fields of a record. Why
+        table->reclength did not work here? Obviously, because char
+        fields when packed actually became 1 byte longer, when we also
+        stored the string length as the first byte. */
+ 
+        upd_buf_size = table->s->reclength + table->s->max_key_length
+            + MAX_REF_PARTS * 3;
+        upd_buf = (uchar*) my_malloc(upd_buf_size, MYF(MY_WME));
+        if (upd_buf == NULL) {
+            upd_buf_size = 0;
+            DBUG_RETURN(HA_ERR_OUT_OF_MEM);
+        }
+    }
+ 
+    ha_statistic_increment(&SSV::ha_update_count);
+ 
+    if (table->timestamp_field_type & TIMESTAMP_AUTO_SET_ON_UPDATE)
+        table->timestamp_field->set_time();
+ 
+    if (prebuilt->upd_node) {
+        uvect = prebuilt->upd_node->update;
+    } else {
+        uvect = row_get_prebuilt_update_vector(prebuilt);
+    }
+ 
+    /* Build an update vector from the modified fields in the rows
+    (uses upd_buf of the handle) */
+ 
+    calc_row_difference(uvect, (uchar*) old_row, new_row, table,
+                upd_buf, upd_buf_size, prebuilt, user_thd);
+ 
+    /* This is not a delete */
+    prebuilt->upd_node->is_delete = FALSE;
+ 
+    ut_a(prebuilt->template_type == ROW_MYSQL_WHOLE_ROW);
+ 
+    innodb_srv_conc_enter_innodb(trx);
+ 
+    error = row_update_for_mysql((byte*) old_row, prebuilt);
+ 
+    /* We need to do some special AUTOINC handling for the following case:
+ 
+    INSERT INTO t (c1,c2) VALUES(x,y) ON DUPLICATE KEY UPDATE ...
+ 
+    We need to use the AUTOINC counter that was actually used by
+    MySQL in the UPDATE statement, which can be different from the
+    value used in the INSERT statement.*/
+ 
+    if (error == DB_SUCCESS
+        && table->next_number_field
+        && new_row == table->record[0]
+        && thd_sql_command(user_thd) == SQLCOM_INSERT
+        && trx->duplicates)  {
+ 
+        ulonglong   auto_inc;
+        ulonglong   col_max_value;
+ 
+        auto_inc = table->next_number_field->val_int();
+ 
+        /* We need the upper limit of the col type to check for
+        whether we update the table autoinc counter or not. */
+        col_max_value = innobase_get_int_col_max_value(
+            table->next_number_field);
+ 
+        if (auto_inc <= col_max_value && auto_inc != 0) {
+ 
+-           ulonglong   need;
+            ulonglong   offset;
++           ulonglong   increment;
+ 
+            offset = prebuilt->autoinc_offset;
+-           need = prebuilt->autoinc_increment;
++           increment = prebuilt->autoinc_increment;
+ 
+            auto_inc = innobase_next_autoinc(
+-               auto_inc, need, offset, col_max_value);
++               auto_inc, 1, increment, offset, col_max_value);
+ 
+            error = innobase_set_max_autoinc(auto_inc);
+        }
+    }
+ 
+    innodb_srv_conc_exit_innodb(trx);
+ 
+    error = convert_error_code_to_mysql(error,
+                        prebuilt->table->flags, user_thd);
+ 
+    if (error == 0 /* success */
+        && uvect->n_fields == 0 /* no columns were updated */) {
+ 
+        /* This is the same as success, but instructs
+        MySQL that the row is not really updated and it
+        should not increase the count of updated rows.
+        This is fix for http://bugs.mysql.com/29157 */
+        error = HA_ERR_RECORD_IS_THE_SAME;
+    }
+ 
+    /* Tell InnoDB server that there might be work for
+    utility threads: */
+ 
+    innobase_active_small();
+ 
+    DBUG_RETURN(error);
+ }
+ 
+ /**********************************************************************//**
+@@ -10072,107 +10090,106 @@ void
+ ha_innobase::get_auto_increment(
+ /*============================*/
+         ulonglong  offset,              /*!< in: table autoinc offset */
+         ulonglong  increment,           /*!< in: table autoinc increment */
+         ulonglong  nb_desired_values,   /*!< in: number of values reqd */
+         ulonglong  *first_value,        /*!< out: the autoinc value */
+         ulonglong  *nb_reserved_values) /*!< out: count of reserved values */
+ {
+    trx_t*      trx;
+    ulint       error;
+    ulonglong   autoinc = 0;
+ 
+    /* Prepare prebuilt->trx in the table handle */
+    update_thd(ha_thd());
+ 
+    error = innobase_get_autoinc(&autoinc);
+ 
+    if (error != DB_SUCCESS) {
+        *first_value = (~(ulonglong) 0);
+        return;
+    }
+ 
+    /* This is a hack, since nb_desired_values seems to be accurate only
+    for the first call to get_auto_increment() for multi-row INSERT and
+    meaningless for other statements e.g, LOAD etc. Subsequent calls to
+    this method for the same statement results in different values which
+    don't make sense. Therefore we store the value the first time we are
+    called and count down from that as rows are written (see write_row()).
+    */
+ 
+    trx = prebuilt->trx;
+ 
+    /* Note: We can't rely on *first_value since some MySQL engines,
+    in particular the partition engine, don't initialize it to 0 when
+    invoking this method. So we are not sure if it's guaranteed to
+    be 0 or not. */
+ 
+    /* We need the upper limit of the col type to check for
+    whether we update the table autoinc counter or not. */
+    ulonglong   col_max_value = innobase_get_int_col_max_value(
+        table->next_number_field);
+ 
+    /* Called for the first time ? */
+    if (trx->n_autoinc_rows == 0) {
+ 
+        trx->n_autoinc_rows = (ulint) nb_desired_values;
+ 
+        /* It's possible for nb_desired_values to be 0:
+        e.g., INSERT INTO T1(C) SELECT C FROM T2; */
+        if (nb_desired_values == 0) {
+ 
+            trx->n_autoinc_rows = 1;
+        }
+ 
+        set_if_bigger(*first_value, autoinc);
+    /* Not in the middle of a mult-row INSERT. */
+    } else if (prebuilt->autoinc_last_value == 0) {
+        set_if_bigger(*first_value, autoinc);
+    /* Check for -ve values. */
+    } else if (*first_value > col_max_value && trx->n_autoinc_rows > 0) {
+        /* Set to next logical value. */
+        ut_a(autoinc > trx->n_autoinc_rows);
+        *first_value = (autoinc - trx->n_autoinc_rows) - 1;
+    }
+ 
+    *nb_reserved_values = trx->n_autoinc_rows;
+ 
+    /* With old style AUTOINC locking we only update the table's
+    AUTOINC counter after attempting to insert the row. */
+    if (innobase_autoinc_lock_mode != AUTOINC_OLD_STYLE_LOCKING) {
+-       ulonglong   need;
+        ulonglong   current;
+        ulonglong   next_value;
+ 
+        current = *first_value > col_max_value ? autoinc : *first_value;
+-       need = *nb_reserved_values * increment;
+ 
+        /* Compute the last value in the interval */
+        next_value = innobase_next_autoinc(
+-           current, need, offset, col_max_value);
++           current, *nb_reserved_values, increment, offset,
++           col_max_value);
+ 
+        prebuilt->autoinc_last_value = next_value;
+ 
+        if (prebuilt->autoinc_last_value < *first_value) {
+            *first_value = (~(ulonglong) 0);
+        } else {
+            /* Update the table autoinc variable */
+            dict_table_autoinc_update_if_greater(
+                prebuilt->table, prebuilt->autoinc_last_value);
+        }
+    } else {
+        /* This will force write_row() into attempting an update
+        of the table's AUTOINC counter. */
+        prebuilt->autoinc_last_value = 0;
+    }
+ 
+    /* The increment to be used to increase the AUTOINC value, we use
+    this in write_row() and update_row() to increase the autoinc counter
+    for columns that are filled by the user. We need the offset and
+    the increment. */
+    prebuilt->autoinc_offset = offset;
+    prebuilt->autoinc_increment = increment;
+ 
+    dict_table_autoinc_unlock(prebuilt->table);
+ }
+ 
+ /*******************************************************************//**

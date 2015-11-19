@@ -1,0 +1,75 @@
+ 
+-	if (max_value <= current) {
++	/* Check for overflow. */
++	if (block >= max_value
++	    || offset > max_value
++	    || current == max_value
++	    || max_value - offset <= offset) {
++
+ 		next_value = max_value;
+-	} else if (offset <= 1) {
+-		/* Offset 0 and 1 are the same, because there must be at
+-		least one node in the system. */
+-		if (max_value - current <= increment) {
++	} else {
++		ut_a(max_value > current);
++
++		ulonglong	free = max_value - current;
++
++		if (free < offset || free - offset <= block) {
+ 			next_value = max_value;
+ 		} else {
+-			next_value = current + increment;
++			next_value = 0;
+ 		}
+-	} else if (max_value > current) {
++	}
++
++	if (next_value == 0) {
++		ulonglong	next;
++
+ 		if (current > offset) {
+-			next_value = ((current - offset) / increment) + 1;
++			next = (current - offset) / step;
+ 		} else {
+-			next_value = ((offset - current) / increment) + 1;
++			next = (offset - current) / step;
+ 		}
+ 
+-		ut_a(increment > 0);
+-		ut_a(next_value > 0);
+-
++		ut_a(max_value > next);
++		next_value = next * step;
+ 		/* Check for multiplication overflow. */
+-		if (increment > (max_value / next_value)) {
++		ut_a(next_value >= next);
++		ut_a(max_value > next_value);
+ 
+-			next_value = max_value;
+-		} else {
+-			next_value *= increment;
++		/* Check for overflow */
++		if (max_value - next_value >= block) {
+ 
+-			ut_a(max_value >= next_value);
++			next_value += block;
+ 
+-			/* Check for overflow. */
+-			if (max_value - next_value <= offset) {
+-				next_value = max_value;
+-			} else {
++			if (max_value - next_value >= offset) {
+ 				next_value += offset;
++			} else {
++				next_value = max_value;
+ 			}
++		} else {
++			next_value = max_value;
+ 		}
+-	} else {
+-		next_value = max_value;
+ 	}
+ 
++	ut_a(next_value != 0);
+ 	ut_a(next_value <= max_value);

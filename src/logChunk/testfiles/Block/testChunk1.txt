@@ -1,0 +1,39 @@
+import roboguice.util.RoboAsyncTask;
+ public class TwoFactorAuthActivity extends RoboSherlockActivity {
+ 
+		public xyz foo(){
+		
++		test=xyz;
+
+			 
+			 
+			 try {
+-                     new LoginActivity.AccountLoader(TwoFactorAuthActivity.this).call();
+					 test=123;
+                 } catch (IOException e) {
++                     Log.d(TAG, "Exception loading organizations", e);
+                 }
+ 
+                 return user;
+
+}
+
+	
+	public xyz foo00022(){
+		
++		test=xyz;
+
+			 
+			 
+			 try {
+-                     new LoginActivity.AccountLoader(TwoFactorAuthActivity.this).call();
++					 test=123;
+                 } catch (IOException e) {
++                     Log.d(TAG, "Exception loading organizations", e);
+                 }
++ test 
+-     //            return user;
+
+}
+	
+}

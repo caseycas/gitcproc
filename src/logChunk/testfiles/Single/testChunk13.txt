@@ -1,0 +1,44 @@
+//=============================================================================
+-// ClassCache
+-
+-template<>
+-inline int
+-ClassCache::hashKey(StringData* sd) {
+-  return sd->hash();
+-}
+-
+-template<>
+-const Class*
+-ClassCache::lookup(RDS::Handle handle, StringData *name,
+-                   const void* unused) {
+-  auto const thiz = handleToPtr<ClassCache>(handle);
+-  Pair *pair = thiz->keyToPair(name);
+-  const StringData* pairSd = pair->m_key;
+-  if (!stringMatches(pairSd, name)) {
+-    TRACE(1, "ClassCache miss: %s\n", name->data());
+-    const NamedEntity *ne = Unit::GetNamedEntity(name);
+-    Class *c = Unit::lookupClass(ne);
+-    if (UNLIKELY(!c)) {
+-      String normName = normalizeNS(name);
+-      if (normName) {
+-        return lookup(handle, normName.get(), unused);
+-      } else {
+-        c = Unit::loadMissingClass(ne, name);
+-      }
+-      if (UNLIKELY(!c)) {
+-        raise_error(Strings::UNKNOWN_CLASS, name->data());
+-      }
+-    }
+-
+-    if (pair->m_key) decRefStr(pair->m_key);
+-    pair->m_key = name;
+-    name->incRefCount();
+-    pair->m_value = c;
+-  } else {
+-    TRACE(1, "ClassCache hit: %s\n", name->data());
+-  }
+-  return pair->m_value;
+-}
+-
+-//=============================================================================
+ // *SPropCache

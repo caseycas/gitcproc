@@ -1,0 +1,29 @@
+                                     postWindowEventID,
+-                                    (jint) AWT_WINDOW_LOST_FOCUS,
++                                (jint) AWT_WINDOW_DEACTIVATED,
+                                     (jobject) NULL, (jint) 0);
+     }
++
++static gboolean
++window_focus_in_cb (GtkWidget * widget,
++                   GdkEventFocus *event,
++                   jobject peer)
++{
++  (*gdk_env)->CallVoidMethod (gdk_env, peer,
++                              postWindowEventID,
++                              (jint) AWT_WINDOW_GAINED_FOCUS,
++                              (jobject) NULL, (jint) 0);
++  return FALSE;
++}
++
++static gboolean
++window_focus_out_cb (GtkWidget * widget,
++                    GdkEventFocus *event,
++                    jobject peer)
++{
++  (*gdk_env)->CallVoidMethod (gdk_env, peer,
++                              postWindowEventID,
++                              (jint) AWT_WINDOW_LOST_FOCUS,
++                              (jobject) NULL, (jint) 0);
++  return FALSE;
+ }

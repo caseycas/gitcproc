@@ -1,0 +1,96 @@
+commit 9d4db30589c1db277981b965c33c3c6e45cfc668
+Author: Liu Liu <i@liuliu.me>
+Date:   2014-03-27
+
+    assert on gemm if no blas library linked, fixed a typo in doc
+
+diff --git a/lib/ccv_algebra.c b/lib/ccv_algebra.c
+index f8de354..c185c9f 100644
+--- a/lib/ccv_algebra.c
++++ b/lib/ccv_algebra.c
+@@ -272,33 +272,35 @@ void ccv_subtract(ccv_matrix_t* a, ccv_matrix_t* b, ccv_matrix_t** c, int type)
+ void ccv_gemm(ccv_matrix_t* a, ccv_matrix_t* b, double alpha, ccv_matrix_t* c, double beta, int transpose, ccv_matrix_t** d, int type)
+ {
+ 	ccv_dense_matrix_t* da = ccv_get_dense_matrix(a);
+ 	ccv_dense_matrix_t* db = ccv_get_dense_matrix(b);
+ 	ccv_dense_matrix_t* dc = (c == 0) ? 0 : ccv_get_dense_matrix(c);
+ 
+ 	assert(CCV_GET_DATA_TYPE(da->type) == CCV_GET_DATA_TYPE(db->type) && CCV_GET_CHANNEL(da->type) == 1 && CCV_GET_CHANNEL(db->type) == 1 && ((transpose & CCV_A_TRANSPOSE) ? da->rows : da->cols) == ((transpose & CCV_B_TRANSPOSE) ? db->cols : db->rows));
+ 
+ 	if (dc != 0)
+ 		assert(CCV_GET_DATA_TYPE(dc->type) == CCV_GET_DATA_TYPE(da->type) && CCV_GET_CHANNEL(dc->type) == 1 && ((transpose & CCV_A_TRANSPOSE) ? da->cols : da->rows) == dc->rows && ((transpose & CCV_B_TRANSPOSE) ? db->rows : db->cols) == dc->cols);
+ 
+ 	ccv_declare_derived_signature_case(sig, ccv_sign_with_format(20, "ccv_gemm(%d)", transpose), ccv_sign_if(dc == 0 && da->sig != 0 && db->sig != 0, da->sig, db->sig, CCV_EOF_SIGN), ccv_sign_if(dc != 0 && da->sig != 0 && db->sig != 0 && dc->sig != 0, da->sig, db->sig, dc->sig, CCV_EOF_SIGN));
+ 	type = CCV_GET_DATA_TYPE(da->type) | CCV_GET_CHANNEL(da->type);
+ 	ccv_dense_matrix_t* dd = *d = ccv_dense_matrix_renew(*d, (transpose & CCV_A_TRANSPOSE) ? da->cols : da->rows, (transpose & CCV_B_TRANSPOSE) ? db->rows : db->cols, type, type, sig);
+ 	ccv_object_return_if_cached(, dd);
+ 
+ 	if (dd != dc && dc != 0)
+ 		memcpy(dd->data.u8, dc->data.u8, dc->step * dc->rows);
+ 	else if (dc == 0) // clean up dd if dc is not provided
+ 		memset(dd->data.u8, 0, dd->step * dd->rows);
+ 
+ #if (defined HAVE_CBLAS || defined HAVE_ACCELERATE_FRAMEWORK)
+ 	switch (CCV_GET_DATA_TYPE(dd->type))
+ 	{
+ 		case CCV_32F:
+ 			cblas_sgemm(CblasRowMajor, (transpose & CCV_A_TRANSPOSE) ? CblasTrans : CblasNoTrans, (transpose & CCV_B_TRANSPOSE) ? CblasTrans : CblasNoTrans, dd->rows, dd->cols, (transpose & CCV_A_TRANSPOSE) ? da->rows : da->cols, alpha, da->data.f32, da->cols, db->data.f32, db->cols, beta, dd->data.f32, dd->cols);
+ 			break;
+ 		case CCV_64F:
+ 			cblas_dgemm(CblasRowMajor, (transpose & CCV_A_TRANSPOSE) ? CblasTrans : CblasNoTrans, (transpose & CCV_B_TRANSPOSE) ? CblasTrans : CblasNoTrans, dd->rows, dd->cols, (transpose & CCV_A_TRANSPOSE) ? da->rows : da->cols, alpha, da->data.f64, da->cols, db->data.f64, db->cols, beta, dd->data.f64, dd->cols);
+ 			break;
+ 	}
++#else
++	assert(0 && "You need a BLAS compatible library for this function, e.g. libatlas.");
+ #endif
+ }
+diff --git a/lib/ccv_convnet.c b/lib/ccv_convnet.c
+index cdc7273..679bb50 100644
+--- a/lib/ccv_convnet.c
++++ b/lib/ccv_convnet.c
+@@ -369,22 +369,2 @@ static void _ccv_convnet_average_pool_forward_propagate(ccv_convnet_layer_t* lay
+ 
+-static void _ccv_convnet_compute_softmax(ccv_dense_matrix_t* a, ccv_dense_matrix_t** b, int type)
+-{
+-	int ch = CCV_GET_CHANNEL(a->type);
+-	assert(CCV_GET_DATA_TYPE(a->type) == CCV_32F);
+-	ccv_dense_matrix_t* db = *b = ccv_dense_matrix_renew(*b, a->rows, a->cols, CCV_32F | ch, CCV_32F | ch, 0);
+-	int i;
+-	float* aptr = a->data.f32;
+-	float* bptr = db->data.f32;
+-	double max = aptr[0];
+-	for (i = 1; i < a->rows * a->cols * ch; i++)
+-		if (aptr[i] > max)
+-			max = aptr[i];
+-	double tt = 0;
+-	for (i = 0; i < a->rows * a->cols * ch; i++)
+-		tt += (bptr[i] = expf(aptr[i] - max));
+-	tt = 1.0 / tt;
+-	for (i = 0; i < a->rows * a->cols * ch; i++)
+-		bptr[i] *= tt;
+-}
+-
+ static void _ccv_convnet_layer_forward_propagate(ccv_convnet_layer_t* layer, ccv_dense_matrix_t* a, ccv_dense_matrix_t** b, ccv_dense_matrix_t** denoms)
+@@ -1080,2 +1060,22 @@ static ccv_convnet_t* _ccv_convnet_update_new(ccv_convnet_t* convnet)
+ 
++static void _ccv_convnet_compute_softmax(ccv_dense_matrix_t* a, ccv_dense_matrix_t** b, int type)
++{
++	int ch = CCV_GET_CHANNEL(a->type);
++	assert(CCV_GET_DATA_TYPE(a->type) == CCV_32F);
++	ccv_dense_matrix_t* db = *b = ccv_dense_matrix_renew(*b, a->rows, a->cols, CCV_32F | ch, CCV_32F | ch, 0);
++	int i;
++	float* aptr = a->data.f32;
++	float* bptr = db->data.f32;
++	double max = aptr[0];
++	for (i = 1; i < a->rows * a->cols * ch; i++)
++		if (aptr[i] > max)
++			max = aptr[i];
++	double tt = 0;
++	for (i = 0; i < a->rows * a->cols * ch; i++)
++		tt += (bptr[i] = expf(aptr[i] - max));
++	tt = 1.0 / tt;
++	for (i = 0; i < a->rows * a->cols * ch; i++)
++		bptr[i] *= tt;
++}
++
+ static void _ccv_convnet_classify(ccv_convnet_t* convnet, ccv_dense_matrix_t** a, int* labels, int batch)

@@ -1,0 +1,16 @@
+ @Override
+     public Bundle getAuthToken(AccountAuthenticatorResponse response,
+             Account account, String authTokenType, Bundle options)
+             throws NetworkErrorException {
+
+        try {
+            // Clear password from account
+             am.clearPassword(account);
+             return bundle;
+-        } catch (Exception e) {
++        } catch (IOException e) {
+             Log.e(TAG, e.getMessage());
++            throw new NetworkErrorException(e);
+         }
+-        return bundle;
+     }

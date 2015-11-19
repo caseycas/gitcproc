@@ -1,0 +1,38 @@
+commit c8d3ef3929e8049a84957002bc7e2071844bfb53
+Author: Alex Miller <alex.miller@cognitect.com>
+Date:   2013-10-25
+
+    CLJ-713 - upgrade ASM to 4.1.
+    
+    Signed-off-by: Stuart Halloway <stu@cognitect.com>
+
+diff --git a/src/jvm/clojure/asm/ClassReader.java b/src/jvm/clojure/asm/ClassReader.java
+index c9bec91..9265a37 100644
+--- a/src/jvm/clojure/asm/ClassReader.java
++++ b/src/jvm/clojure/asm/ClassReader.java
+@@ -31,63 +31,87 @@ package clojure.asm;
+ 
+-import java.io.InputStream;
+ import java.io.IOException;
++import java.io.InputStream;
+ 
+ /**
+  *
+  * @author Eric Bruneton
+  * @author Eugene Kuleshov
+  */
+ public class ClassReader {
+ 
+ 
+@@ -116,2109 +140,2063 @@ private final int maxStringLength;
+     public final int header;
+ 
+     // ------------------------------------------------------------------------
+     // Constructors
+     // ------------------------------------------------------------------------
+ 
+    public ClassReader(final byte[] b) {
+         this(b, 0, b.length);
+     }
+ }
+ 

@@ -1,0 +1,241 @@
++static RuntimeType
++getDynLocType(const vector<DynLocation*>& inputs,
++              const Tracelet& t,
++              Opcode opcode,
++              NormalizedInstruction* ni,
++              Operands op,
++              OutTypeConstraints constraint,
++              DynLocation* outDynLoc) {
++  assert(constraint != OutFInputL);
++
++  switch (constraint) {
++#define CS(OutXLike, KindOfX) \
++    case OutXLike:            \
++      return RuntimeType(KindOfX);
++    CS(OutInt64,       KindOfInt64);
++    CS(OutBoolean,     KindOfBoolean);
++    CS(OutDouble,      KindOfDouble);
++    CS(OutString,      KindOfString);
++    CS(OutNull,        KindOfNull);
++    CS(OutUnknown,     KindOfInvalid); // Subtle interaction with BB-breaking.
++    CS(OutFDesc,       KindOfInvalid); // Unclear if OutFDesc has a purpose.
++    CS(OutArray,       KindOfArray);
++    CS(OutObject,      KindOfObject);
++#undef CS
++    case OutPred: return RuntimeType(predictOutputs(t, ni));
++
++    case OutClassRef: {
++      Op op = Op(ni->op());
++      if ((op == OpAGetC && inputs[0]->isString())) {
++        const StringData *sd = inputs[0]->rtt.valueString();
++        if (sd) {
++          Class *klass = Unit::lookupUniqueClass(sd);
++          TRACE(3, "KindOfClass: derived class \"%s\" from string literal\n",
++                klass ? klass->preClass()->name()->data() : "NULL");
++          return RuntimeType(klass);
++        }
++      } else if (op == OpSelf) {
++        return RuntimeType(curClass());
++      } else if (op == OpParent) {
++        Class* clss = curClass();
++        if (clss != nullptr)
++          return RuntimeType(clss->parent());
++      }
++      return RuntimeType(KindOfClass);
++    }
++
++    case OutCns: {
++      // If it's a system constant, burn in its type. Otherwise we have
++      // to accept prediction; use the translation-time value, or fall back
++      // to the targetcache if none exists.
++      StringData *sd = curUnit()->lookupLitstrId(ni->imm[0].u_SA);
++      assert(sd);
++      const TypedValue* tv = Unit::lookupPersistentCns(sd);
++      if (tv) {
++        return RuntimeType(tv->m_type);
++      }
++      tv = Unit::lookupCns(sd);
++      if (tv) {
++        ni->outputPredicted = true;
++        TRACE(1, "CNS %s: guessing runtime type %d\n", sd->data(), tv->m_type);
++        return RuntimeType(tv->m_type);
++      }
++      return RuntimeType(KindOfInvalid);
++    }
++
++    case OutNullUninit: {
++      assert(ni->op() == OpNullUninit);
++      return RuntimeType(KindOfUninit);
++    }
++
++    case OutStringImm: {
++      assert(ni->op() == OpString);
++      StringData *sd = curUnit()->lookupLitstrId(ni->imm[0].u_SA);
++      assert(sd);
++      return RuntimeType(sd);
++    }
++
++    case OutArrayImm: {
++      assert(ni->op() == OpArray);
++      ArrayData *ad = curUnit()->lookupArrayId(ni->imm[0].u_AA);
++      assert(ad);
++      return RuntimeType(ad);
++    }
++
++    case OutBooleanImm: {
++      assert(ni->op() == OpTrue || ni->op() == OpFalse);
++      return RuntimeType(ni->op() == OpTrue);
++    }
++
++    case OutThisObject: {
++      return Translator::outThisObjectType();
++    }
++
++    case OutVUnknown: {
++      return RuntimeType(KindOfRef, KindOfInvalid);
++    }
++
++    case OutArith: {
++      return RuntimeType(inferType(ArithRules, inputs));
++    }
++
++    case OutSameAsInput: {
++      /*
++       * Relies closely on the order that inputs are pushed in
++       * getInputs().  (Pushing top of stack first for multi-stack
++       * consumers, stack elements before M-vectors and locals, etc.)
++       */
++      assert(inputs.size() >= 1);
++      Opcode op = ni->op();
++      ASSERT_NOT_IMPLEMENTED(
++        // Sets and binds that take multiple arguments have the rhs
++        // pushed first.  In the case of the M-vector versions, the
++        // rhs comes before the M-vector elements.
++        op == OpSetL  || op == OpSetN  || op == OpSetG  || op == OpSetS  ||
++        op == OpBindL || op == OpBindG || op == OpBindS || op == OpBindN ||
++        op == OpSetM  || op == OpBindM ||
++        // Dup takes a single element.
++        op == OpDup
++      );
++
++      if (op == OpSetM) {
++        /*
++         * SetM returns null for "invalid" inputs, or a string if the
++         * base was a string. VectorTranslator ensures that invalid
++         * inputs or a string output when we weren't expecting it will
++         * cause a side exit, so we can keep this fairly simple.
++         */
++
++        if (ni->immVecM.size() > 1) {
++          // We don't know the type of the base for the final
++          // operation so we can't assume anything about the output
++          // type.
++          return RuntimeType(KindOfAny);
++        }
++
++        // For single-element vectors, we can determine the output
++        // type from the base.
++        Type baseType;
++        switch (ni->immVec.locationCode()) {
++          case LGL: case LGC:
++          case LNL: case LNC:
++          case LSL: case LSC:
++            baseType = Type::Gen;
++            break;
++
++          default:
++            baseType = Type::fromRuntimeType(inputs[1]->rtt);
++        }
++
++        const bool setElem = mcodeMaybeArrayKey(ni->immVecM[0]);
++        const bool setNewElem = ni->immVecM[0] == MW;
++        const Type keyType =
++          setNewElem ? Type::None
++                     : Type::fromRuntimeType(inputs[2]->rtt);
++        const Type valType = Type::fromRuntimeType(inputs[0]->rtt);
++        if (setElem && baseType.maybe(Type::Str)) {
++          if (baseType.isString()) {
++            // The base is a string so our output is a string.
++            return RuntimeType(KindOfString);
++          } else if (!valType.isString()) {
++            // The base might be a string and our value isn't known to
++            // be a string. The output type could be Str or valType.
++            return RuntimeType(KindOfAny);
++          }
++        }
++      }
++
++      const int idx = 0; // all currently supported cases.
++
++      if (debug) {
++        if (!inputs[idx]->rtt.isVagueValue()) {
++          if (op == OpBindG || op == OpBindN || op == OpBindS ||
++              op == OpBindM || op == OpBindL) {
++            assert(inputs[idx]->rtt.isRef() && !inputs[idx]->isLocal());
++          } else {
++            assert(inputs[idx]->rtt.valueType() ==
++                   inputs[idx]->rtt.outerType());
++          }
++        }
++      }
++      return inputs[idx]->rtt;
++    }
++
++    case OutCInputL: {
++      assert(inputs.size() >= 1);
++      const DynLocation* in = inputs[inputs.size() - 1];
++      RuntimeType retval;
++      if (in->rtt.outerType() == KindOfUninit) {
++        // Locals can be KindOfUninit, so we need to convert
++        // this to KindOfNull
++        retval = RuntimeType(KindOfNull);
++      } else {
++        retval = in->rtt.unbox();
++      }
++      TRACE(2, "Input (%d, %d) -> (%d, %d)\n",
++            in->rtt.outerType(), in->rtt.innerType(),
++            retval.outerType(), retval.innerType());
++      return retval;
++    }
++
++    case OutIncDec: {
++      const RuntimeType &inRtt = ni->inputs[0]->rtt;
++      // TODO: instead of KindOfInvalid this should track the actual
++      // type we will get from interping a non-int IncDec.
++      return RuntimeType(IS_INT_TYPE(inRtt.valueType()) ?
++                         KindOfInt64 : KindOfInvalid);
++    }
++
++    case OutStrlen: {
++      auto const& rtt = ni->inputs[0]->rtt;
++      return RuntimeType(rtt.isString() ? KindOfInt64 : KindOfInvalid);
++    }
++
++    case OutCInput: {
++      assert(inputs.size() >= 1);
++      const DynLocation* in = inputs[inputs.size() - 1];
++      if (in->rtt.outerType() == KindOfRef) {
++        return in->rtt.unbox();
++      }
++      return in->rtt;
++    }
++
++    case OutBitOp: {
++      assert(inputs.size() == 2 ||
++             (inputs.size() == 1 && opcode == OpBitNot));
++      if (inputs.size() == 2) {
++        return bitOpType(inputs[0], inputs[1]);
++      } else {
++        return bitOpType(inputs[0], nullptr);
++      }
++    }
++
++    case OutSetOp: {
++      return setOpOutputType(ni, inputs);
++    }
++
++    case OutNone:
++    default:
++      return RuntimeType(KindOfInvalid);
++  }
++}
