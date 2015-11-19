@@ -22,9 +22,12 @@ debug information, and points to the config.ini file.  The config.ini file speci
 must be created manually before) and the location of the keywords file.
 
 The keywords file specifies what structures you wish to track.  It is formatted in the following manner:
-<keyword_1>, <INCLUDED/EXCLUDED>, <SINGLE/BLOCK>
+<br/>
+[keyword_1], [INCLUDED/EXCLUDED], [SINGLE/BLOCK]
+<br/>
 ...
-<keyword_N>,<INCLUDED/EXCLUDED>, <SINGLE/BLOCK>
+<br/>
+[keyword_N],[INCLUDED/EXCLUDED], [SINGLE/BLOCK]
 
 The first part is the keyword you wish to track.  For instance, if you are tracking assert statements, one 
 keyword of interest would be "assert", if you were tracking try-catch blocks, you might have "try" and "catch".
@@ -34,7 +37,7 @@ For example, if you are tracking assertions, but you wish to exclude headers, yo
 a multiple line element.  A single line element might be "println", where as "for" with a BLOCK designation will
 track all the contents of the for loop encased by {...}.
 
-python ghProc.py <git_log>
+python ghProc.py [git_log]
 
 #Running Tests
 
