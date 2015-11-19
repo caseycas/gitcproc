@@ -12,6 +12,7 @@ class Config:
         else:
             print("Config file not found at: ")
             print(configFile)
+            quit()
 
     def ConfigSectionMap(self, section):
         dict1 = {}

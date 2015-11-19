@@ -1,3 +1,7 @@
+import sys
+
+sys.path.append("../util")
+import Util
 import unittest
 import ghLogDb
 
@@ -5,6 +9,8 @@ import ghLogDb
 class ghLogDbTest(unittest.TestCase):
 
     def setUp(self):
+ 
+        Util.DATABASE = 0
         self.testCommit1 = ghLogDb.ghLogDb("testfiles/ghLogDbTest/TestCommit1.txt")
         self.testCommit2 = ghLogDb.ghLogDb("testfiles/ghLogDbTest/TestCommit2.txt")
         self.testCommit3 = ghLogDb.ghLogDb("testfiles/ghLogDbTest/TestCommit3.txt")
@@ -24,7 +30,6 @@ class ghLogDbTest(unittest.TestCase):
         self.testCommit3.processLog()
         self.testCommit4.processLog()
         self.testCommit5.processLog()
-
         self.testCommit7.processLog()
         self.testCommit8.processLog()
         self.testCommit9.processLog()
@@ -32,6 +37,11 @@ class ghLogDbTest(unittest.TestCase):
         self.testCommit11.processLog() #Make sure there is no crash
         self.testCommit12.processLog() #Make sure there is no crash
         #self.testCommit13.processLog() #Make sure there is no crash
+
+        self.testCommitb1=ghLogDb.ghLogDb("testfiles/ghLogDbTestBlock/TestCommit1.txt")
+        self.testCommitb1.processLog("../util/sample_conf2.ini")
+
+
 
  
     def test_Commit1(self):
@@ -44,7 +54,7 @@ class ghLogDbTest(unittest.TestCase):
             self.assertTrue(patch.language == "c")
             self.assertTrue(patch.is_test == False)
             print(patch.file_name)
-        
+
         self.assertTrue(patches[0].file_name == "bin/cuda/cwc-verify.c")
         methods = patches[0].methods
         self.assertTrue(len(methods) == 1) #Can't label stuff outside functions anymore unless we're looking for it.
@@ -73,7 +83,7 @@ class ghLogDbTest(unittest.TestCase):
         self.assertTrue(patches[2].file_name == "lib/ccv_convnet.c")
         methods = patches[2].methods
         self.assertTrue(len(methods)==6)
-        self.assertTrue(methods[1].method == "ccv_convnet_verify")  
+        self.assertTrue(methods[1].method == "ccv_convnet_verify")
         self.assertTrue(methods[1].total_add == 6)
         self.assertTrue(methods[1].total_del == 0)
         testDict = {'assert Adds':0, 'assert Dels': 0, 'ut_ad Adds':0, 'ut_ad Dels': 0, 'ut_a Adds':0, 'ut_a Dels': 0}
@@ -92,7 +102,7 @@ class ghLogDbTest(unittest.TestCase):
             self.assertTrue(patch.language == "c")
             self.assertTrue(patch.is_test == False)
             print(patch.file_name)
-            
+
         self.assertTrue(patches[0].file_name == "bin/cuda/cwc-bench.c")
         methods = patches[0].methods
         self.assertTrue(len(methods) == 1)
@@ -102,18 +112,18 @@ class ghLogDbTest(unittest.TestCase):
         testDict = {'assert Adds':0, 'assert Dels': 0, 'ut_ad Adds':0, 'ut_ad Dels': 0, 'ut_a Adds':0, 'ut_a Dels': 0}
         self.assertEqual(testDict,methods[0].keywordDictionary)
 
-        
-        
+
+
         self.assertTrue(patches[1].file_name == "bin/cuda/cwc-verify.c")
         methods = patches[1].methods
-        
+
         self.assertTrue(len(methods) == 1)
         self.assertTrue(methods[0].method == "main")
         self.assertTrue(methods[0].total_add == 314)
         self.assertTrue(methods[0].total_del == 0)
         testDict = {'assert Adds':1, 'assert Dels': 0, 'ut_ad Adds':0, 'ut_ad Dels': 0, 'ut_a Adds':0, 'ut_a Dels': 0}
         self.assertEqual(testDict,methods[0].keywordDictionary)
-        
+
 
     def test_Commit3(self):
         shas = self.testCommit3.shas
@@ -125,26 +135,26 @@ class ghLogDbTest(unittest.TestCase):
             self.assertTrue(patch.language == "c")
             self.assertTrue(patch.is_test == False)
             print(patch.file_name)
-            
+
         self.assertTrue(patches[0].file_name == "lib/ccv_convnet.c")
         methods = patches[0].methods
         self.assertTrue(len(methods) == 2)
-        
-        
+
+
         self.assertTrue(methods[0].method == "_ccv_convnet_convolutional_forward_propagate_sse2")
         self.assertTrue(methods[0].total_add == 1)
         self.assertTrue(methods[0].total_del == 1)
         testDict = {'assert Adds':0, 'assert Dels': 0, 'ut_ad Adds':0, 'ut_ad Dels': 0, 'ut_a Adds':0, 'ut_a Dels': 0}
         self.assertEqual(testDict,methods[0].keywordDictionary)
-        
-        self.assertTrue(methods[1].method == "_ccv_convnet_convolutional_forward_propagate_neon")        
+
+        self.assertTrue(methods[1].method == "_ccv_convnet_convolutional_forward_propagate_neon")
 
         self.assertTrue(methods[1].total_add == 62)
         self.assertTrue(methods[1].total_del == 40)
         testDict = {'assert Adds':0, 'assert Dels': 0, 'ut_ad Adds':0, 'ut_ad Dels': 0, 'ut_a Adds':0, 'ut_a Dels': 0}
         self.assertEqual(testDict,methods[1].keywordDictionary)
 
-    def test_Commit4(self):   
+    def test_Commit4(self):
         shas = self.testCommit4.shas
         self.assertTrue(len(shas) == 1) #Just 1 commit.
         self.assertTrue(shas[0].author == "Liu Liu")
@@ -154,16 +164,16 @@ class ghLogDbTest(unittest.TestCase):
             self.assertTrue(patch.language == "c")
             self.assertTrue(patch.is_test == False)
             print(patch.file_name)
-            
+
         methods = patches[0].methods
         self.assertTrue(len(methods) == 1)
-            
+
         self.assertTrue(methods[0].method == "ccv_gemm")
         self.assertTrue(methods[0].total_add == 2)
         self.assertTrue(methods[0].total_del == 0)
         testDict = {'assert Adds':1, 'assert Dels': 0, 'ut_ad Adds':0, 'ut_ad Dels': 0, 'ut_a Adds':0, 'ut_a Dels': 0}
         self.assertEqual(testDict,methods[0].keywordDictionary)
-        
+
         methods = patches[1].methods
         self.assertTrue(len(methods) == 2)
         self.assertTrue(methods[0].method == "_ccv_convnet_compute_softmax")
@@ -171,7 +181,7 @@ class ghLogDbTest(unittest.TestCase):
         self.assertTrue(methods[0].total_del == 18)
         testDict = {'assert Adds':0, 'assert Dels': 1, 'ut_ad Adds':0, 'ut_ad Dels': 0, 'ut_a Adds':0, 'ut_a Dels': 0}
         self.assertEqual(testDict,methods[0].keywordDictionary)
-        
+
         self.assertTrue(methods[1].method == "_ccv_convnet_compute_softmax")
         self.assertTrue(methods[1].total_add == 18)
         self.assertTrue(methods[1].total_del == 0)
@@ -271,7 +281,7 @@ class ghLogDbTest(unittest.TestCase):
         self.assertTrue(methods[0].method == "_ccv_read_rgb_raw")
         testDict = {'assert Adds':2, 'assert Dels': 0, 'ut_ad Adds':0, 'ut_ad Dels': 0, 'ut_a Adds':0, 'ut_a Dels': 0}
         self.assertEqual(testDict,methods[0].keywordDictionary)
-        
+
         methods = patches[4].methods
         self.assertTrue(len(methods) == 0) #Can't match the test case examples.
 
@@ -283,30 +293,31 @@ class ghLogDbTest(unittest.TestCase):
     #     self.testCommit2.processLog()
 
 
+    def test_Commitb1(self):
+
+        shas = self.testCommitb1.shas
+        self.assertTrue(len(shas) == 1) #Just 1 commit.
+        self.assertTrue(shas[0].author == "Kevin Sawicki")
+        patches = shas[0].patches
+        self.assertTrue(len(patches) == 1)
+        for patch in patches:
+            self.assertTrue(patch.language == "java")
+            self.assertTrue(patch.is_test == False)
+            print(patch.file_name)
+
+        self.assertTrue(patches[0].file_name == "app/src/main/java/com/github/mobile/accounts/AccountUtils.java")
+        methods = patches[0].methods
+
+        self.assertTrue(len(methods) == 1)
+        self.assertTrue(methods[0].method == "getAccounts")
+        self.assertTrue(methods[0].total_add == 1)
+        self.assertTrue(methods[0].total_del == 2)
+        dict= {'throw  Adds':0, 'catch Dels': 0, 'throw  Dels': 0, 'try Adds': 0, 'try Dels': 0, 'exception Dels': 0, 'raise Adds': 0, 'catch Adds': 0, 'finally Dels': 0, 'finally Adds': 0, 'exception Adds': 0, 'raise Dels': 0, 'for Adds': 0,'for Dels': 0,'while Adds': 0,'while Dels': 0}
+        self.assertEqual(dict,methods[0].keywordDictionary)
 
 
 
-    # def test_Commit1(self):
 
-    #     shas = self.testCommit1.shas
-    #     self.assertTrue(len(shas) == 1) #Just 1 commit.
-    #     self.assertTrue(shas[0].author == "Kevin Sawicki")
-    #     patches = shas[0].patches
-    #     self.assertTrue(len(patches) == 1)
-    #     for patch in patches:
-    #         self.assertTrue(patch.language == "java")
-    #         self.assertTrue(patch.is_test == False)
-    #         print(patch.file_name)
-
-    #     self.assertTrue(patches[0].file_name == "app/src/main/java/com/github/mobile/accounts/AccountUtils.java")
-    #     methods = patches[0].methods
-
-    #     self.assertTrue(len(methods) == 1)
-    #     self.assertTrue(methods[0].method == "getAccounts")
-    #     self.assertTrue(methods[0].total_add == 1)
-    #     self.assertTrue(methods[0].total_del == 2)
-    #     dict= {'throw Adds':0, 'catch Dels': 0, 'throw Dels': 0, 'try Adds': 0, 'try Dels': 0, 'exception Dels': 0, 'raise Adds': 0, 'catch Adds': 0, 'finally Dels': 0, 'finally Adds': 0, 'exception Adds': 0, 'raise Dels': 0}
-    #     self.assertEqual(dict,methods[0].keywordDictonary)
 
 
 
