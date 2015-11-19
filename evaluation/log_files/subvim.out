@@ -1,0 +1,19 @@
+Utility to process github logs
+Going to process projects/top_C++/subvim/all_log_nomerge_function.txt 
+---------- subvim ------------
+
+COMMIT: f361a5f7d3fb2d23d8e44d74000de8cb4219e266
+COMMIT: fa6f19facc0d3b599da654ded65acee87d76e7c4
+COMMIT: f94306e274d6b82e53e27368c6496b16a08251a0
+COMMIT: d915cf9628dc3c5ed6a0795dd9164fc1090301dd
+COMMIT: 3970e1312ffd1a42377a1093d4d24a0756ebf27a
+COMMIT: ec7943dfd86834f56dd8915c4b80f8cf21d350c7
+COMMIT: be29b6829842904b959dae79ebf27570f8d55721
+COMMIT: b113cadb4ee626b254c41a8a3061f29609a3500f
+Match patches:  1841
+MisMatch patches:  37
+!! Done
+Project: projects/top_C++/subvim
+Start time: 2015-11-19 01:18:41.835382
+End time: 2015-11-19 01:20:17.613552
+Process time: 0:01:35.778170

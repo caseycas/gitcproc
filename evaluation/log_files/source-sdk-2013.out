@@ -1,0 +1,39 @@
+Utility to process github logs
+Going to process projects/top_C++/source-sdk-2013/all_log_nomerge_function.txt 
+---------- source-sdk-2013 ------------
+
+COMMIT: 55ed12f8d1eb6887d348be03aee5573d44177ffb
+COMMIT: 53e78c503e6e9c7d15e2eefc480755fe37dd7077
+COMMIT: 7309a5f13f63fdcc7b1e090f6c176113a9d95061
+COMMIT: 73f5dea98e8a036c27c4026cff260ce48d93e492
+COMMIT: b5dc4a85433a908d38d453e98d7d45e22e2a5fc0
+COMMIT: 30064a19770809fbb25f5f19a11389812c7f22a9
+COMMIT: 27d9df18d1a0181ed1650b408881d4f1a3fdc642
+COMMIT: beaae8ac45a2f322a792404092d4482065bef7ef
+COMMIT: b00fad8cd0db02ebc326f494010ae63bed9a8573
+COMMIT: f56bb35301836e56582a575a75864392a0177875
+COMMIT: 1524321396a91ef9fa1f19b4873e53e2c5d9e50a
+COMMIT: a0c29e7dd67abb15c74c85f07741784877edfdcd
+COMMIT: 0c8730284404a99c4645634bcaac20e5eb838bee
+COMMIT: 137582c2b9930c48744d791418e7400b1fc3423a
+COMMIT: 38a9e52e616c7e7e1c7fd38acb033057cdc344c8
+COMMIT: d9ac276a957034bba99d71c1ecbfb53c3d2d1c87
+COMMIT: e16ea21dc8a710237ade8413207f58d403c616a3
+COMMIT: 77b376f8a0d8d172c51729762f80bb394534aa41
+COMMIT: 3a066ecf312210316f0f61938c03fc761f32095a
+COMMIT: 949bd75a99c20c87c82ccd8bcd271800dd7eaf4b
+COMMIT: 39ed87570bdb2f86969d4be821c94b722dc71179
+<type 'unicode'>
+<type 'unicode'>
+<type 'unicode'>
+<type 'unicode'>
+<type 'unicode'>
+<type 'unicode'>
+<type 'unicode'>
+Match patches:  14571
+MisMatch patches:  263
+!! Done
+Project: projects/top_C++/source-sdk-2013
+Start time: 2015-11-19 00:56:48.109810
+End time: 2015-11-19 01:18:40.505273
+Process time: 0:21:52.395463

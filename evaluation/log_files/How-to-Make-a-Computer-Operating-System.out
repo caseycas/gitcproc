@@ -1,0 +1,52 @@
+Utility to process github logs
+Going to process projects/top_C/How-to-Make-a-Computer-Operating-System/all_log_nomerge_function.txt 
+---------- How-to-Make-a-Computer-Operating-System ------------
+
+COMMIT: a051d0104df5ef5c5ea5b0bde5d5d34c185eb0a9
+COMMIT: 477403ef384c53c111cc877521ebfc66d66c664b
+COMMIT: a3a6a864f1e13c99b5e33bb10ffe7b813ac7753c
+COMMIT: af8e2aad0c1aa5231cdbf4742ec022837219f326
+COMMIT: 63593677de632ef968f2089c32ff2401fabb5cc8
+COMMIT: 99569d407b67e2195cd026c718a77d480b37f110
+COMMIT: 73ee812d708266b9a84a3a747d76bd5027fbb80f
+COMMIT: 795309da219f65d25df03d1b9d57f475fef7c4ad
+<type 'unicode'>
+<type 'unicode'>
+<type 'unicode'>
+<type 'unicode'>
+<type 'unicode'>
+<type 'unicode'>
+<type 'unicode'>
+Match patches:  393
+MisMatch patches:  4
+!! Done
+Project: projects/top_C/How-to-Make-a-Computer-Operating-System
+Start time: 2015-11-18 23:20:42.160235
+End time: 2015-11-18 23:20:47.670240
+Process time: 0:00:05.510005
+Utility to process github logs
+Going to process projects/top_C/How-to-Make-a-Computer-Operating-System/all_log_nomerge_function.txt 
+---------- How-to-Make-a-Computer-Operating-System ------------
+
+COMMIT: a051d0104df5ef5c5ea5b0bde5d5d34c185eb0a9
+COMMIT: 477403ef384c53c111cc877521ebfc66d66c664b
+COMMIT: a3a6a864f1e13c99b5e33bb10ffe7b813ac7753c
+COMMIT: af8e2aad0c1aa5231cdbf4742ec022837219f326
+COMMIT: 63593677de632ef968f2089c32ff2401fabb5cc8
+COMMIT: 99569d407b67e2195cd026c718a77d480b37f110
+COMMIT: 73ee812d708266b9a84a3a747d76bd5027fbb80f
+COMMIT: 795309da219f65d25df03d1b9d57f475fef7c4ad
+<type 'unicode'>
+<type 'unicode'>
+<type 'unicode'>
+<type 'unicode'>
+<type 'unicode'>
+<type 'unicode'>
+<type 'unicode'>
+Match patches:  393
+MisMatch patches:  4
+!! Done
+Project: projects/top_C/How-to-Make-a-Computer-Operating-System
+Start time: 2015-11-18 23:23:03.751452
+End time: 2015-11-18 23:23:09.230798
+Process time: 0:00:05.479346

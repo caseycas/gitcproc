@@ -1,0 +1,17 @@
+nohup: ignoring input
+Traceback (most recent call last):
+  File "ghProc.py", line 96, in <module>
+    main()
+  File "ghProc.py", line 84, in main
+    processLog(project)
+  File "ghProc.py", line 47, in processLog
+    ghDb.processLog()
+  File "/home/ccasal/gitcproc/src/logChunk/ghLogDb.py", line 507, in processLog
+    self.processLastChunk(patchObj, curLogChunk)
+  File "/home/ccasal/gitcproc/src/logChunk/ghLogDb.py", line 411, in processLastChunk
+    curLogChunk.parseText()
+  File "/home/ccasal/gitcproc/src/logChunk/logChunk.py", line 799, in parseText
+    funcToAdd = PatchMethod(self.parseFunctionName(shortFunctionName), funcStart, funcEnd, ftotal_add, ftotal_del,keywordDictionary,etotal_add,etotal_del,catchLineNumber)
+  File "/home/ccasal/gitcproc/src/logChunk/logChunk.py", line 292, in parseFunctionName
+    raise ValueError("Couldn't find method name", fullName)
+ValueError: ("Couldn't find method name", u'       (vault ?: SingletonVault::singleton())->get_weak({')

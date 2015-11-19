@@ -1,0 +1,14 @@
+Utility to process github logs
+Going to process projects/top_C++/DOOM-3-BFG/all_log_nomerge_function.txt 
+---------- DOOM-3-BFG ------------
+
+COMMIT: 9c37079c16015fc58de29d3de366e0d93dc11f8a
+COMMIT: 2edcf7d40be353e6ec7f1b3d58c7fd83b51bb449
+COMMIT: 5016f605b89400b0dc1e12a19c6c2e223b098497
+Match patches:  987
+MisMatch patches:  13
+!! Done
+Project: projects/top_C++/DOOM-3-BFG
+Start time: 2015-11-18 23:25:12.175100
+End time: 2015-11-18 23:26:02.577714
+Process time: 0:00:50.402614
