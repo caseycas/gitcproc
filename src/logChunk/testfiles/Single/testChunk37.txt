@@ -451,7 +451,7 @@
          if ( !deletedList[ 1 ].isValid() )
              deletedList[ 1 ] = DiskLoc();
          
-         assert( len < 400000000 );
+-        assert( len < 400000000 );
          int passes = 0;
 -        const int maxPasses = len / 30; // 30 is about the smallest entry that could go in the oplog
 +        int maxPasses = len / 32; // 30 is about the smallest entry that could go in the oplog

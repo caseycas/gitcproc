@@ -96,16 +96,16 @@ class logChunktest(unittest.TestCase):
         self.chunk38 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk38.txt")) #Check
 
         #Read in the block tests
-        self.chunkb1 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk1.txt"),"sample_conf2.ini")
-        self.chunkb2 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk2.txt"),"sample_conf2.ini")
-        self.chunkb3 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk3.txt"),"sample_conf2.ini")
-        self.chunkb4 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk4.txt"),"sample_conf2.ini")
-        self.chunkb5 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk5.txt"),"sample_conf2.ini")
-        self.chunkb6 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk6.txt"),"sample_conf2.ini")
-        self.chunkb7 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk7.txt"),"sample_conf2.ini")
-        self.chunkb8 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk8.txt"),"sample_conf2.ini")
-        self.chunkb9 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk9.txt"),"sample_conf2.ini")
-        self.chunkb10 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk10.txt"),"sample_conf2.ini")
+        self.chunkb1 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk1.txt"),"../util/sample_conf2.ini")
+        self.chunkb2 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk2.txt"),"../util/sample_conf2.ini")
+        self.chunkb3 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk3.txt"),"../util/sample_conf2.ini")
+        self.chunkb4 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk4.txt"),"../util/sample_conf2.ini")
+        self.chunkb5 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk5.txt"),"../util/sample_conf2.ini")
+        self.chunkb6 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk6.txt"),"../util/sample_conf2.ini")
+        self.chunkb7 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk7.txt"),"../util/sample_conf2.ini")
+        self.chunkb8 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk8.txt"),"../util/sample_conf2.ini")
+        self.chunkb9 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk9.txt"),"../util/sample_conf2.ini")
+        self.chunkb10 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk10.txt"),"../util/sample_conf2.ini")
 
 
 
@@ -308,7 +308,7 @@ class logChunktest(unittest.TestCase):
     def test_parseText_Single8(self):
         self.chunk8.parseText()
         funcList = self.chunk8.functions
-        self.debugFunctions(funcList)
+        #self.debugFunctions(funcList)
         self.assertTrue(len(funcList) == 4)
 
         self.assertTrue(funcList[0].method ==  "GetHelperBinary")
@@ -376,7 +376,7 @@ class logChunktest(unittest.TestCase):
     def test_parseText_Single11(self):
         self.chunk11.parseText()
         funcList = self.chunk11.functions
-        self.debugFunctions(funcList)
+        #self.debugFunctions(funcList)
         self.assertTrue(len(funcList) == 5)
 
         self.assertTrue(funcList[4].method ==  "parseArgs")
@@ -412,14 +412,14 @@ class logChunktest(unittest.TestCase):
         self.assertTrue(funcList[0].end == 8)
         self.assertTrue(funcList[0].total_add == 0)
         self.assertTrue(funcList[0].total_del == 3)
-        self.assertTrue(len(funcList[0].assertionList) == 0)
+        #self.assertTrue(len(funcList[0].assertionList) == 0)
 
         self.assertTrue(funcList[1].method ==  "ClassCache::lookup")
         self.assertTrue(funcList[1].start == 13)
         self.assertTrue(funcList[1].end == 41)
         self.assertTrue(funcList[1].total_add == 0)
         self.assertTrue(funcList[1].total_del == 29)
-        self.assertTrue(len(funcList[1].assertionList) == 0)
+        #self.assertTrue(len(funcList[1].assertionList) == 0)
 
     def test_parseText_Single14(self):
         self.chunk14.parseText()
@@ -432,7 +432,7 @@ class logChunktest(unittest.TestCase):
         self.assertTrue(funcList[0].end == 241)
 
         testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 15, 'ut_a Dels': 0}
-        self.assertTrue(testDict,funcList[0].keywordDictionary)
+        self.assertEqual(testDict,funcList[0].keywordDictionary)
 
     def test_parseText_Single15(self):
         self.chunk15.parseText()
@@ -450,13 +450,13 @@ class logChunktest(unittest.TestCase):
     def test_parseText_Single22(self):
         self.chunk22.parseText()
         funcList = self.chunk22.functions
-        #self.debugFunctions(funcList)
+        self.debugFunctions(funcList)
 
         self.assertTrue(len(funcList) == 6) #Can't get the last one b/c constructor out of context
         self.assertTrue(funcList[0].method ==  "MDL_map::init")
         self.assertTrue(funcList[1].method ==  "MDL_map::destroy")
         testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 1, 'ut_a Dels': 0}
-        self.assertTrue(testDict,funcList[0].keywordDictionary)
+        self.assertEqual(testDict,funcList[1].keywordDictionary)
 
         self.assertTrue(funcList[2].method ==  "MDL_map::find_or_insert")
         self.assertTrue(funcList[3].method ==  "MDL_map::find")
@@ -467,7 +467,7 @@ class logChunktest(unittest.TestCase):
         self.assertTrue(funcList[5].method ==  "MDL_map::remove")
 
         testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 1, 'ut_a Dels': 0}
-        self.assertTrue(testDict,funcList[5].keywordDictionary)
+        self.assertEqual(testDict,funcList[5].keywordDictionary)
 
     def test_parseText_Single23(self):
         self.chunk23.parseText()
@@ -477,9 +477,9 @@ class logChunktest(unittest.TestCase):
 
         #Broken like 2...
         self.assertTrue(funcList[0].method ==  "MDL_ticket::has_pending_conflicting_lock_impl")
-        self.assertTrue(len(funcList[0].assertionList) == 2)
+        #self.assertTrue(len(funcList[0].assertionList) == 2)
         self.assertTrue(funcList[1].method ==  "MDL_ticket::has_pending_conflicting_lock") #Name not in + or -
-        self.assertTrue(len(funcList[1].assertionList) == 1)
+        #self.assertTrue(len(funcList[1].assertionList) == 1)
 
     def test_parseText_Single24(self):
         self.chunk24.parseText()
@@ -489,7 +489,7 @@ class logChunktest(unittest.TestCase):
 
         self.assertTrue(funcList[16].method ==  "*get_date_time_format_str")
         testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 1, 'ut_a Dels': 0}
-        self.assertTrue(testDict,funcList[16].keywordDictionary)
+        self.assertEqual(testDict,funcList[16].keywordDictionary)
 
     def test_parseText_Single25(self):
         self.chunk25.parseText()
@@ -499,7 +499,7 @@ class logChunktest(unittest.TestCase):
 
         self.assertTrue(funcList[2].method ==  "row_upd_index_replace_new_col_vals_index_pos")
         testDict = { 'ut_ad Adds': 1, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 1, 'assert Adds': 0, 'ut_a Dels': 0}
-        self.assertTrue(testDict,funcList[2].keywordDictionary)
+        self.assertEqual(testDict,funcList[2].keywordDictionary)
 
     def test_parseText_Single27(self):
         self.chunk27.parseText()
@@ -515,11 +515,11 @@ class logChunktest(unittest.TestCase):
 
         self.assertTrue(funcList[11].method ==  "sfmt_fill_array32")
         testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 3, 'ut_a Dels': 0}
-        self.assertTrue(testDict,funcList[11].keywordDictionary)
+        self.assertEqual(testDict,funcList[11].keywordDictionary)
 
         self.assertTrue(funcList[12].method ==  "sfmt_fill_array64")
         testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 3, 'ut_a Dels': 0}
-        self.assertTrue(testDict,funcList[12].keywordDictionary)
+        self.assertEqual(testDict,funcList[12].keywordDictionary)
 
     def test_parseText_Single31(self):
         self.chunk31.parseText() #Broken like 2 is
@@ -530,11 +530,11 @@ class logChunktest(unittest.TestCase):
 
         self.assertTrue(funcList[0].method ==  "smp_callin")
         testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 1, 'ut_a Dels': 0}
-        self.assertTrue(testDict,funcList[0].keywordDictionary)
+        self.assertEqual(testDict,funcList[0].keywordDictionary)
 
         self.assertTrue(funcList[1].method ==  "NO_FUNC_CONTEXT")
         testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 1, 'ut_a Dels': 0}
-        self.assertTrue(testDict,funcList[1].keywordDictionary)
+        self.assertEqual(testDict,funcList[1].keywordDictionary)
 
     def test_parseText_Single32(self):
         self.chunk32.parseText()
@@ -544,12 +544,12 @@ class logChunktest(unittest.TestCase):
 
         self.assertTrue(funcList[1].method ==  "h264_er_decode_mb")
         testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 1, 'ut_a Dels': 0}
-        self.assertTrue(testDict,funcList[1].keywordDictionary)
+        self.assertEqual(testDict,funcList[1].keywordDictionary)
 
 
         self.assertTrue(funcList[7].method ==  "alloc_picture")
         testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 2, 'ut_a Dels': 0}
-        self.assertTrue(testDict,funcList[7].keywordDictionary)
+        self.assertEqual(testDict,funcList[7].keywordDictionary)
 
     def test_parseText_Single33(self):
         self.chunk33.parseText()
@@ -577,19 +577,22 @@ class logChunktest(unittest.TestCase):
         self.assertTrue(len(funcList) == 3) # 2 + 1 Mock
 
         self.assertTrue(funcList[1].method ==  "Patch")
-        self.assertTrue(len(funcList[1].assertionList) == 5)
+        #self.assertTrue(len(funcList[1].assertionList) == 5)
 
         self.assertTrue(funcList[2].method ==  "NO_FUNC_CONTEXT")
-        self.assertTrue(len(funcList[2].assertionList) == 1)
+        #self.assertTrue(len(funcList[2].assertionList) == 1)
 
     def test_parseText_Single37(self):
         self.chunk37.parseText()
         funcList = self.chunk37.functions
         #self.debugFunctions(funcList)
         self.assertTrue(len(funcList) == 1)
+
         self.assertTrue(funcList[0].method ==  "NamespaceDetails::_alloc")
-        testDict = { 'ut_ad Adds': 0, 'assert Dels': 1, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 1, 'ut_a Dels': 0}
-        self.assertTrue(testDict, funcList[0].keywordDictionary)
+        self.assertTrue(funcList[0].total_add == 6)
+        self.assertTrue(funcList[0].total_del == 3)
+        testDict = { 'ut_ad Adds': 0, 'assert Dels': 1, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 0, 'ut_a Dels': 0}
+        self.assertEqual(testDict, funcList[0].keywordDictionary)
 
     def test_parseText_Single38(self):
         self.chunk38.parseText()
@@ -602,8 +605,11 @@ class logChunktest(unittest.TestCase):
         self.assertTrue(funcList[1].method ==  "mysql_stmt_reset")
         self.assertTrue(funcList[1].total_add == 6)
         self.assertTrue(funcList[1].total_del == 1)
-        testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 1, 'ut_a Dels': 0}
-        self.assertTrue(testDict, funcList[1].keywordDictionary)
+        self.assertTrue(funcList[2].method ==  "mysql_stmt_close")
+        self.assertTrue(funcList[2].total_add == 3)
+        self.assertTrue(funcList[2].total_del == 3)
+        testDict = { 'ut_ad Adds': 0, 'assert Dels': 1, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 1, 'ut_a Dels': 0}
+        self.assertEqual(testDict, funcList[2].keywordDictionary)
 
     def test_parseText_Block1(self):
 
@@ -616,16 +622,16 @@ class logChunktest(unittest.TestCase):
         self.assertTrue(funcList[0].method=="foo")
         self.assertTrue(funcList[0].total_add == 2)
         self.assertTrue(funcList[0].total_del == 1)
-        dict= {'throw  Adds': 0, 'catch Dels': 0, 'try Adds': 0, 'try Dels': 1, 'exception Dels': 0, 'raise Adds': 0, 'catch Adds': 1, 'finally Dels': 0, 'finally Adds': 0, 'throw  Dels': 0, 'exception Adds': 0, 'raise Dels': 0, 'for Adds': 0,'for Dels': 0,'while Adds': 0,'while Dels': 0}
+        testDict= {'throw  Adds': 0, 'catch Dels': 0, 'try Adds': 0, 'try Dels': 1, 'exception Dels': 0, 'raise Adds': 0, 'catch Adds': 1, 'finally Dels': 0, 'finally Adds': 0, 'throw  Dels': 0, 'exception Adds': 0, 'raise Dels': 0, 'for Adds': 0,'for Dels': 0,'while Adds': 0,'while Dels': 0}
 
 
-        self.assertEqual(dict,funcList[0].keywordDictionary)
+        self.assertEqual(testDict,funcList[0].keywordDictionary)
         self.assertTrue(funcList[1].method=="foo00022")
         self.assertTrue(funcList[1].total_add == 4)
         self.assertTrue(funcList[1].total_del == 2)
-        dict= {'throw  Adds': 0, 'catch Dels': 0, 'try Adds': 1, 'try Dels': 1, 'exception Dels': 0, 'raise Adds': 0, 'catch Adds': 1, 'finally Dels': 0, 'finally Adds': 0, 'throw  Dels': 0, 'exception Adds': 0, 'raise Dels': 0, 'for Adds': 0,'for Dels': 0,'while Adds': 0,'while Dels': 0}
+        testDict= {'throw  Adds': 0, 'catch Dels': 0, 'try Adds': 1, 'try Dels': 1, 'exception Dels': 0, 'raise Adds': 0, 'catch Adds': 1, 'finally Dels': 0, 'finally Adds': 0, 'throw  Dels': 0, 'exception Adds': 0, 'raise Dels': 0, 'for Adds': 0,'for Dels': 0,'while Adds': 0,'while Dels': 0}
 
-        self.assertEqual(dict,funcList[1].keywordDictionary)
+        self.assertEqual(testDict, funcList[1].keywordDictionary)
 
     def test_parseText_Block2(self):
 
