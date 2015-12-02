@@ -644,20 +644,20 @@ class logChunktest(unittest.TestCase):
         self.assertTrue(funcList[0].method=="getAccounts")
         self.assertTrue(funcList[0].total_add == 1)
         self.assertTrue(funcList[0].total_del == 2)
-        dict= {'throw  Adds': 0, 'catch Dels': 0, 'try Adds': 0, 'try Dels': 0, 'exception Dels': 0, 'raise Adds': 0, 'catch Adds': 0, 'finally Dels': 0, 'finally Adds': 0, 'throw  Dels': 0, 'exception Adds': 0, 'raise Dels': 0, 'for Adds': 0,'for Dels': 0,'while Adds': 0,'while Dels': 0}
+        testdict= {'throw  Adds': 0, 'catch Dels': 0, 'try Adds': 0, 'try Dels': 0, 'exception Dels': 0, 'raise Adds': 0, 'catch Adds': 0, 'finally Dels': 0, 'finally Adds': 0, 'throw  Dels': 0, 'exception Adds': 0, 'raise Dels': 0, 'for Adds': 0,'for Dels': 0,'while Adds': 0,'while Dels': 0}
 
 
 
 
-        self.assertEqual(dict,funcList[0].keywordDictionary)
+        self.assertEqual(testdict,funcList[0].keywordDictionary)
 
         self.assertTrue(funcList[1].method=="getAccount")
         self.assertTrue(funcList[1].total_add == 6)
         self.assertTrue(funcList[1].total_del == 2)
-        dict={'throw  Adds': 1, 'catch Dels': 0, 'try Adds': 2, 'try Dels': 2, 'exception Dels': 0, 'raise Adds': 0, 'catch Adds': 4, 'finally Dels': 0, 'finally Adds': 0, 'throw  Dels': 0, 'exception Adds': 2, 'raise Dels': 0, 'for Adds': 0,'for Dels': 0,'while Adds': 0,'while Dels': 0}
+        testdict={'throw  Adds': 1, 'catch Dels': 0, 'try Adds': 2, 'try Dels': 2, 'exception Dels': 0, 'raise Adds': 0, 'catch Adds': 4, 'finally Dels': 0, 'finally Adds': 0, 'throw  Dels': 0, 'exception Adds': 2, 'raise Dels': 0, 'for Adds': 0,'for Dels': 0,'while Adds': 0,'while Dels': 0}
 
 
-        self.assertEqual(dict,funcList[1].keywordDictionary)
+        self.assertEqual(testdict,funcList[1].keywordDictionary)
 
 
     def test_parseText_Block3(self):
@@ -673,9 +673,9 @@ class logChunktest(unittest.TestCase):
         self.assertTrue(funcList[0].method=="ReflectiveProperty")
         self.assertTrue(funcList[0].total_add == 12)
         self.assertTrue(funcList[0].total_del == 3)
-        dict= {'throw  Adds': 0, 'catch Dels': 1, 'try Adds': 8, 'try Dels': 2, 'exception Dels': 0, 'raise Adds': 0, 'catch Adds': 4, 'finally Dels': 0, 'finally Adds': 0, 'throw  Dels': 0, 'exception Adds': 0, 'raise Dels': 0, 'for Adds': 0,'for Dels': 0,'while Adds': 0,'while Dels': 0}
+        testdict= {'throw  Adds': 0, 'catch Dels': 1, 'try Adds': 8, 'try Dels': 2, 'exception Dels': 0, 'raise Adds': 0, 'catch Adds': 4, 'finally Dels': 0, 'finally Adds': 0, 'throw  Dels': 0, 'exception Adds': 0, 'raise Dels': 0, 'for Adds': 0,'for Dels': 0,'while Adds': 0,'while Dels': 0}
 
-        self.assertEqual(dict,funcList[0].keywordDictionary)
+        self.assertEqual(testdict,funcList[0].keywordDictionary)
 
     def test_parseText_Block4(self):
 
@@ -691,8 +691,8 @@ class logChunktest(unittest.TestCase):
         self.assertTrue(funcList[0].method=="setHandle")
         self.assertTrue(funcList[0].total_add == 1)
         self.assertTrue(funcList[0].total_del == 1)
-        dict= {'throw  Adds': 0, 'catch Dels': 0, 'try Adds': 0, 'try Dels': 0, 'exception Dels': 0, 'raise Adds': 0, 'catch Adds': 0, 'finally Dels': 0, 'finally Adds': 0, 'throw  Dels': 0, 'exception Adds': 0, 'raise Dels': 0, 'for Adds': 0,'for Dels': 0,'while Adds': 0,'while Dels': 0}
-        self.assertEqual(dict,funcList[0].keywordDictionary)
+        testdict= {'throw  Adds': 0, 'catch Dels': 0, 'try Adds': 0, 'try Dels': 0, 'exception Dels': 0, 'raise Adds': 0, 'catch Adds': 0, 'finally Dels': 0, 'finally Adds': 0, 'throw  Dels': 0, 'exception Adds': 0, 'raise Dels': 0, 'for Adds': 0,'for Dels': 0,'while Adds': 0,'while Dels': 0}
+        self.assertEqual(testdict,funcList[0].keywordDictionary)
 
     def test_parseText_Block5(self):
 
@@ -707,9 +707,9 @@ class logChunktest(unittest.TestCase):
         self.assertTrue(funcList[0].total_add == 1)
         self.assertTrue(funcList[0].total_del == 5)
 
-        dict= {'throw  Adds': 0, 'catch Dels': 0, 'try Adds': 0, 'try Dels': 0, 'exception Dels': 1, 'raise Adds': 0, 'catch Adds': 0, 'finally Dels': 0, 'finally Adds': 0, 'throw  Dels': 0, 'exception Adds': 1, 'raise Dels': 0, 'for Adds': 0,'for Dels': 0,'while Adds': 0,'while Dels': 0}
+        testdict= {'throw  Adds': 0, 'catch Dels': 0, 'try Adds': 0, 'try Dels': 0, 'exception Dels': 1, 'raise Adds': 0, 'catch Adds': 0, 'finally Dels': 0, 'finally Adds': 0, 'throw  Dels': 0, 'exception Adds': 1, 'raise Dels': 0, 'for Adds': 0,'for Dels': 0,'while Adds': 0,'while Dels': 0}
 
-        self.assertEqual(dict,funcList[0].keywordDictionary)
+        self.assertEqual(testdict,funcList[0].keywordDictionary)
 
 
     def test_parseText_Block6(self):
@@ -725,9 +725,9 @@ class logChunktest(unittest.TestCase):
         self.assertTrue(funcList[0].method=="init")
         self.assertTrue(funcList[0].total_add == 0)
         self.assertTrue(funcList[0].total_del == 1)
-        dict= {'throw  Adds': 0, 'catch Dels': 1, 'try Adds': 0, 'try Dels': 0, 'exception Dels': 1, 'raise Adds': 0, 'catch Adds': 0, 'finally Dels': 0, 'finally Adds': 0, 'throw  Dels': 1, 'exception Adds': 0, 'raise Dels': 0, 'for Adds': 0,'for Dels': 0,'while Adds': 0,'while Dels': 0}
+        testdict= {'throw  Adds': 0, 'catch Dels': 1, 'try Adds': 0, 'try Dels': 0, 'exception Dels': 1, 'raise Adds': 0, 'catch Adds': 0, 'finally Dels': 0, 'finally Adds': 0, 'throw  Dels': 1, 'exception Adds': 0, 'raise Dels': 0, 'for Adds': 0,'for Dels': 0,'while Adds': 0,'while Dels': 0}
 
-        self.assertEqual(dict,funcList[0].keywordDictionary)
+        self.assertEqual(testdict,funcList[0].keywordDictionary)
 
 
     def test_parseText_Block7(self):
@@ -741,9 +741,9 @@ class logChunktest(unittest.TestCase):
         self.assertTrue(funcList[0].total_add == 2)
         self.assertTrue(funcList[0].total_del == 7)
         #TODO for Dels should be 0. FIXME
-        dict= {'throw  Adds': 0, 'catch Dels': 0, 'try Adds': 0, 'try Dels': 0, 'exception Dels': 1, 'raise Adds': 0, 'catch Adds': 0, 'finally Dels': 0, 'finally Adds': 0, 'throw  Dels': 0, 'exception Adds': 1, 'raise Dels': 0, 'for Adds': 0,'for Dels': 0,'while Adds': 0,'while Dels': 0, 'for Adds': 0,'for Dels': 0,'while Adds': 0,'while Dels': 0, 'for Adds': 0,'for Dels': 0,'while Adds': 0,'while Dels': 0}
+        testdict= {'throw  Adds': 0, 'catch Dels': 0, 'try Adds': 0, 'try Dels': 0, 'exception Dels': 1, 'raise Adds': 0, 'catch Adds': 0, 'finally Dels': 0, 'finally Adds': 0, 'throw  Dels': 0, 'exception Adds': 1, 'raise Dels': 0, 'for Adds': 0,'for Dels': 0,'while Adds': 0,'while Dels': 0, 'for Adds': 0,'for Dels': 0,'while Adds': 0,'while Dels': 0, 'for Adds': 0,'for Dels': 0,'while Adds': 0,'while Dels': 0}
 
-        self.assertEqual(dict,funcList[0].keywordDictionary)
+        self.assertEqual(testdict,funcList[0].keywordDictionary)
 
 
     def test_parseText_Block8(self):
@@ -757,8 +757,8 @@ class logChunktest(unittest.TestCase):
         self.assertTrue(funcList[0].method=="getAuthToken")
         self.assertTrue(funcList[0].total_add == 2)
         self.assertTrue(funcList[0].total_del == 2)
-        dict= {'throw  Adds': 1, 'catch Dels': 0, 'try Adds': 0, 'try Dels': 1, 'exception Dels': 1, 'raise Adds': 0, 'catch Adds': 2, 'finally Dels': 0, 'finally Adds': 0, 'throw  Dels': 0, 'exception Adds': 2, 'raise Dels': 0, 'for Adds': 0,'for Dels': 0,'while Adds': 0,'while Dels': 0}
-        self.assertEqual(dict,funcList[0].keywordDictionary)
+        testdict= {'throw  Adds': 1, 'catch Dels': 0, 'try Adds': 0, 'try Dels': 1, 'exception Dels': 1, 'raise Adds': 0, 'catch Adds': 2, 'finally Dels': 0, 'finally Adds': 0, 'throw  Dels': 0, 'exception Adds': 2, 'raise Dels': 0, 'for Adds': 0,'for Dels': 0,'while Adds': 0,'while Dels': 0}
+        self.assertEqual(testdict,funcList[0].keywordDictionary)
 
 
     def test_parseText_Block9(self):
@@ -775,9 +775,9 @@ class logChunktest(unittest.TestCase):
         self.assertTrue(funcList[0].method=="getAuthToken")
         self.assertTrue(funcList[0].total_add == 2)
         self.assertTrue(funcList[0].total_del == 2)
-        dict= {'throw  Adds': 1, 'catch Dels': 0, 'try Adds': 0, 'try Dels': 0, 'exception Dels': 1, 'raise Adds': 0, 'catch Adds': 2, 'finally Dels': 0, 'finally Adds': 0, 'throw  Dels': 0, 'exception Adds': 2, 'raise Dels': 0, 'for Adds': 0,'for Dels': 0,'while Adds': 0,'while Dels': 0}
+        testdict= {'throw  Adds': 1, 'catch Dels': 0, 'try Adds': 0, 'try Dels': 0, 'exception Dels': 1, 'raise Adds': 0, 'catch Adds': 2, 'finally Dels': 0, 'finally Adds': 0, 'throw  Dels': 0, 'exception Adds': 2, 'raise Dels': 0, 'for Adds': 0,'for Dels': 0,'while Adds': 0,'while Dels': 0}
 
-        self.assertEqual(dict,funcList[0].keywordDictionary)
+        self.assertEqual(testdict,funcList[0].keywordDictionary)
 
 
     def test_parseText_Block10(self):
@@ -792,9 +792,9 @@ class logChunktest(unittest.TestCase):
         self.assertTrue(funcList[0].method=="getToken")
         self.assertTrue(funcList[0].total_add == 8)
         self.assertTrue(funcList[0].total_del == 3)
-        dict= {'throw  Adds': 0, 'catch Dels': 0, 'try Adds': 0, 'try Dels': 0, 'exception Dels': 0, 'raise Adds': 0, 'catch Adds': 0, 'finally Dels': 0, 'finally Adds': 0, 'throw  Dels': 0, 'exception Adds': 0, 'raise Dels': 0, 'for Adds': 4,'for Dels': 2,'while Adds': 3,'while Dels': 1}
+        testdict= {'throw  Adds': 0, 'catch Dels': 0, 'try Adds': 0, 'try Dels': 0, 'exception Dels': 0, 'raise Adds': 0, 'catch Adds': 0, 'finally Dels': 0, 'finally Adds': 0, 'throw  Dels': 0, 'exception Adds': 0, 'raise Dels': 0, 'for Adds': 4,'for Dels': 2,'while Adds': 3,'while Dels': 1}
 
-        self.assertEqual(dict,funcList[0].keywordDictionary)
+        self.assertEqual(testdict,funcList[0].keywordDictionary)
 
 
 
