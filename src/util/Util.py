@@ -13,6 +13,8 @@ CSV=0
 LOGTIME = 1
 CONFIG = "../util/sample_conf.ini" #Location of the configuration file.
 
+supportedLanguages = ["C", "C++", "Java"]
+
 class cd:
     """Context manager for changing the current working directory"""
     def __init__(self, newPath):

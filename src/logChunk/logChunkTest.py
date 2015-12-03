@@ -1,5 +1,6 @@
 import unittest
 import logChunk
+from chunkingConstants import *
 
 class logChunktest(unittest.TestCase):
 
@@ -188,10 +189,36 @@ class logChunktest(unittest.TestCase):
         self.assertTrue(self.testChunk.isFunction(self.method16))
         # self.assertFalse(self.testChunk.isFunction(self.method17))
 
+    def test_removeComments(self):
+        line = "/***********************************************************//**"
+        commentFlag = False
+        lineType = ADD
+        commentType = UNMARKED
+        functionName = ""
+        phase = LOOKFORNAME
+        fChange = UNMARKED
+        (line, lineType, commentFlag, commentType, functionName, fChange) = self.testChunk.removeComments(line, commentFlag, lineType, commentType, functionName, phase)
+        self.assertTrue(line == "")
+        self.assertTrue(lineType == ADD)
+        self.assertTrue(commentFlag == True)
+        self.assertTrue(commentType == ADD)
+        self.assertTrue(functionName == "")
+        self.assertTrue(fChange == UNMARKED)
+        line = "Replaces the new column values stored in the update vector to the index entry"
+        lineType = ADD
+        (line, lineType, commentFlag, commentType, functionName, fChange) = self.testChunk.removeComments(line, commentFlag, lineType, commentType, functionName, phase)
+        self.assertTrue(line == "", "Actual: " + line)
+        self.assertTrue(lineType == ADD)
+        self.assertTrue(commentFlag == True)
+        self.assertTrue(commentType == ADD)
+        self.assertTrue(functionName == "")
+        self.assertTrue(fChange == TOTALADD)
+
+
     def test_parseText_Single1(self):
         self.chunk1.parseText()
         funcList = self.chunk1.functions
-        # self.debugFunctions(funcList)
+        #self.debugFunctions(funcList)
         self.assertTrue(len(funcList) == 3) #Should be no mock function for asserts
         self.assertTrue(funcList[0].method=="NdbBlob::getBlobEventName")
         self.assertTrue(funcList[0].total_add == 10)
@@ -225,10 +252,10 @@ class logChunktest(unittest.TestCase):
         self.assertTrue(len(funcList) == 1)
 
         self.assertTrue(funcList[0].method=="btr_pcur_release_leaf")
-        self.assertTrue(funcList[0].start==0)
-        self.assertTrue(funcList[0].end==0)
+        self.assertTrue(funcList[0].start==13)
+        self.assertTrue(funcList[0].end==27)
         self.assertTrue(funcList[0].total_add == 0)
-        self.assertTrue(funcList[0].total_del == 0)
+        self.assertTrue(funcList[0].total_del == 15)
 
         testDict = {'assert Adds':0, 'assert Dels': 0, 'ut_ad Adds':0, 'ut_ad Dels': 1, 'ut_a Adds':0, 'ut_a Dels': 2}
         self.assertEqual(testDict,funcList[0].keywordDictionary)
@@ -362,7 +389,7 @@ class logChunktest(unittest.TestCase):
     def test_parseText_Single10(self):
         self.chunk10.parseText()
         funcList = self.chunk10.functions
-        #self.debugFunctions(funcList)
+        self.debugFunctions(funcList)
         self.assertTrue(len(funcList) == 6)
 
         self.assertTrue(funcList[3].method ==  "FreeArenaList")
@@ -386,6 +413,7 @@ class logChunktest(unittest.TestCase):
         self.assertTrue(funcList[4].total_del == 0)
         testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 1, 'ut_a Dels': 0}
         self.assertEqual(testDict,funcList[4].keywordDictionary)
+
 
     def test_parseText_Single12(self):
         self.chunk12.parseText()
@@ -450,7 +478,7 @@ class logChunktest(unittest.TestCase):
     def test_parseText_Single22(self):
         self.chunk22.parseText()
         funcList = self.chunk22.functions
-        self.debugFunctions(funcList)
+        #self.debugFunctions(funcList)
 
         self.assertTrue(len(funcList) == 6) #Can't get the last one b/c constructor out of context
         self.assertTrue(funcList[0].method ==  "MDL_map::init")
@@ -494,12 +522,13 @@ class logChunktest(unittest.TestCase):
     def test_parseText_Single25(self):
         self.chunk25.parseText()
         funcList = self.chunk25.functions
-        #self.debugFunctions(funcList)
+        self.debugFunctions(funcList)
         self.assertTrue(len(funcList) == 4)
 
         self.assertTrue(funcList[2].method ==  "row_upd_index_replace_new_col_vals_index_pos")
         testDict = { 'ut_ad Adds': 1, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 1, 'assert Adds': 0, 'ut_a Dels': 0}
         self.assertEqual(testDict,funcList[2].keywordDictionary)
+
 
     def test_parseText_Single27(self):
         self.chunk27.parseText()
@@ -522,18 +551,17 @@ class logChunktest(unittest.TestCase):
         self.assertEqual(testDict,funcList[12].keywordDictionary)
 
     def test_parseText_Single31(self):
-        self.chunk31.parseText() #Broken like 2 is
-        # BROKEN LIKE 2
+        self.chunk31.parseText() 
         funcList = self.chunk31.functions
         #self.debugFunctions(funcList)
         self.assertTrue(len(funcList) == 2)
 
         self.assertTrue(funcList[0].method ==  "smp_callin")
-        testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 1, 'ut_a Dels': 0}
+        testDict = { 'ut_ad Adds': 0, 'assert Dels': 1, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 0, 'ut_a Dels': 0}
         self.assertEqual(testDict,funcList[0].keywordDictionary)
 
         self.assertTrue(funcList[1].method ==  "NO_FUNC_CONTEXT")
-        testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 1, 'ut_a Dels': 0}
+        testDict = { 'ut_ad Adds': 0, 'assert Dels': 1, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 0, 'ut_a Dels': 0}
         self.assertEqual(testDict,funcList[1].keywordDictionary)
 
     def test_parseText_Single32(self):

@@ -7,78 +7,15 @@ from PatchMethod import PatchMethod
 sys.path.append("../util")
 
 import Util
+import scopeTracker
 from dictUtil import incrementDict, nonZeroCount
 from Config import Config
-
-#Constants for the keywords
-SINGLE = "single"
-BLOCK = "block"
-INCLUDED = "included"
-EXCLUDED = "excluded"
-
-KEYLISTSIZE = 3
-
-#Constants for which phase we are in
-LOOKFORNAME = 1
-LOOKFOREND = 2
-LOOKFOREXCP=3
-LOOKFOREXCPEND=4
-
-#LineTypes
-ADD = 1
-REMOVE = 2
-OTHER = 3
-
-classPattern1 = " class [\w\d_: ]+ {$"
-classPattern2 = "^class [\w\d_: ]+ {$"
-
-#notClassPattern = "class.*;.*{"
-validClassNamePattern = "[\w\d_:]+"
-
-stringPattern = "\".*?\""
-stringPattern2 = "\'.*?\'"
-
-commentPattern = "/\*.*?\*/"
-commentPattern2 = "//.*"
-parenPattern = "\(.*?\)"
-assignPattern = "= *{"
-paramPattern = " *\([\w\d_,\[\]\*\(\)&: ]*\)[^;]*{" #What parameters to a call look like.
-
-#Regex expressions for Java/C/C++ functions
-functionPattern1 = " [\w\d:_]+&* *\** +[\w\d_:~]+&* *\([\w\d_,\[\]\*\(\)&:<> ]*\) *{$"
-functionPattern2 = " [\w<>\d:_]+&* +\** *[\w\d_:~]+&* *\([\w\d_,\[\]\*\(\)&:<> ]*\) *{$"
-functionPattern3 = " [\w\d:_]+&* *\** *[\w\d_:~]+&* *\([\w\d_,\[\]\*\(\)&:<> ]*\) const *{$"
-functionPattern4 = "^[\w\d:_]+&* *\** +[\w\d_:~]+&* *\([\w\d_,\[\]\*\(\)&:<> ]*\) *{$"
-functionPattern5 = "^[\w<>\d:_]+&* +\** *[\w\d_:~]+&* *\([\w\d_,\[\]\*\(\)&:<> ]*\) *{$"
-functionPattern6 = "^[\w\d:_]+&* *\** *[\w\d_:~]+&* *\([\w\d_,\[\]\*\(\)&:<> ]*\) const *{$"
-functionPattern7="[\w\d:_]+&* *\** *[\w\d_:~]+&* *\([\w\d_,\[\]\*\(\)&:<> ]*\)[\s]* throws [\w\W\s]+ *{$"
-functionPattern8 = "^[\w\d:_]+&* *\** *[\w\d_:~]+&* *\([\w\d_,\[\]\*\(\)&:<> ]*\)[\s]* throws [\w\W\s]+ *{$"
-
-anonymousClassPattern= "[\s\w\d_:~]+&* * = new [\w\d_:~]+&* *\([\w\d_,\[\]\*\(\)&:<> ]*\) *{$"
-namespacePattern = "namespace.*{" #namespaces can be not named.
-externPattern = "extern *{"
-
-#Regex expressions for C++ template functions
-templatePattern1 = "template +< *class +.*> +[\w\d_]+ *\** +[\w\d_<>:~]+ *\([\w\d_,\[\]\*\(\)&:<> ]*\) *{$"
-templatePattern2 = "template +< *class +.*> +[\w\d_]+ +\** *[\w\d_<>:~]+ *\([\w\d_,\[\]\*\(\)&:<> ]*\) *{$"
-templatePattern3 = "template +< *typename +.*> +[\w\d_]+ *\** +[\w\d_<>:~]+ *\([\w\d_,\[\]\*\(\)&:<> ]*\) *{$"
-templatePattern4 = "template +< *typename +.*> +[\w\d_]+ +\** *[\w\d_<>:~]+ *\([\w\d_,\[\]\*\(\)&:<> ]*\) *{$"
-templatePattern5 = "template +< *DataType +.*> +[\w\d_]+ *\** +[\w\d_<>:~]+ *\([\w\d_,\[\]\*\(\)&:<> ]*\) *{$"
-templatePattern6 = "template +< *DataType +.*> +[\w\d_]+ +\** *[\w\d_<>:~]+ *\([\w\d_,\[\]\*\(\)&:<> ]*\) *{$"
-
-catchModifyPattern="- *} *catch.*{\s*\+ *} *catch.*{\s*"
-
-#Label for structures found outside of a function
-MOCK = "NO_FUNC_CONTEXT"
-
-#A text file for function that we know are asserts, but don't use
-#the word assert in their names
-otherAssertFile = "assertFunctions.txt"
+from chunkingConstants import *
 
 #A log contains a raw set of text and a set of functions
 #parsed from the text.
 class logChunk:
-    def __init__(self, text = "", config_file = Util.CONFIG):
+    def __init__(self, text = "", config_file = Util.CONFIG, language = "C"):
         #Get the keyword file through the Config and .ini system
         cfg = Config(config_file)
         db_config = cfg.ConfigSectionMap("Keywords")
@@ -91,6 +28,7 @@ class logChunk:
         self.total_del = 0
         self.header = "" #What is the name given after '@@' in log
         self.bracketMisMatch=0
+        self.sT = scopeTracker.scopeTracker(language)
 
     #list of strings --> boolean
     #Returns true if the string conforms to the pattern <keyword>,[included/excluded],[single,block]
@@ -213,7 +151,7 @@ class logChunk:
         #inside the other, e.g. ut_ad and ut_a
         keywords = sorted(keywords, key=lambda tup: -len(tup[0]))
         if(Util.DEBUG):
-            print("LINE TO PARSE FOR KEYWORD:" + line.encode('utf-8'))
+            print("LINE TO PARSE FOR KEYWORD:" + unicode(line, 'utf-8', errors='ignore'))
         includedKeywords = [k for k in keywords if k[1] == INCLUDED]
 
         if(blockContext==None):
@@ -358,7 +296,7 @@ class logChunk:
         temp = temp.replace("\n", "")
         if(Util.DEBUG == 1):
             print("Class context: " + classContext)
-            print("Checking if a constructor/destructor: " + line.encode('utf-8'))
+            print("Checking if a constructor/destructor: " + unicode(line, 'utf-8', errors='ignore'))
 
         return re.search(classContext + paramPattern, temp)
 
@@ -416,7 +354,7 @@ class logChunk:
 
 
         if(Util.DEBUG):
-            print("Checking if function: " + line.encode('utf-8'))
+            print("Checking if function: " + unicode(line, 'utf-8', errors='ignore'))
         
         #Check for regular and template functions
         if("template" in temp):
@@ -519,38 +457,74 @@ class logChunk:
         line = re.sub(stringPattern2, "", line)
         return line
     
-    #TODO: This is a sub function replace the code segment from the main parseText.
-    #It will need to be implemented in a future version as there are a few issues remaining.
-    #String, Boolean -> String
-    #Given a line of code from a diff statement, and a marker if prior lines were a multiblock
-    #comment, return the line with any comments removed (on the fly comment removal)
-    def removeComments(self, line, insideComment, lineType):
-        #print("Next Line: " + line)
-        if lineType!=REMOVE:
+    #String, Boolean, String, String, String -> (String, String, Boolean, String, String)
+    #Given a line of code from a diff statement, a marker if prior lines were a multiblock
+    #comment, the marker for the type of line, a marker for the type of comment, and
+    #the current running function name, and returns a 5-tuple containing
+    #The modified line, the modified line type, the changed commentFlag, the commentType,
+    #the running function name, and any changes if inside a function (this forces a continue)
+    #TODO: Make language independent.
+    def removeComments(self, line, commentFlag, lineType, commentType, functionName, phase):
+        #Thoughts: if inside block comment and we've added or deleted that line, it can be ignored
+        #If it exists as code and has been commented out or added back in, it must have a corresponding line.
+        #However, if inside a comment and the line is unmodified, we need to find if /* has been added or removed
+        #When it is removed, we should consider the unmodified code as a block of added code.  When it is added
+        #We should consider it as a block of deleted code.  (The /* and */ can be ignored, as if they contain code
+        #They must also have a corresponding section of added or deleted code.)
 
-        #Ignore multiple line comments
-            if(line.find("/*") != -1):
-                commentFlag = True
-                #We need to consider the content of the line before the /*
-                line = line.split("/*")[0]
-            elif(line.find("*/") != -1):
-                if(commentFlag): #Normal case were whole /* ... */ comment is changed
-                    commentFlag = False
-                elif(phase == LOOKFORNAME): #Case where only bottom part of comment is changed and looking for function name.
-                    functionName = "" #Clear the function name #TODO: Side effect to remove...
+        fChange = UNMARKED
 
-                index = line.find("*/")
-                if(len(line) > index + 2): #Case where there is code after comment end.
-                    line = line[index + 2:]
+        #Remove single line multi block comments...
+        line = re.sub(commentPattern, "", line)
+
+        if(line.find("/*") != -1):
+            commentFlag = True
+            #We need to consider the content of the line before the /*
+            line = line.split("/*")[0]
+            commentType = lineType
+        elif(line.find("*/") != -1):
+            if(commentFlag): #Normal case were whole /* ... */ comment is changed
+                commentFlag = False
+            elif(phase == LOOKFORNAME): #Case where only bottom part of comment is changed and looking for function name.
+                functionName = "" #Clear the function name
+
+            index = line.find("*/")
+            if(len(line) > index + 2): #Case where there is code after comment end.
+                line = line[index + 2:]
+            else:
+                if(phase == LOOKFOREND and lineType == ADD): #Make sure to count this line if inside function before continuing
+                    fChange = COMADD
+                elif(phase == LOOKFOREND and lineType == REMOVE):
+                    fChange = COMDEL
                 else:
-                    #continue
-                    return
-            elif(commentFlag):
-                #continue
-                return
+                    fChange = UNCHANGED
+                line = ""
+        elif(commentFlag): #Inside a block comment
+            if(lineType == ADD):
+                line = ""
+                if(phase == LOOKFOREND): #Make sure to count this line if inside function before continuing
+                    fChange = COMADD
+                else: #Otherwise, just add it to the total count of lines seen...
+                    fChange = TOTALADD
+            elif(lineType == REMOVE):
+                line = ""
+                if(phase == LOOKFOREND): #Make sure to count this line if inside function before continuing
+                    fChange = COMDEL
+                else:
+                    fChange = TOTALADD
+            if(lineType == OTHER): #If the line is unmodified
+                if(commentType == ADD): #This line has been commented out, with no corresponding block
+                    lineType = REMOVE
+                elif(commentType == REMOVE): #This line was commented out, but is now part of code again.
+                    lineType = ADD
+                else: #Unmodified line in an unmodified comment can be skipped
+                    fChange = UNCHANGED
+                    line = ""
 
-        #Remove // comments from the string
+        #Remove single line comments
         line = re.sub(commentPattern2, "", line)
+
+        return (line,lineType, commentFlag, commentType, functionName, fChange)
     
     #String -> [lineType, String]
     #Given a line in the diff, return a list of 2 with the first line being ADD/REMOVE/OTHER and the second being
@@ -587,9 +561,10 @@ class logChunk:
         bracketDepth = 0
         self.bracketMisMatch=0
         lineType = OTHER
-        phase = LOOKFORNAME
+        phase = LOOKFORNAME #TODO: Replace the phases with scopeTracker...
         phase2=LOOKFOREXCP
         commentFlag = False #Are we inside a comment?
+        commentType = OTHER #Is the original line of the comment ADD, REMOVE, or OTHER
         functionName = ""
         shortFunctionName = ""
         funcStart = 0
@@ -606,7 +581,7 @@ class logChunk:
         outsideFuncKeywordDictionary = OrderedDict() # A grouping for all keywords found outside function contexts
         catchLineNumber=[]
         tryList=[]
-        currentBlock=None
+        #currentBlock=None
 
         #Initialize keywords (This is repeated three times -> make into a subfunction)
         for keyword in singleKeyWordList:
@@ -634,65 +609,42 @@ class logChunk:
                 continue
                 
             if(Util.DEBUG==1):
-                print("The real line: " + line.encode('utf-8'))
+                print("The real line: " + unicode(line, 'utf-8', errors='ignore'))
             
-            marked = self.markLine(line)
-            lineType = marked[0]
-            line = marked[1]
-
-            #line2 = line
-            #line = fullLine
+            (lineType, line)= self.markLine(line)
             
-            #Remove all strings from the line. (Get rid of wierd cases of brackets
+            #Remove all strings from the line. (Get rid of weird cases of brackets
             #or comment values being excluded from the line.
             line = self.removeStrings(line)
             
             #Remove all comments from the line
-            #TODO: ADD SUB Comment Removal Sub- FUNCTION
+            fChange = UNMARKED
+            (line, lineType, commentFlag, commentType, functionName, fChange) = self.removeComments(line, commentFlag, lineType, commentType, functionName, phase)
+            
+            #Update the function conunts if necessary
+            if(fChange != UNMARKED):
+                if(fChange == COMADD):
+                    ftotal_add += 1
+                    self.total_add += 1
+                elif(fChange == COMDEL):
+                    ftotal_del += 1
+                    self.total_add += 1
+                elif(fChange == TOTALADD):
+                    self.total_add += 1
+                elif(fChange == TOTALDEL):
+                    self.total_del +=  1
+                elif(fChange != UNCHANGED):
+                    assert("Not a valid fChange type.")
 
-            #If there is a comment of the form /* .... */ (single line only) remove it.
-            line = re.sub(commentPattern, "", line)
+                continue
 
-            #print("Next Line: " + line)
-            if lineType!=REMOVE:
-
-            #Ignore multiple line comments
-                if(line.find("/*") != -1):
-                    commentFlag = True
-                    #We need to consider the content of the line before the /*
-                    line = line.split("/*")[0]
-                elif(line.find("*/") != -1):
-                    if(commentFlag): #Normal case were whole /* ... */ comment is changed
-                        commentFlag = False
-                    elif(phase == LOOKFORNAME): #Case where only bottom part of comment is changed and looking for function name.
-                        functionName = "" #Clear the function name
-
-                    index = line.find("*/")
-                    if(len(line) > index + 2): #Case where there is code after comment end.
-                        line = line[index + 2:]
-                    else:
-                        if(phase == LOOKFOREND and lineType == ADD): #Make sure to count this line if inside function before continuing
-                            ftotal_add += 1
-                        continue
-                elif(commentFlag):
-                    if(phase == LOOKFOREND and lineType == ADD): #Make sure to count this line if inside function before continuing
-                        ftotal_add += 1
-                    continue
-
-            #Remove // comments from the string
-            line = re.sub(commentPattern2, "", line)
-
-            if lineType!=REMOVE:
-                self.bracketMisMatch+=(line.count("{") - line.count("}"))
-
-            #print(str(bracketDepth) + ":" + str(nestingDepth))  
-
+            #TODO: This is not needed any longer?
+            #if lineType!=REMOVE:
+            #    self.bracketMisMatch+=(line.count("{") - line.count("}"))
 
             #TODO: Convert into sub function to update the dictionaries
             if(lineType == ADD):
                 self.total_add += 1 #This tracks + for whole chunks.
-                #It is necessary for all the normal cases we had before
-                #where the function context was correct.
                 if(phase == LOOKFOREND):
                     if(startFlag==0):
                         ftotal_add += 1
@@ -704,28 +656,34 @@ class logChunk:
             else:
                 lineType=OTHER
 
-
-
             #Extract the name of the function
             if(phase == LOOKFORNAME):
-                #if(not line.startswith("-")):
-                if lineType != REMOVE:
-                    bracketDepth += line.count("{")
+                #if lineType != REMOVE:
+                #    bracketDepth += line.count("{")
 
                 if(Util.DEBUG == 1):
-                    print("Current Name Search: " + functionName.encode('utf-8'))
+                    print("Current Name Search: " + unicode(functionName, 'utf-8', errors='ignore'))
 
                 #What if we've hit a function defintion?
+                #TODO: Is this really needed?
                 if(line.strip().endswith(";")):
                     functionName = "" #Clear the name
 
                 #Namespace problem comes in here. we add extra stuff in conjunction with functionName += ... above
-                if(bracketDepth > nestingDepth):
-                    #Add last line of name (everything before first "{")
-                    if("{" in line):
-                        functionName += line.split("{")[0] + "{"
-                    else:
-                        functionName += line.split("{")[0]
+                #How can we replace if and the { stuff below with scopeTracker methods? No, check for scope change
+                if(self.sT.isScopeIncrease(line)):
+                    if(Util.DEBUG == 1):
+                        print("Scope increase while searching for function.")
+                    #TODO: replace with scopeTracker.increaseScope()?  Not yet
+                    #How do we know to associate which scope Change with the function? 
+                    if(self.sT.scopeIncreaseCount(line) > 1):
+                        if(Util.DEBUG == 1):
+                            print("Parsing of multiscope increases like: ")
+                            print(line)
+                            print("is not yet supported.")
+                        continue
+
+                    functionName = self.sT.appendFunctionEnding(line, functionName)
 
                     shortFunctionName = self.getFunctionPattern(functionName)
                     if(shortFunctionName != ""):
@@ -737,16 +695,17 @@ class logChunk:
                     else:
                         isFunction = False
 
+                    #Update to function scope or other here.
                     if(isFunction): #Skip things are aren't functions
                         if(Util.DEBUG == 1):
-                            print("Function: " + shortFunctionName.encode('utf-8'))
+                            print("Function: " + unicode(shortFunctionName, 'utf-8', errors='ignore'))
+
+                        self.sT.increaseScope(shortFunctionName, lineType, scopeTracker.FUNC)
                         funcStart = lineNum
                         phase = LOOKFOREND
                         #Count this line as an addition or deletion
                         #this means either a { will be counted or part
-                        #of the function name.  Its close enough to fair
-                        #I think
-                        #111415. YS. Total count was getting updated twice.
+                        #of the function name. 
                         if(lineType == REMOVE):
                             ftotal_del = 1
                             startFlag=1
@@ -754,27 +713,30 @@ class logChunk:
                             ftotal_add = 1
                             startFlag=1
                     else: #Something that looked like a function at first but wasn't
+                        self.sT.increaseScope(line, lineType, scopeTracker.GENERIC)
                         className = self.getClassPattern(functionName)
                         if(className != ""):
                             if(Util.DEBUG == 1):
-                                print("Class:" + className.encode('utf-8'))
+                                print("Class:" + unicode(className, 'utf-8', errors='ignore'))
                             classContext.append(self.extractClassName(className)) #Push onto the class stack
                             nestingDepth += 1 #Functions are inside something now
                         elif(self.isNamespace(functionName)):
                             if(Util.DEBUG == 1):
-                                print("Namespace:" + functionName.encode('utf-8'))
+                                print("Namespace:" + unicode(functionName, 'utf-8', errors='ignore'))
                             nestingDepth += 1 #Functions are inside something now
                         elif(self.isExternBlock(functionName)):
                             if(Util.DEBUG == 1):
-                                print("Extern:" + functionName.encode('utf-8'))
+                                print("Extern:" + unicode(functionName, 'utf-8', errors='ignore'))
                             nestingDepth +=1
                         else:
                             if(Util.DEBUG == 1):
-                                print("Other type of bracket: " + functionName.encode('utf-8'))
+                                print("Other type of bracket: " + unicode(functionName, 'utf-8', errors='ignore'))
                             nestingDepth +=1
                             
                         functionName = "" #Reset name and find next
-                else: #No brackets to cut off, so add the whole line instead
+                else: #No scope change to cut off, so add the whole line instead
+                    if(Util.DEBUG):
+                        print("Extending the function name")
                     functionName += line.replace("\n", "") + " " #add the line with no new lines
                         
                 #Check for single line keywords
@@ -786,11 +748,15 @@ class logChunk:
                     else:
                         assert(0)
 
-                #Handle case where we have body {} on same line.   
-                #if(not line.startswith("-")):
-                if lineType!=REMOVE:
-                    bracketDepth -= line.count("}")
-                if(bracketDepth == nestingDepth and phase == LOOKFOREND):
+                #Handle cases where we have a single line function.
+                if(phase == LOOKFOREND and self.sT.isScopeDecrease(line)):
+                    shortFunctionName = self.sT.getFuncContext(lineType) #Get the functional context
+                    self.sT.decreaseScope(line, lineType)
+
+                #if lineType!=REMOVE:
+                #    bracketDepth -= line.count("}")
+
+                if(self.sT.getFuncContext(lineType) == "" and phase == LOOKFOREND):
                     funcEnd = lineNum
 
                     #Add this function to our list and reset the trackers.
@@ -827,50 +793,70 @@ class logChunk:
 
 
                 if(Util.DEBUG == 1):
-                    print("Depths: " + str(bracketDepth) + ":" + str(nestingDepth))
+                #    print("Depths: " + str(bracketDepth) + ":" + str(nestingDepth))
                     print(classContext)
 
+                #TODO: This should no longer be needed.
                 #Set back the expected level for seeing the start of functions
                 #Need to redo this so we stack everything?
-                if(bracketDepth < nestingDepth):
-                    if(Util.DEBUG == 1):
-                        print("Adjusting depth.")
-                        #print(classContext)
-                    nestingDepth = bracketDepth
+                #if(bracketDepth < nestingDepth):
+                #    if(Util.DEBUG == 1):
+                #        print("Adjusting depth.")
+                #        #print(classContext)
+                #    nestingDepth = bracketDepth
 
             elif(phase == LOOKFOREND): #determine the end of the function
 
-                #if(not line.startswith("-")):
-                if lineType!=REMOVE:
-                    bracketDepth -= line.count("}")
+                #if lineType!=REMOVE:
+                #    bracketDepth -= line.count("}")
 
+                #TODO: REPLACE ME
                 if(BlockBracketDepth>bracketDepth and phase2==LOOKFOREXCPEND):
                     phase2=LOOKFOREXCP
                     BlockBracketDepth=0
 
-                if lineType!=REMOVE:
-                    bracketDepth += line.count("{")
+                #TODO: DOUBLE CHECK
 
+                #if lineType!=REMOVE:
+                #    bracketDepth += line.count("{")
 
-                if lineType!=REMOVE and phase2==LOOKFOREXCP:
-                    foundBlock=self.getBlockPattern(line,blockKeyWordList)
-                    if(foundBlock!=None):
-                        phase2=LOOKFOREXCPEND
-                        BlockBracketDepth=bracketDepth
-                        currentBlock=foundBlock
+                if(self.sT.isScopeIncrease(line)):
+                    if(self.sT.scopeIncreaseCount(line) > 1):
+                        if(Util.DEBUG == 1):
+                            print("Parsing of multiscope increases like: ")
+                            print(line)
+                            print("is not yet supported.")
+                        continue
 
-                if(Util.DEBUG == 1):
-                    print("End Check: " + str(bracketDepth))
+                    if(phase2==LOOKFOREXCP):
+                        foundBlock=self.getBlockPattern(line,blockKeyWordList)
+                        if(foundBlock!=None):
+                            phase2=LOOKFOREXCPEND
+                            #BlockBracketDepth=bracketDepth #TODO: REPLACE
+                            self.sT.increaseScope(foundBlock, lineType, scopeTracker.SBLOCK)
+                            #currentBlock=foundBlock #Move to internal tracking... for
+                        else:
+                            self.sT.increaseScope(line, lineType, scopeTracker.GENERIC)
+                    else:
+                        self.sT.increaseScope(line, lineType, scopeTracker.GENERIC)
+
+                #if(Util.DEBUG == 1):
+                #    print("End Check: " + str(bracketDepth))
 
                 if(lineType != OTHER):
                     if(phase == LOOKFOREND):
                         keywordDictionary = self.parseLineForKeywords(line, lineType, singleKeyWordList, keywordDictionary)
-                        if(phase2==LOOKFOREXCPEND and currentBlock!=None):
-                            keywordDictionary = self.parseLineForKeywords(line, lineType, blockKeyWordList, keywordDictionary,currentBlock)
+                        if(phase2==LOOKFOREXCPEND and self.sT.getBlockContext(lineType) != ""): #currentBlock!=None):
+                            keywordDictionary = self.parseLineForKeywords(line, lineType, blockKeyWordList, keywordDictionary, self.sT.getBlockContext(lineType))
                     else:
                         assert(0)
 
-                if(bracketDepth == nestingDepth):
+                #NOTE: This was moved after the scope increase, this may introduce new bugs...
+                if(self.sT.isScopeDecrease(line)):
+                    shortFunctionName = self.sT.getFuncContext(lineType) #Get the functional context
+                    self.sT.decreaseScope(line, lineType)
+
+                if(self.sT.getFuncContext(lineType) == ""):
                     funcEnd = lineNum
                     #Add this function to our list and reset the trackers.
                     if(Util.DEBUG == 1):
@@ -890,8 +876,8 @@ class logChunk:
                     etotal_del=0
                     phase = LOOKFORNAME
                     catchLineNumber=[]
-                    foundBlock={}
-                    currentBlock=None
+                    foundBlock=""
+                    #currentBlock=None
                     for keyword in singleKeyWordList:
                         if(keyword[1] != EXCLUDED):
                             keywordDictionary[str(keyword[0])+" Adds"]=0
@@ -911,6 +897,8 @@ class logChunk:
         #   int x = 0;
         #Then we want to add this into the count.
 
+        #Question: Does this need to be replaced with the context function...
+        #Need to think of a test case that would break it.
         if(shortFunctionName != ""):
             #The end of the function will be said to be the cutoff of the change.
             funcEnd = lineNum
