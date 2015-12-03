@@ -40,9 +40,6 @@ class ghLogDbTest(unittest.TestCase):
 
         self.testCommitb1=ghLogDb.ghLogDb("testfiles/ghLogDbTestBlock/TestCommit1.txt")
         self.testCommitb1.processLog("../util/sample_conf2.ini")
-
-
-
  
     def test_Commit1(self):
         shas = self.testCommit1.shas
@@ -186,7 +183,7 @@ class ghLogDbTest(unittest.TestCase):
         self.assertTrue(methods[1].total_add == 18)
         self.assertTrue(methods[1].total_del == 0)
         testDict = {'assert Adds':1, 'assert Dels': 0, 'ut_ad Adds':0, 'ut_ad Dels': 0, 'ut_a Adds':0, 'ut_a Dels': 0}
-        self.assertEqual(testDict,methods[0].keywordDictionary)
+        self.assertEqual(testDict,methods[1].keywordDictionary)
 
     def test_Commit5(self):
         shas = self.testCommit5.shas
@@ -212,6 +209,7 @@ class ghLogDbTest(unittest.TestCase):
         self.assertTrue(len(methods) == 8)
 
     def test_Commit7(self):
+        #Failing due to constructor regex not being sufficient.
         shas = self.testCommit7.shas
         self.assertTrue(len(shas) == 1) #Just 1 commit.
         self.assertTrue(shas[0].author == "Dmitry Lenev")
@@ -223,7 +221,7 @@ class ghLogDbTest(unittest.TestCase):
         methods = patches[0].methods
         #print(len(methods))
         #print(methods)
-        self.assertTrue(len(methods) == 9) #Should be 9, 7 minus the function deletion bug.
+        self.assertTrue(len(methods) == 9) #Should be 9, 8 minus the constructor bug.
 
     def test_commit8(self):
         shas = self.testCommit8.shas
@@ -285,14 +283,6 @@ class ghLogDbTest(unittest.TestCase):
         methods = patches[4].methods
         self.assertTrue(len(methods) == 0) #Can't match the test case examples.
 
-
-    # def setUp(self):
-    #     self.testCommit1=ghLogDb.ghLogDb("test_case/TestCommit1.txt")
-    #     self.testCommit1.processLog()
-    #     self.testCommit2=ghLogDb.ghLogDb("test_case/TestCommit2.txt")
-    #     self.testCommit2.processLog()
-
-
     def test_Commitb1(self):
 
         shas = self.testCommitb1.shas
@@ -314,13 +304,6 @@ class ghLogDbTest(unittest.TestCase):
         self.assertTrue(methods[0].total_del == 2)
         dict= {'throw  Adds':0, 'catch Dels': 0, 'throw  Dels': 0, 'try Adds': 0, 'try Dels': 0, 'exception Dels': 0, 'raise Adds': 0, 'catch Adds': 0, 'finally Dels': 0, 'finally Adds': 0, 'exception Adds': 0, 'raise Dels': 0, 'for Adds': 0,'for Dels': 0,'while Adds': 0,'while Dels': 0}
         self.assertEqual(dict,methods[0].keywordDictionary)
-
-
-
-
-
-
-
 
 
 if __name__=="__main__":

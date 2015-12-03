@@ -37,6 +37,14 @@ class scopeTracker:
         else:
             raise UnsupportedLanguageException(language + "is not yet supported.")
 
+    def clearScope(self):
+        self.oldVerStack = []
+        self.newVerStack = []
+        self.lastOldFuncContext = ""
+        self.lastOldBlockContext = ""
+        self.lastNewFuncContext = ""
+        self.lastNewBlockContext = ""
+
     def scopeIncreaseCount(self, line):
         if(self.language in BracketLanguages):
             return line.count("{")

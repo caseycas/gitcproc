@@ -907,6 +907,9 @@ class logChunk:
 
         #Remove any unmodified functions
         self.functions = filter(lambda(x) : x.total_add != 0 or x.total_del != 0 , self.functions)
+
+        #Clear out the scope.
+        self.sT.clearScope()
         
         #Create a mock function for any asserts that do not fall into another function's list
         if nonZeroCount(outsideFuncKeywordDictionary):
