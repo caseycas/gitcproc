@@ -45,6 +45,11 @@ class scopeTracker:
         self.lastNewFuncContext = ""
         self.lastNewBlockContext = ""
 
+    #String -> list
+    #Returns a list giving the sequence of scope changes in this line.
+    def scopeOrder(self, line):
+        return [] #TODO  
+
     def scopeIncreaseCount(self, line):
         if(self.language in BracketLanguages):
             return line.count("{")

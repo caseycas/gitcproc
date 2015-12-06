@@ -214,29 +214,6 @@ class logChunktest(unittest.TestCase):
         self.assertTrue(functionName == "")
         self.assertTrue(fChange == TOTALADD)
 
-    def test_parseText_Block1(self):
-
-        self.chunkb1.parseText()
-        funcList = self.chunkb1.functions
-        self.debugFunctions(funcList)
-        self.assertTrue(len(funcList) == 2) 
-        self.assertTrue(self.chunkb1.bracketMisMatch==0)
-
-        self.assertTrue(funcList[0].method=="foo")
-        self.assertTrue(funcList[0].total_add == 2)
-        self.assertTrue(funcList[0].total_del == 1)
-        testDict= {'throw  Adds': 0, 'catch Dels': 0, 'try Adds': 0, 'try Dels': 1, 'exception Dels': 0, 'raise Adds': 0, 'catch Adds': 1, 'finally Dels': 0, 'finally Adds': 0, 'throw  Dels': 0, 'exception Adds': 0, 'raise Dels': 0, 'for Adds': 0,'for Dels': 0,'while Adds': 0,'while Dels': 0}
-
-
-        self.assertEqual(testDict,funcList[0].keywordDictionary)
-        self.assertTrue(funcList[1].method=="foo00022")
-        self.assertTrue(funcList[1].total_add == 4)
-        self.assertTrue(funcList[1].total_del == 2)
-        testDict= {'throw  Adds': 0, 'catch Dels': 0, 'try Adds': 1, 'try Dels': 1, 'exception Dels': 0, 'raise Adds': 0, 'catch Adds': 1, 'finally Dels': 0, 'finally Adds': 0, 'throw  Dels': 0, 'exception Adds': 0, 'raise Dels': 0, 'for Adds': 0,'for Dels': 0,'while Adds': 0,'while Dels': 0}
-
-        self.assertEqual(testDict, funcList[1].keywordDictionary)
-
-
     def test_parseText_Single1(self):
         self.chunk1.parseText()
         funcList = self.chunk1.functions
@@ -661,6 +638,27 @@ class logChunktest(unittest.TestCase):
         testDict = { 'ut_ad Adds': 0, 'assert Dels': 1, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 1, 'ut_a Dels': 0}
         self.assertEqual(testDict, funcList[2].keywordDictionary)
 
+    def test_parseText_Block1(self):
+
+        self.chunkb1.parseText()
+        funcList = self.chunkb1.functions
+        self.debugFunctions(funcList)
+        self.assertTrue(len(funcList) == 2) 
+        self.assertTrue(self.chunkb1.bracketMisMatch==0)
+
+        self.assertTrue(funcList[0].method=="foo")
+        self.assertTrue(funcList[0].total_add == 2)
+        self.assertTrue(funcList[0].total_del == 1)
+        testDict= {'throw  Adds': 0, 'catch Dels': 0, 'try Adds': 0, 'try Dels': 1, 'exception Dels': 0, 'raise Adds': 0, 'catch Adds': 1, 'finally Dels': 0, 'finally Adds': 0, 'throw  Dels': 0, 'exception Adds': 0, 'raise Dels': 0, 'for Adds': 0,'for Dels': 0,'while Adds': 0,'while Dels': 0}
+
+
+        self.assertEqual(testDict,funcList[0].keywordDictionary)
+        self.assertTrue(funcList[1].method=="foo00022")
+        self.assertTrue(funcList[1].total_add == 4)
+        self.assertTrue(funcList[1].total_del == 2)
+        testDict= {'throw  Adds': 0, 'catch Dels': 0, 'try Adds': 1, 'try Dels': 1, 'exception Dels': 0, 'raise Adds': 0, 'catch Adds': 1, 'finally Dels': 0, 'finally Adds': 0, 'throw  Dels': 0, 'exception Adds': 0, 'raise Dels': 0, 'for Adds': 0,'for Dels': 0,'while Adds': 0,'while Dels': 0}
+
+        self.assertEqual(testDict, funcList[1].keywordDictionary)
 
     def test_parseText_Block2(self):
 

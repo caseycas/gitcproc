@@ -820,6 +820,11 @@ class logChunk:
                 #if lineType!=REMOVE:
                 #    bracketDepth += line.count("{")
 
+                #TODO: Need to handle ordering in cases of { ... } vs } ... {
+                if(self.sT.isScopeDecrease(line)):
+                    shortFunctionName = self.sT.getFuncContext(lineType) #Get the functional context
+                    self.sT.decreaseScope(line, lineType)
+
                 if(self.sT.isScopeIncrease(line)):
                     if(self.sT.scopeIncreaseCount(line) > 1):
                         if(Util.DEBUG == 1):
@@ -856,10 +861,6 @@ class logChunk:
                     else:
                         assert(0)
 
-                #NOTE: This was moved after the scope increase, this may introduce new bugs...
-                if(self.sT.isScopeDecrease(line)):
-                    shortFunctionName = self.sT.getFuncContext(lineType) #Get the functional context
-                    self.sT.decreaseScope(line, lineType)
 
                 if(self.sT.getFuncContext(lineType) == ""):
                     funcEnd = lineNum
