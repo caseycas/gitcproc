@@ -562,7 +562,7 @@ class logChunk:
         self.bracketMisMatch=0
         lineType = OTHER
         phase = LOOKFORNAME #TODO: Replace the phases with scopeTracker...
-        phase2=LOOKFOREXCP
+        #phase2=LOOKFOREXCP
         commentFlag = False #Are we inside a comment?
         commentType = OTHER #Is the original line of the comment ADD, REMOVE, or OTHER
         functionName = ""
@@ -777,7 +777,7 @@ class logChunk:
                     etotal_add = 0
                     etotal_del = 0
                     phase = LOOKFORNAME
-                    phase2=LOOKFOREXCPEND
+                    #phase2=LOOKFOREXCPEND
                     lineType=OTHER
                     for keyword in singleKeyWordList:
                         if(keyword[1] != EXCLUDED):
@@ -811,9 +811,9 @@ class logChunk:
                 #    bracketDepth -= line.count("}")
 
                 #TODO: REPLACE ME
-                if(BlockBracketDepth>bracketDepth and phase2==LOOKFOREXCPEND):
-                    phase2=LOOKFOREXCP
-                    BlockBracketDepth=0
+                #if(BlockBracketDepth>bracketDepth and phase2==LOOKFOREXCPEND):
+                #    phase2=LOOKFOREXCP
+                #    BlockBracketDepth=0
 
                 #TODO: DOUBLE CHECK
 
@@ -828,17 +828,19 @@ class logChunk:
                             print("is not yet supported.")
                         continue
 
-                    if(phase2==LOOKFOREXCP):
-                        foundBlock=self.getBlockPattern(line,blockKeyWordList)
-                        if(foundBlock!=None):
-                            phase2=LOOKFOREXCPEND
-                            #BlockBracketDepth=bracketDepth #TODO: REPLACE
-                            self.sT.increaseScope(foundBlock, lineType, scopeTracker.SBLOCK)
-                            #currentBlock=foundBlock #Move to internal tracking... for
-                        else:
-                            self.sT.increaseScope(line, lineType, scopeTracker.GENERIC)
+                    #if(phase2==LOOKFOREXCP):
+                    foundBlock=self.getBlockPattern(line,blockKeyWordList)
+                    if(foundBlock!=None):
+                        if(Util.DEBUG):
+                            print("Block start found: " + foundBlock)
+                        #phase2=LOOKFOREXCPEND
+                        #BlockBracketDepth=bracketDepth #TODO: REPLACE
+                        self.sT.increaseScope(foundBlock, lineType, scopeTracker.SBLOCK)
+                        #currentBlock=foundBlock #Move to internal tracking... for
                     else:
                         self.sT.increaseScope(line, lineType, scopeTracker.GENERIC)
+                    #else:
+                    #    self.sT.increaseScope(line, lineType, scopeTracker.GENERIC)
 
                 #if(Util.DEBUG == 1):
                 #    print("End Check: " + str(bracketDepth))
@@ -846,7 +848,10 @@ class logChunk:
                 if(lineType != OTHER):
                     if(phase == LOOKFOREND):
                         keywordDictionary = self.parseLineForKeywords(line, lineType, singleKeyWordList, keywordDictionary)
-                        if(phase2==LOOKFOREXCPEND and self.sT.getBlockContext(lineType) != ""): #currentBlock!=None):
+                        #if(phase2==LOOKFOREXCPEND and self.sT.getBlockContext(lineType) != ""): #currentBlock!=None):
+                        if(self.sT.getBlockContext(lineType) != ""):
+                            if(Util.DEBUG):
+                                print("Current block context: " + self.sT.getBlockContext(lineType))
                             keywordDictionary = self.parseLineForKeywords(line, lineType, blockKeyWordList, keywordDictionary, self.sT.getBlockContext(lineType))
                     else:
                         assert(0)
