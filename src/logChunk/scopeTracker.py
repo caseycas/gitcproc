@@ -1,4 +1,5 @@
 import sys
+import re
 
 sys.path.append("../util")
 
@@ -48,8 +49,34 @@ class scopeTracker:
     #String -> list
     #Returns a list giving the sequence of scope changes in this line.
     def scopeOrder(self, line):
-        return [] #TODO  
+        scopeOrderChanges = []
+        #Thanks to http://stackoverflow.com/questions/4664850/find-all-occurrences-of-a-substring-in-python
+        if(self.language in BracketLanguages):
+            increaseIndicies = [next.start() for next in re.finditer('{', line)] 
+            decreaseIndicies = [next.start() for next in re.finditer('}', line)]
+            j = 0
+            k = 0
+            iLen = len(increaseIndicies)
+            dLen = len(decreaseIndicies)
+            for i in range(0, iLen + dLen):
+                #assert(j < iLen and k < dLen)
+                if(j == iLen and k < dLen):
+                    scopeOrderChanges.append(DECREASE)
+                    k += 1
+                elif(k == dLen and j < iLen):
+                    scopeOrderChanges.append(INCREASE)
+                    j += 1
+                elif(increaseIndicies[j] < decreaseIndicies[k]):
+                    scopeOrderChanges.append(INCREASE)
+                    j += 1
+                else:
+                    scopeOrderChanges.append(DECREASE)
+                    k += 1
 
+            return scopeOrderChanges
+        else:
+            raise UnsupportedLanguageException(language + "is not yet supported.")
+        
     def scopeIncreaseCount(self, line):
         if(self.language in BracketLanguages):
             return line.count("{")

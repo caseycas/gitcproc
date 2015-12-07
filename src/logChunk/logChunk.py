@@ -165,7 +165,7 @@ class logChunk:
                         print("Unmodified")
                         assert(0)
 
-        elif(blockContext != None):
+        elif(blockContext != None): #Need to modifiy to handle multiple block keywords...
             found = False
             for keyword in includedKeywords:
                 if(blockContext == keyword[0]):
@@ -793,62 +793,45 @@ class logChunk:
 
 
                 if(Util.DEBUG == 1):
-                #    print("Depths: " + str(bracketDepth) + ":" + str(nestingDepth))
                     print(classContext)
 
-                #TODO: This should no longer be needed.
-                #Set back the expected level for seeing the start of functions
-                #Need to redo this so we stack everything?
-                #if(bracketDepth < nestingDepth):
-                #    if(Util.DEBUG == 1):
-                #        print("Adjusting depth.")
-                #        #print(classContext)
-                #    nestingDepth = bracketDepth
-
             elif(phase == LOOKFOREND): #determine the end of the function
+                #Handle changes in scope
+                scopeChanges = self.sT.scopeOrder(line)
+                if(len(scopeChanges) > 2):
+                    if(Util.DEBUG == 1):
+                        print("Parsing of multiscope changes like: ")
+                        print(line)
+                        print("is not yet supported.")
+                    continue
 
-                #if lineType!=REMOVE:
-                #    bracketDepth -= line.count("}")
+                else:
+                    for nextScopeChange in scopeChanges:
+                        if(nextScopeChange == INCREASE):
+                            if(self.sT.isScopeIncrease(line)):
+                                if(self.sT.scopeIncreaseCount(line) > 1):
+                                    if(Util.DEBUG == 1):
+                                        print("Parsing of multiscope increases like: ")
+                                        print(line)
+                                        print("is not yet supported.")
+                                    continue
 
-                #TODO: REPLACE ME
-                #if(BlockBracketDepth>bracketDepth and phase2==LOOKFOREXCPEND):
-                #    phase2=LOOKFOREXCP
-                #    BlockBracketDepth=0
+                                #if(phase2==LOOKFOREXCP):
+                                foundBlock=self.getBlockPattern(line,blockKeyWordList)
+                                if(foundBlock!=None):
+                                    if(Util.DEBUG):
+                                        print("Block start found: " + foundBlock)
+                                    #phase2=LOOKFOREXCPEND
+                                    #BlockBracketDepth=bracketDepth #TODO: REPLACE
+                                    self.sT.increaseScope(foundBlock, lineType, scopeTracker.SBLOCK)
+                                    #currentBlock=foundBlock #Move to internal tracking... for
+                                else:
+                                    self.sT.increaseScope(line, lineType, scopeTracker.GENERIC)
+                        else:
+                            if(self.sT.isScopeDecrease(line)):
+                                shortFunctionName = self.sT.getFuncContext(lineType) #Get the functional context
+                                self.sT.decreaseScope(line, lineType)
 
-                #TODO: DOUBLE CHECK
-
-                #if lineType!=REMOVE:
-                #    bracketDepth += line.count("{")
-
-                #TODO: Need to handle ordering in cases of { ... } vs } ... {
-                if(self.sT.isScopeDecrease(line)):
-                    shortFunctionName = self.sT.getFuncContext(lineType) #Get the functional context
-                    self.sT.decreaseScope(line, lineType)
-
-                if(self.sT.isScopeIncrease(line)):
-                    if(self.sT.scopeIncreaseCount(line) > 1):
-                        if(Util.DEBUG == 1):
-                            print("Parsing of multiscope increases like: ")
-                            print(line)
-                            print("is not yet supported.")
-                        continue
-
-                    #if(phase2==LOOKFOREXCP):
-                    foundBlock=self.getBlockPattern(line,blockKeyWordList)
-                    if(foundBlock!=None):
-                        if(Util.DEBUG):
-                            print("Block start found: " + foundBlock)
-                        #phase2=LOOKFOREXCPEND
-                        #BlockBracketDepth=bracketDepth #TODO: REPLACE
-                        self.sT.increaseScope(foundBlock, lineType, scopeTracker.SBLOCK)
-                        #currentBlock=foundBlock #Move to internal tracking... for
-                    else:
-                        self.sT.increaseScope(line, lineType, scopeTracker.GENERIC)
-                    #else:
-                    #    self.sT.increaseScope(line, lineType, scopeTracker.GENERIC)
-
-                #if(Util.DEBUG == 1):
-                #    print("End Check: " + str(bracketDepth))
 
                 if(lineType != OTHER):
                     if(phase == LOOKFOREND):
