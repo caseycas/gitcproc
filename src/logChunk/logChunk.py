@@ -142,9 +142,31 @@ class logChunk:
 
         return False
 
+    #dictionary, list of tuples, list of strings -> dictionary
+    #Update the add/delete for all open block contexts
+    def incrementBlockContext(self, keywordDict, lineType, includedKeywords, blockContext):
+        for b in blockContext:
+            found = False
+            for keyword in includedKeywords:
+                if(b == keyword[0]):
+                    assert(keyword[1] == INCLUDED and keyword[2] == BLOCK)
+                    found = True
+                    break
+
+            if(not found):
+                print("Invalid block keyword.")
+                assert(False)
+
+            if(lineType == ADD):
+                incrementDict(str(b) + " Adds", keywordDict, 1)
+            elif(lineType == REMOVE):
+                incrementDict(str(b) + " Dels", keywordDict, 1)
+
+        return keywordDict
+
     #String, String, list of Strings, dictionary, String -> dictionary
     #Modify the keyword dictionary for this line.  
-    def parseLineForKeywords(self, line, lineType, keywords, keywordDict, blockContext = None):
+    def parseLineForKeywords(self, line, lineType, keywords, keywordDict, blockContext = []):
         assert(lineType == ADD or lineType == REMOVE) #How do we handle block statements where only internal part modified?
         line = self.removeExcludedKeywords(line, keywords)
         #Make sure keywords are sorted by decreasing length, in case one is contained
@@ -154,7 +176,7 @@ class logChunk:
             print("LINE TO PARSE FOR KEYWORD:" + unicode(line, 'utf-8', errors='ignore'))
         includedKeywords = [k for k in keywords if k[1] == INCLUDED]
 
-        if(blockContext==None):
+        if(blockContext==[]):
             for keyword in includedKeywords:
                 if(keyword[0] in line.lower()):
                     if(lineType == ADD):
@@ -165,23 +187,9 @@ class logChunk:
                         print("Unmodified")
                         assert(0)
 
-        elif(blockContext != None): #Need to modifiy to handle multiple block keywords...
-            found = False
-            for keyword in includedKeywords:
-                if(blockContext == keyword[0]):
-                    assert(keyword[1] == INCLUDED and keyword[2] == BLOCK)
-                    found = True
-                    break
-
-            if(not found):
-                print("Invalid block keyword.")
-                assert(False)
-
-            if(lineType == ADD):
-                incrementDict(str(blockContext) + " Adds", keywordDict, 1)
-            elif(lineType == REMOVE):
-                incrementDict(str(blockContext) + " Dels", keywordDict, 1)
-
+        elif(blockContext != []):
+            #Sum over all block keywords
+            keywordDict = self.incrementBlockContext(keywordDict, lineType, includedKeywords, blockContext)
 
         return keywordDict
 
@@ -621,12 +629,16 @@ class logChunk:
             fChange = UNMARKED
             (line, lineType, commentFlag, commentType, functionName, fChange) = self.removeComments(line, commentFlag, lineType, commentType, functionName, phase)
             
-            #Update the function conunts if necessary
+            #Update the function counts if necessary
             if(fChange != UNMARKED):
                 if(fChange == COMADD):
+                    if(self.sT.getBlockContext(lineType) != []):
+                        keywordDictionary = self.incrementBlockContext(keywordDict, lineType, includedKeywords, blockContext)
                     ftotal_add += 1
                     self.total_add += 1
                 elif(fChange == COMDEL):
+                    if(self.sT.getBlockContext(lineType) != []):
+                        keywordDictionary = self.incrementBlockContext(keywordDict, lineType, includedKeywords, blockContext)
                     ftotal_del += 1
                     self.total_add += 1
                 elif(fChange == TOTALADD):
@@ -837,9 +849,9 @@ class logChunk:
                     if(phase == LOOKFOREND):
                         keywordDictionary = self.parseLineForKeywords(line, lineType, singleKeyWordList, keywordDictionary)
                         #if(phase2==LOOKFOREXCPEND and self.sT.getBlockContext(lineType) != ""): #currentBlock!=None):
-                        if(self.sT.getBlockContext(lineType) != ""):
+                        if(self.sT.getBlockContext(lineType) != []):
                             if(Util.DEBUG):
-                                print("Current block context: " + self.sT.getBlockContext(lineType))
+                                print("Current block context: " + str(self.sT.getBlockContext(lineType)))
                             keywordDictionary = self.parseLineForKeywords(line, lineType, blockKeyWordList, keywordDictionary, self.sT.getBlockContext(lineType))
                     else:
                         assert(0)

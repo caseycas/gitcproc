@@ -642,7 +642,7 @@ class logChunktest(unittest.TestCase):
 
         self.chunkb1.parseText()
         funcList = self.chunkb1.functions
-        self.debugFunctions(funcList)
+        #self.debugFunctions(funcList)
         self.assertTrue(len(funcList) == 2) 
         self.assertTrue(self.chunkb1.bracketMisMatch==0)
 
@@ -664,7 +664,7 @@ class logChunktest(unittest.TestCase):
 
         self.chunkb2.parseText()
         funcList = self.chunkb2.functions
-        self.debugFunctions(funcList)
+        #self.debugFunctions(funcList)
         self.assertTrue(len(funcList) == 2) 
         self.assertTrue(self.chunkb2.bracketMisMatch==0)
 
@@ -685,7 +685,7 @@ class logChunktest(unittest.TestCase):
         self.chunkb3.parseText()
         funcList = self.chunkb3.functions
 
-        # self.debugFunctions(funcList)
+        #self.debugFunctions(funcList)
 
         self.assertTrue(len(funcList) == 1) 
         self.assertTrue(self.chunkb3.bracketMisMatch==0)
@@ -693,7 +693,7 @@ class logChunktest(unittest.TestCase):
         self.assertTrue(funcList[0].method=="ReflectiveProperty")
         self.assertTrue(funcList[0].total_add == 12)
         self.assertTrue(funcList[0].total_del == 3)
-        testdict= {'throw  Adds': 0, 'catch Dels': 1, 'try Adds': 8, 'try Dels': 2, 'exception Dels': 0, 'raise Adds': 0, 'catch Adds': 4, 'finally Dels': 0, 'finally Adds': 0, 'throw  Dels': 0, 'exception Adds': 0, 'raise Dels': 0, 'for Adds': 0,'for Dels': 0,'while Adds': 0,'while Dels': 0}
+        testdict= {'throw  Adds': 0, 'catch Dels': 1, 'try Adds': 12, 'try Dels': 3, 'exception Dels': 0, 'raise Adds': 0, 'catch Adds': 4, 'finally Dels': 0, 'finally Adds': 0, 'throw  Dels': 0, 'exception Adds': 0, 'raise Dels': 0, 'for Adds': 0,'for Dels': 0,'while Adds': 0,'while Dels': 0}
 
         self.assertEqual(testdict,funcList[0].keywordDictionary)
 

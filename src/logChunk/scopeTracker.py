@@ -30,9 +30,9 @@ class scopeTracker:
         self.oldVerStack = []
         self.newVerStack = []
         self.lastOldFuncContext = ""
-        self.lastOldBlockContext = ""
+        self.lastOldBlockContext = []
         self.lastNewFuncContext = ""
-        self.lastNewBlockContext = ""
+        self.lastNewBlockContext = []
         if(language in Util.supportedLanguages):
             self.language = language
         else:
@@ -42,9 +42,9 @@ class scopeTracker:
         self.oldVerStack = []
         self.newVerStack = []
         self.lastOldFuncContext = ""
-        self.lastOldBlockContext = ""
+        self.lastOldBlockContext = []
         self.lastNewFuncContext = ""
-        self.lastNewBlockContext = ""
+        self.lastNewBlockContext = []
 
     #String -> list
     #Returns a list giving the sequence of scope changes in this line.
@@ -145,7 +145,7 @@ class scopeTracker:
             self.lastNewFuncContext = line
         elif(changeType == SBLOCK): #Consider this carefully for when we get the opening {...
             self.newVerStack.append((line, SBLOCK))
-            self.lastNewBlockContext = line
+            self.lastNewBlockContext.append(line)
         else:
             assert("Not a valid change type.")
 
@@ -159,7 +159,7 @@ class scopeTracker:
             self.lastOldFuncContext = line
         elif(changeType == SBLOCK): #Consider this carefully for when we get the opening {...
             self.oldVerStack.append((line, SBLOCK))
-            self.lastOldBlockContext = line
+            self.lastOldBlockContext.append(line)
         else:
             assert("Not a valid change type.")
 
@@ -190,10 +190,13 @@ class scopeTracker:
         for i in range(0, line.count("}")):
             if(self.newVerStack != []):
                 removed = self.newVerStack.pop()
+                if(Util.DEBUG):
+                    print("Removing: " + str(removed))
+                    print("Context: " + str(self.lastNewBlockContext))
                 if(removed[LABELINDEX] == FUNC):
                     self.lastNewFuncContext = self.getTopType(self.newVerStack, FUNC)
                 elif(removed[LABELINDEX] == SBLOCK):
-                    self.lastNewBlockContext = self.getTopType(self.newVerStack, SBLOCK)
+                    self.lastNewBlockContext.remove(removed[LINEINDEX])
             else:#Bracket overclosing -> estimating...
                 if(Util.DEBUG):
                     print("Popped from empty new Stack.")
@@ -204,10 +207,13 @@ class scopeTracker:
         for i in range(0, line.count("}")):
             if(self.oldVerStack != []):
                 removed = self.oldVerStack.pop()
+                if(Util.DEBUG):
+                    print("Removing: " + str(removed))
+                    print("Context: " + str(self.lastOldBlockContext))
                 if(removed[LABELINDEX] == FUNC):
                     self.lastOldFuncContext = self.getTopType(self.oldVerStack, FUNC)
                 elif(removed[LABELINDEX] == SBLOCK):
-                    self.lastOldBlockContext = self.getTopType(self.oldVerStack, SBLOCK)
+                    self.lastOldBlockContext.remove(removed[LINEINDEX])
             else:#Bracket overclosing -> estimating...
                 if(Util.DEBUG):
                     print("Popped from empty new Stack.")
@@ -244,7 +250,7 @@ class scopeTracker:
         else:
             assert("Not a valid line type")
 
-    #Return the surrounding block context or "" if not on the stack
+    #Return the surrounding block contexts or [] if not on the stack
     def getBlockContext(self, lineType):
         if(lineType == ADD or lineType == OTHER):
             return self.lastNewBlockContext
