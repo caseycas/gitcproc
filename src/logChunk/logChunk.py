@@ -172,7 +172,10 @@ class logChunk:
         #inside the other, e.g. ut_ad and ut_a
         keywords = sorted(keywords, key=lambda tup: -len(tup[0]))
         if(Util.DEBUG):
-            print("LINE TO PARSE FOR KEYWORD:" + unicode(line, 'utf-8', errors='ignore'))
+            try:
+                print("LINE TO PARSE FOR KEYWORD:" + line)
+            except:
+                print("LINE TO PARSE FOR KEYWORD:" + unicode(line, 'utf-8', errors='ignore'))
         includedKeywords = [k for k in keywords if k[1] == INCLUDED]
 
         if(blockContext==[]):
@@ -312,7 +315,10 @@ class logChunk:
 
         if(Util.DEBUG == 1):
             print("Class context: " + classContext)
-            print("Checking if a constructor/destructor: " + unicode(line, 'utf-8', errors='ignore'))
+            try:
+                print("Checking if a constructor/destructor: " + line)
+            except:
+                print("Checking if a constructor/destructor: " + unicode(line, 'utf-8', errors='ignore'))
 
         return re.search(classContext + paramPattern, temp)
 
@@ -370,7 +376,10 @@ class logChunk:
 
 
         if(Util.DEBUG):
-            print("Checking if function: \'" + unicode(line, 'utf-8', errors='ignore') + "\'")
+            try:
+                print("Checking if function: \'" + line + "\'")
+            except:
+                print("Checking if function: \'" + unicode(line, 'utf-8', errors='ignore') + "\'")
         
         #Check for regular and template functions
         if("template" in temp):
@@ -692,7 +701,10 @@ class logChunk:
             fullLine = line.strip()
                 
             if(Util.DEBUG==1):
-                print("The real line: " + unicode(line, 'utf-8', errors='ignore'))
+                try:
+                    print("The real line: " + line)
+                except:
+                    print("The real line: " + unicode(line, 'utf-8', errors='ignore'))
             
             (lineType, line)= self.markLine(line)
             
@@ -714,7 +726,10 @@ class logChunk:
             #Extract the name of the function
             if(phase == LOOKFORNAME):
                 if(Util.DEBUG == 1):
-                    print("Current Name Search: " + unicode(functionName, 'utf-8', errors='ignore'))
+                    try:
+                        print("Current Name Search: " + functionName)
+                    except:
+                        print("Current Name Search: " + unicode(functionName, 'utf-8', errors='ignore'))
 
                 #What if we've hit a function defintion?
                 #TODO: Is this really needed?
@@ -748,7 +763,10 @@ class logChunk:
                     #Update to function scope or other here.
                     if(isFunction): #Skip things are aren't functions
                         if(Util.DEBUG == 1):
-                            print("Function: " + unicode(shortFunctionName, 'utf-8', errors='ignore'))
+                            try:
+                                 print("Function: " + shortFunctionName)
+                            except:
+                                 print("Function: " + unicode(shortFunctionName, 'utf-8', errors='ignore'))
 
                         self.sT.increaseScope(shortFunctionName, lineType, scopeTracker.FUNC)
                         funcStart = lineNum
@@ -767,20 +785,32 @@ class logChunk:
                         className = self.getClassPattern(functionName)
                         if(className != ""):
                             if(Util.DEBUG == 1):
-                                print("Class:" + unicode(className, 'utf-8', errors='ignore'))
+                                try:
+                                    print("Class:" + className)
+                                except:
+                                    print("Class:" + unicode(className, 'utf-8', errors='ignore'))
                             classContext.append(self.extractClassName(className)) #Push onto the class stack
                             nestingDepth += 1 #Functions are inside something now
                         elif(self.isNamespace(functionName)):
                             if(Util.DEBUG == 1):
-                                print("Namespace:" + unicode(functionName, 'utf-8', errors='ignore'))
+                                try:
+                                    print("Namespace:" + functionName)
+                                except:
+                                    print("Namespace:" + unicode(functionName, 'utf-8', errors='ignore'))
                             nestingDepth += 1 #Functions are inside something now
                         elif(self.isExternBlock(functionName)):
                             if(Util.DEBUG == 1):
-                                print("Extern:" + unicode(functionName, 'utf-8', errors='ignore'))
+                                try:
+                                    print("Extern:" + functionName)
+                                except:
+                                    print("Extern:" + unicode(functionName, 'utf-8', errors='ignore'))
                             nestingDepth +=1
                         else:
                             if(Util.DEBUG == 1):
-                                print("Other type of bracket: " + unicode(functionName, 'utf-8', errors='ignore'))
+                                try:
+                                    print("Other type of bracket: " + functionName)
+                                except:
+                                    print("Other type of bracket: " + unicode(functionName, 'utf-8', errors='ignore'))
                             nestingDepth +=1
                             
                         functionName = "" #Reset name and find next

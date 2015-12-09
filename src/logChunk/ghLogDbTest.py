@@ -26,16 +26,16 @@ class ghLogDbTest(unittest.TestCase):
         #self.testCommit13 = ghLogDb.ghLogDb("testfiles/ghLogDbTest/TestCommit13.txt")
 
         self.testCommit1.processLog()
-        self.testCommit2.processLog()
-        self.testCommit3.processLog()
-        self.testCommit4.processLog()
-        self.testCommit5.processLog()
-        self.testCommit7.processLog()
-        self.testCommit8.processLog()
-        self.testCommit9.processLog()
-        self.testCommit10.processLog()
-        self.testCommit11.processLog() #Make sure there is no crash
-        self.testCommit12.processLog() #Make sure there is no crash
+        #self.testCommit2.processLog()
+        #self.testCommit3.processLog()
+        #self.testCommit4.processLog()
+        #self.testCommit5.processLog()
+        #self.testCommit7.processLog()
+        #self.testCommit8.processLog()
+        #self.testCommit9.processLog()
+        #self.testCommit10.processLog()
+        #self.testCommit11.processLog() #Make sure there is no crash
+        #self.testCommit12.processLog() #Make sure there is no crash
         #self.testCommit13.processLog() #Make sure there is no crash
 
         self.testCommitb1=ghLogDb.ghLogDb("testfiles/ghLogDbTestBlock/TestCommit1.txt")
@@ -88,7 +88,7 @@ class ghLogDbTest(unittest.TestCase):
         self.assertTrue(patches[3].file_name == "lib/ccv_icf.c")
         methods = patches[3].methods
         self.assertTrue(len(methods)==1)
-
+'''
     def test_Commit2(self):
         shas = self.testCommit2.shas
         self.assertTrue(len(shas) == 1) #Just 1 commit.
@@ -304,7 +304,7 @@ class ghLogDbTest(unittest.TestCase):
         self.assertTrue(methods[0].total_del == 2)
         dict= {'throw  Adds':0, 'catch Dels': 0, 'throw  Dels': 0, 'try Adds': 0, 'try Dels': 0, 'exception Dels': 0, 'raise Adds': 0, 'catch Adds': 0, 'finally Dels': 0, 'finally Adds': 0, 'exception Adds': 0, 'raise Dels': 0, 'for Adds': 0,'for Dels': 0,'while Adds': 0,'while Dels': 0}
         self.assertEqual(dict,methods[0].keywordDictionary)
-
+'''
 
 if __name__=="__main__":
     unittest.main()
