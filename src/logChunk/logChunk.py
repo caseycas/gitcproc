@@ -459,7 +459,6 @@ class logChunk:
                 if(Util.DEBUG):
                     print("PATTERN 1")
                 return result.group(0)
-            print(temp)
             result = re.search(functionPattern2, temp)
             if(result != None):
                 if(Util.DEBUG):
