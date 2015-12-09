@@ -714,7 +714,6 @@ class logChunktest(unittest.TestCase):
         funcList = self.chunkb1.functions
         #self.debugFunctions(funcList)
         self.assertTrue(len(funcList) == 2) 
-        self.assertTrue(self.chunkb1.bracketMisMatch==0)
 
         self.assertTrue(funcList[0].method=="foo")
         self.assertTrue(funcList[0].total_add == 2)
@@ -736,7 +735,6 @@ class logChunktest(unittest.TestCase):
         funcList = self.chunkb2.functions
         #self.debugFunctions(funcList)
         self.assertTrue(len(funcList) == 2) 
-        self.assertTrue(self.chunkb2.bracketMisMatch==0)
 
         self.assertTrue(funcList[0].method=="getAccounts")
         self.assertTrue(funcList[0].total_add == 1)
@@ -758,8 +756,6 @@ class logChunktest(unittest.TestCase):
         #self.debugFunctions(funcList)
 
         self.assertTrue(len(funcList) == 1) 
-        self.assertTrue(self.chunkb3.bracketMisMatch==0)
-
         self.assertTrue(funcList[0].method=="ReflectiveProperty")
         self.assertTrue(funcList[0].total_add == 12)
         self.assertTrue(funcList[0].total_del == 3)
@@ -773,11 +769,7 @@ class logChunktest(unittest.TestCase):
         funcList = self.chunkb4.functions
         # self.debugFunctions(funcList)
 
-
         self.assertTrue(len(funcList) == 1) 
-        # self.assertTrue(self.chunkb4.isExceptionChunkFlag==0)
-        self.assertTrue(self.chunkb4.bracketMisMatch==0)
-
         self.assertTrue(funcList[0].method=="setHandle")
         self.assertTrue(funcList[0].total_add == 1)
         self.assertTrue(funcList[0].total_del == 1)
@@ -792,7 +784,6 @@ class logChunktest(unittest.TestCase):
 
 
         self.assertTrue(len(funcList) == 1) 
-        self.assertTrue(self.chunkb5.bracketMisMatch==0)
         self.assertTrue(funcList[0].method=="copy")
         self.assertTrue(funcList[0].total_add == 19)
         self.assertTrue(funcList[0].total_del == 5)
@@ -807,9 +798,8 @@ class logChunktest(unittest.TestCase):
         funcList = self.chunkb6.functions
         # self.debugFunctions(funcList)
 
-
         self.assertTrue(len(funcList) == 1) 
-        self.assertTrue(self.chunkb5.bracketMisMatch==0)
+
 
         self.assertTrue(funcList[0].method=="init")
         self.assertTrue(funcList[0].total_add == 0)
@@ -825,7 +815,6 @@ class logChunktest(unittest.TestCase):
         funcList = self.chunkb7.functions
         #self.debugFunctions(funcList)
         self.assertTrue(len(funcList) == 1) 
-        self.assertTrue(self.chunkb7.bracketMisMatch==0)
         self.assertTrue(funcList[0].method=="onCreateLoader")
         self.assertTrue(funcList[0].total_add == 2)
         self.assertTrue(funcList[0].total_del == 7)
@@ -842,7 +831,6 @@ class logChunktest(unittest.TestCase):
         self.debugFunctions(funcList)
 
         self.assertTrue(len(funcList) == 1) 
-        self.assertTrue(self.chunkb8.bracketMisMatch==0)
         self.assertTrue(funcList[0].method=="getAuthToken")
         self.assertTrue(funcList[0].total_add == 2)
         self.assertTrue(funcList[0].total_del == 2)
@@ -856,10 +844,7 @@ class logChunktest(unittest.TestCase):
         funcList = self.chunkb9.functions
         #self.debugFunctions(funcList)
 
-
         self.assertTrue(len(funcList) == 1) 
-        self.assertTrue(self.chunkb9.bracketMisMatch==0)
-
 
         self.assertTrue(funcList[0].method=="getAuthToken")
         self.assertTrue(funcList[0].total_add == 2)
@@ -875,7 +860,6 @@ class logChunktest(unittest.TestCase):
         funcList = self.chunkb10.functions
         #self.debugFunctions(funcList)
         self.assertTrue(len(funcList) == 1) 
-        self.assertTrue(self.chunkb10.bracketMisMatch==0)
 
 
         self.assertTrue(funcList[0].method=="getToken")

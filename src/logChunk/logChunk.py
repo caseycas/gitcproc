@@ -27,7 +27,6 @@ class logChunk:
         self.total_add = 0
         self.total_del = 0
         self.header = "" #What is the name given after '@@' in log
-        self.bracketMisMatch=0
         self.sT = scopeTracker.scopeTracker(language)
 
     #list of strings --> boolean
@@ -243,40 +242,6 @@ class logChunk:
             #Parse out the name
             pieces = name[:matchIndex].strip().split(" ")
             return pieces[len(pieces)-1]
-
-        # #print("Name: " + name)
-        # results = re.findall(parenPattern, name)
-        # #Since types can be of (), we want to find the index of the last and largest match to (.*)
-        # #Prefer largest, but if multiple equal size (i.e. returns a type with () and has no arguments)
-        # #get the later one.
-        # max = -1
-        # biggest = ""
-        # for r in results:
-        #     if(Util.DEBUG == 1):
-        #       print("Next: " + r)
-        #     if(max <= len(r)):
-        #         max = len(r)
-        #         biggest = r
-
-        
-        # if(biggest == ""):
-        #     #raise ValueError("This line doesn't seem to be a function header", fullName)
-        #     return "" #If not a function name - return nothing.
-
-        # #Get start index of last copy of biggest
-        # argStart = fullName.rfind(biggest)
-        # #print("ARGSTART: " + str(argStart))
-        # if(argStart == -1):
-        #     raise ValueError("Regex said we found argument section, but now we can't find it.", fullName)
-
-        # #Break up the string prior to the () section
-        # pieces = fullName[0:argStart].split(" ")
-        # for next in reversed(pieces):
-        #     if(next != ""):
-        #         #print("Return: " + next.strip())
-        #         return next.strip()
-
-        # raise ValueError("Couldn't find method name", fullName)
 
     def isExternBlock(self, line):
         return(re.search(externPattern, line.strip().lower().replace("\n", "")))
@@ -604,7 +569,52 @@ class logChunk:
         line = re.sub(commentPattern2, "", line)
 
         return (line,lineType, commentFlag, commentType, functionName, fChange)
-    
+
+    #If we have made changes to the comment structure, we want to count changes to the current
+    #logChunk, function, and blocks separately so we can skip the rest of the changes.
+    def modifyCountForComment(self, fChange, lineType, keywordDict, keywords, ftotal_add, ftotal_del):
+        includedKeywords = [k for k in keywords if k[1] == INCLUDED]
+        if(fChange == COMADD):
+            if(self.sT.getBlockContext(lineType) != []):
+                keywordDict = self.incrementBlockContext(keywordDict, lineType, includedKeywords, self.sT.getBlockContext(lineType))
+            if(self.sT.getFuncContext(lineType) != []):
+                ftotal_add += 1
+            self.total_add += 1
+        elif(fChange == COMDEL):
+            if(self.sT.getBlockContext(lineType) != []):
+                keywordDict = self.incrementBlockContext(keywordDict, lineType, includedKeywords, self.sT.getBlockContext(lineType))
+            if(self.sT.getFuncContext(lineType) != []):
+                ftotal_del += 1
+            self.total_add += 1
+        elif(fChange == TOTALADD):
+            self.total_add += 1
+        elif(fChange == TOTALDEL):
+            self.total_del +=  1
+        elif(fChange != UNCHANGED):
+            assert("Not a valid fChange type.")
+
+        return (keywordDict, ftotal_add, ftotal_del)
+
+    #Update the counts of the total log chunk and function in the case of a normal, non comment
+    #line.
+    def updateCounts(self, lineType, ftotal_add, ftotal_del, phase, startFlag):
+        if(lineType == ADD):
+            self.total_add += 1 #This tracks + for whole chunks.
+            if(phase == LOOKFOREND):
+                if(startFlag==0):
+                    ftotal_add += 1
+        elif(lineType == REMOVE):
+            self.total_del += 1
+            if(phase == LOOKFOREND):
+                if(startFlag==0):
+                    ftotal_del += 1
+        else:
+            assert(lineType==OTHER)
+
+        return (ftotal_add, ftotal_del)
+
+
+
     #String -> [lineType, String]
     #Given a line in the diff, return a list of 2 with the first line being ADD/REMOVE/OTHER and the second being
     #the line with the +/- removed, if applicable
@@ -616,9 +626,8 @@ class logChunk:
         else:
             return [OTHER, line[0:]]
         
-    #TODO: This still needs to be abstracted better to be easier to understand and modify.
-    #I'd like to revamp the bracket handling structure to better account for the different
-    #needs of added, unmodified, and unchanged lines.
+
+    #Main function to parse out the contents loaded into logChunk
     def parseText(self):
 
         '''
@@ -626,22 +635,18 @@ class logChunk:
         and                            + } catch (#Exception) {
         '''
 
+        #----------------------------------Initialization----------------------------------#
+
         #New keyword list for both single and block keywords.  This is a list of triples.
         keyWordList = []
         keyWordList = self.readKeywords(keyWordList)
         singleKeyWordList = filter(lambda w : w[2] == SINGLE, keyWordList)
         blockKeyWordList = filter(lambda w: w[2] == BLOCK, keyWordList)
 
-        # if self.isExceptionChunk(blockKeyWordList) !=None:
-        #     self.isExceptionChunkFlag=True
-
         self.initialized = True
         lineNum = 0 # which line we are on, relative to the start of the chunk
-        bracketDepth = 0
-        self.bracketMisMatch=0
         lineType = OTHER
-        phase = LOOKFORNAME #TODO: Replace the phases with scopeTracker...
-        #phase2=LOOKFOREXCP
+        phase = LOOKFORNAME #TODO: Replace the phases with scopeTracker?
         commentFlag = False #Are we inside a comment?
         commentType = OTHER #Is the original line of the comment ADD, REMOVE, or OTHER
         functionName = ""
@@ -655,12 +660,10 @@ class logChunk:
         ftotal_del=0
         etotal_add=0 #TODO: From an earlier version, to be removed.
         etotal_del=0
-        BlockBracketDepth=0
         keywordDictionary = OrderedDict()
         outsideFuncKeywordDictionary = OrderedDict() # A grouping for all keywords found outside function contexts
         catchLineNumber=[]
         tryList=[]
-        #currentBlock=None
 
         #Initialize keywords (This is repeated three times -> make into a subfunction)
         for keyword in singleKeyWordList:
@@ -679,13 +682,14 @@ class logChunk:
                 keywordDictionary[str(keyword[0])+" Adds"]=0
                 keywordDictionary[str(keyword[0])+" Dels"]=0
 
+        #----------------------------------Initialization----------------------------------#
+
+        #Start of iteration over the lines.
         for line in self.text.split("\n"):
             startFlag=0
             lineNum += 1
             #Remove whitespace on ends.
             fullLine = line.strip()
-            #if not fullLine:
-            #    continue
                 
             if(Util.DEBUG==1):
                 print("The real line: " + unicode(line, 'utf-8', errors='ignore'))
@@ -700,42 +704,12 @@ class logChunk:
             fChange = UNMARKED
             (line, lineType, commentFlag, commentType, functionName, fChange) = self.removeComments(line, commentFlag, lineType, commentType, functionName, phase)
 
-            #Update the function counts if necessary
+            #Update the all the counts if this is a comment line
             if(fChange != UNMARKED):
-                if(fChange == COMADD):
-                    if(self.sT.getBlockContext(lineType) != []):
-                        keywordDictionary = self.incrementBlockContext(keywordDict, lineType, includedKeywords, blockContext)
-                    if(self.sT.getFuncContext(lineType) != []):
-                        ftotal_add += 1
-                    self.total_add += 1
-                elif(fChange == COMDEL):
-                    if(self.sT.getBlockContext(lineType) != []):
-                        keywordDictionary = self.incrementBlockContext(keywordDict, lineType, includedKeywords, blockContext)
-                    if(self.sT.getFuncContext(lineType) != []):
-                        ftotal_del += 1
-                    self.total_add += 1
-                elif(fChange == TOTALADD):
-                    self.total_add += 1
-                elif(fChange == TOTALDEL):
-                    self.total_del +=  1
-                elif(fChange != UNCHANGED):
-                    assert("Not a valid fChange type.")
-
+                (keywordDictionary, ftotal_add, ftotal_del) = self.modifyCountForComment(fChange, lineType, keywordDictionary, blockKeyWordList, ftotal_add, ftotal_del)
                 continue
-
-            #TODO: Convert into sub function to update the dictionaries
-            if(lineType == ADD):
-                self.total_add += 1 #This tracks + for whole chunks.
-                if(phase == LOOKFOREND):
-                    if(startFlag==0):
-                        ftotal_add += 1
-            elif(lineType == REMOVE):
-                self.total_del += 1
-                if(phase == LOOKFOREND):
-                    if(startFlag==0):
-                        ftotal_del += 1
-            else:
-                assert(lineType==OTHER)
+            else: #Otherwise, update just the function and total counts
+                (ftotal_add, ftotal_del) = self.updateCounts(lineType, ftotal_add, ftotal_del, phase, startFlag)
 
             #Extract the name of the function
             if(phase == LOOKFORNAME):
@@ -752,8 +726,7 @@ class logChunk:
                 if(self.sT.isScopeIncrease(line)):
                     if(Util.DEBUG == 1):
                         print("Scope increase while searching for function.")
-                    #TODO: replace with scopeTracker.increaseScope()?  Not yet
-                    #How do we know to associate which scope Change with the function? 
+
                     if(self.sT.scopeIncreaseCount(line) > 1):
                         if(Util.DEBUG == 1):
                             print("Parsing of multiscope increases like: ")
@@ -830,9 +803,6 @@ class logChunk:
                     shortFunctionName = self.sT.getFuncContext(lineType) #Get the functional context
                     self.sT.decreaseScope(line, lineType)
 
-                #if lineType!=REMOVE:
-                #    bracketDepth -= line.count("}")
-
                 if(self.sT.getFuncContext(lineType) == "" and phase == LOOKFOREND):
                     funcEnd = lineNum
 
@@ -854,7 +824,6 @@ class logChunk:
                     etotal_add = 0
                     etotal_del = 0
                     phase = LOOKFORNAME
-                    #phase2=LOOKFOREXCPEND
                     lineType=OTHER
                     for keyword in singleKeyWordList:
                         if(keyword[1] != EXCLUDED):
@@ -898,10 +867,7 @@ class logChunk:
                                 if(foundBlock!=None):
                                     if(Util.DEBUG):
                                         print("Block start found: " + foundBlock)
-                                    #phase2=LOOKFOREXCPEND
-                                    #BlockBracketDepth=bracketDepth #TODO: REPLACE
                                     self.sT.increaseScope(foundBlock, lineType, scopeTracker.SBLOCK)
-                                    #currentBlock=foundBlock #Move to internal tracking... for
                                 else:
                                     self.sT.increaseScope(line, lineType, scopeTracker.GENERIC)
                         else:
@@ -910,10 +876,11 @@ class logChunk:
                                 self.sT.decreaseScope(line, lineType)
 
 
+                #Problem: This misses the last line of a block context, and if we move it before, it will miss the first
+                #How do we capture a line with multiple block contexts?
                 if(lineType != OTHER):
                     if(phase == LOOKFOREND):
                         keywordDictionary = self.parseLineForKeywords(line, lineType, singleKeyWordList, keywordDictionary)
-                        #if(phase2==LOOKFOREXCPEND and self.sT.getBlockContext(lineType) != ""): #currentBlock!=None):
                         if(self.sT.getBlockContext(lineType) != []):
                             if(Util.DEBUG):
                                 print("Current block context: " + str(self.sT.getBlockContext(lineType)))
@@ -965,10 +932,7 @@ class logChunk:
         # e.g.
         # int renamedFunction(int arg1) {
         #   int x = 0;
-        #Then we want to add this into the count.
-
-        #Question: Does this need to be replaced with the context function...
-        #Need to think of a test case that would break it.
+        #Then we want to add this into the count even though there is a hanging }
         if(shortFunctionName != ""):
             #The end of the function will be said to be the cutoff of the change.
             funcEnd = lineNum
