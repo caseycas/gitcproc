@@ -9,8 +9,8 @@ KEYLISTSIZE = 3
 #Constants for which phase we are in
 LOOKFORNAME = 1
 LOOKFOREND = 2
-LOOKFOREXCP=3
-LOOKFOREXCPEND=4
+LOOKFOREXCP = 3
+LOOKFOREXCPEND = 4
 
 #LineTypes
 ADD = 1
@@ -47,14 +47,14 @@ assignPattern = "= *{"
 paramPattern = " *\([\w\d_,\[\]\*\(\)&: ]*\)[^;]*{" #What parameters to a call look like.
 
 #Regex expressions for Java/C/C++ functions
-functionPattern1 = " [\w\d:_]+&* *\** +[\w\d_:~]+&* *\([\w\d_,\[\]\*\(\)&:<> ]*\) *{$"
+functionPattern1 = " [\w<>\d:_]+&* *\** +[\w\d_:~]+&* *\([\w\d_,\[\]\*\(\)&:<> ]*\) *{$"
 functionPattern2 = " [\w<>\d:_]+&* +\** *[\w\d_:~]+&* *\([\w\d_,\[\]\*\(\)&:<> ]*\) *{$"
-functionPattern3 = " [\w\d:_]+&* *\** *[\w\d_:~]+&* *\([\w\d_,\[\]\*\(\)&:<> ]*\) const *{$"
-functionPattern4 = "^[\w\d:_]+&* *\** +[\w\d_:~]+&* *\([\w\d_,\[\]\*\(\)&:<> ]*\) *{$"
+functionPattern3 = " [\w<>\d:_]+&* *\** *[\w\d_:~]+&* *\([\w\d_,\[\]\*\(\)&:<> ]*\) const *{$"
+functionPattern4 = "^[\w<>\d:_]+&* *\** +[\w\d_:~]+&* *\([\w\d_,\[\]\*\(\)&:<> ]*\) *{$"
 functionPattern5 = "^[\w<>\d:_]+&* +\** *[\w\d_:~]+&* *\([\w\d_,\[\]\*\(\)&:<> ]*\) *{$"
-functionPattern6 = "^[\w\d:_]+&* *\** *[\w\d_:~]+&* *\([\w\d_,\[\]\*\(\)&:<> ]*\) const *{$"
-functionPattern7="[\w\d:_]+&* *\** *[\w\d_:~]+&* *\([\w\d_,\[\]\*\(\)&:<> ]*\)[\s]* throws [\w\W\s]+ *{$"
-functionPattern8 = "^[\w\d:_]+&* *\** *[\w\d_:~]+&* *\([\w\d_,\[\]\*\(\)&:<> ]*\)[\s]* throws [\w\W\s]+ *{$"
+functionPattern6 = "^[\w<>\d:_]+&* *\** *[\w\d_:~]+&* *\([\w\d_,\[\]\*\(\)&:<> ]*\) const *{$"
+functionPattern7="[\w<>\d:_]+&* *\** *[\w\d_:~]+&* *\([\w\d_,\[\]\*\(\)&:<> ]*\)[\s]* throws [\w\W\s]+ *{$"
+functionPattern8 = "^[\w<>\d:_]+&* *\** *[\w\d_:~]+&* *\([\w\d_,\[\]\*\(\)&:<> ]*\)[\s]* throws [\w\W\s]+ *{$"
 
 anonymousClassPattern= "[\s\w\d_:~]+&* * = new [\w\d_:~]+&* *\([\w\d_,\[\]\*\(\)&:<> ]*\) *{$"
 namespacePattern = "namespace.*{" #namespaces can be not named.
@@ -69,6 +69,8 @@ templatePattern5 = "template +< *DataType +.*> +[\w\d_]+ *\** +[\w\d_<>:~]+ *\([
 templatePattern6 = "template +< *DataType +.*> +[\w\d_]+ +\** *[\w\d_<>:~]+ *\([\w\d_,\[\]\*\(\)&:<> ]*\) *{$"
 
 catchModifyPattern="- *} *catch.*{\s*\+ *} *catch.*{\s*"
+
+constructorInheritsPattern = "\) *: *.*{"
 
 #Label for structures found outside of a function
 MOCK = "NO_FUNC_CONTEXT"

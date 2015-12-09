@@ -195,7 +195,7 @@ class logChunk:
 
     #String -> String
     #Given a full function String: "<0-n other modifiers> <return_type> <name>(arg0, ..., argN) {"
-    #Return <name> or "" if the string is not a function header
+    #Return <name> or raise ValueError if the string is not a function header
     def parseFunctionName(self, fullName):
         if(fullName.find("\n") != -1):
             fullName = fullName.replace("\n", "")
@@ -203,39 +203,80 @@ class logChunk:
         multiline = fullName.split(";")
         name = multiline[len(multiline)-1]
 
-        #print("Name: " + name)
-        results = re.findall(parenPattern, name)
-        #Since types can be of (), we want to find the index of the last and largest match to (.*)
-        #Prefer largest, but if multiple equal size (i.e. returns a type with () and has no arguments)
-        #get the later one.
-        max = -1
-        biggest = ""
-        for r in results:
-            if(Util.DEBUG == 1):
-              print("Next: " + r)
-            if(max <= len(r)):
-                max = len(r)
-                biggest = r
+        #Want to find the starting "(" that matches the last ")" in name.
+        increaseIndicies = [next.start() for next in re.finditer('\(', name)]
+        decreaseIndicies = [next.start() for next in re.finditer('\)', name)]
+        if(len(decreaseIndicies) < 1 or len(increaseIndicies) < 1):
+            raise ValueError("1. Function Name to parse is malformed.", fullName)
+
+        if(decreaseIndicies[len(decreaseIndicies) - 1] <= increaseIndicies[len(increaseIndicies)-1]): #Last paren should be closing
+            raise ValueError("2. Function Name to parse is malformed.", fullName)
+        parenStack = []
+        matchIndex = -1
+        j = len(decreaseIndicies) - 1
+        k = len(increaseIndicies) - 1
+        for i in range(0, len(increaseIndicies + decreaseIndicies)):
+            if(k < 0):
+                raise ValueError("3. Function Name to parse is malformed.", fullName)
+            elif(j < 0):
+                parenStack.pop()
+                if(parenStack == []):
+                    matchIndex = increaseIndicies[k]
+                    break
+                k -= 1
+            elif(decreaseIndicies[j] > increaseIndicies[k]):
+                parenStack.append(decreaseIndicies[j])
+                j -= 1
+            elif(decreaseIndicies[j] < increaseIndicies[k]):
+                parenStack.pop()
+                if(parenStack == []):
+                    matchIndex = increaseIndicies[k]
+                    break
+                k -= 1
+            else:
+                raise ValueError("4. Function Name to parse is malformed.", fullName)
+
+
+        if(matchIndex == -1):
+            raise ValueError("5. Function Name to parse is malformed.", fullName)
+        else:
+            #Parse out the name
+            pieces = name[:matchIndex].strip().split(" ")
+            return pieces[len(pieces)-1]
+
+        # #print("Name: " + name)
+        # results = re.findall(parenPattern, name)
+        # #Since types can be of (), we want to find the index of the last and largest match to (.*)
+        # #Prefer largest, but if multiple equal size (i.e. returns a type with () and has no arguments)
+        # #get the later one.
+        # max = -1
+        # biggest = ""
+        # for r in results:
+        #     if(Util.DEBUG == 1):
+        #       print("Next: " + r)
+        #     if(max <= len(r)):
+        #         max = len(r)
+        #         biggest = r
 
         
-        if(biggest == ""):
-            #raise ValueError("This line doesn't seem to be a function header", fullName)
-            return "" #If not a function name - return nothing.
+        # if(biggest == ""):
+        #     #raise ValueError("This line doesn't seem to be a function header", fullName)
+        #     return "" #If not a function name - return nothing.
 
-        #Get start index of last copy of biggest
-        argStart = fullName.rfind(biggest)
-        #print("ARGSTART: " + str(argStart))
-        if(argStart == -1):
-            raise ValueError("Regex said we found argument section, but now we can't find it.", fullName)
+        # #Get start index of last copy of biggest
+        # argStart = fullName.rfind(biggest)
+        # #print("ARGSTART: " + str(argStart))
+        # if(argStart == -1):
+        #     raise ValueError("Regex said we found argument section, but now we can't find it.", fullName)
 
-        #Break up the string prior to the () section
-        pieces = fullName[0:argStart].split(" ")
-        for next in reversed(pieces):
-            if(next != ""):
-                #print("Return: " + next.strip())
-                return next.strip()
+        # #Break up the string prior to the () section
+        # pieces = fullName[0:argStart].split(" ")
+        # for next in reversed(pieces):
+        #     if(next != ""):
+        #         #print("Return: " + next.strip())
+        #         return next.strip()
 
-        raise ValueError("Couldn't find method name", fullName)
+        # raise ValueError("Couldn't find method name", fullName)
 
     def isExternBlock(self, line):
         return(re.search(externPattern, line.strip().lower().replace("\n", "")))
@@ -302,6 +343,8 @@ class logChunk:
         temp = temp.replace("\t", "")
         temp = temp.replace("\r", "")
         temp = temp.replace("\n", "")
+        temp = temp.replace(constructorInheritsPattern, ")")
+
         if(Util.DEBUG == 1):
             print("Class context: " + classContext)
             print("Checking if a constructor/destructor: " + unicode(line, 'utf-8', errors='ignore'))
@@ -335,7 +378,7 @@ class logChunk:
         #Therefore, to handle this specific pseudo code case, I'm adding a special line to remove "..."
         temp = temp.replace("...", "")
         #Also, I will remove any instances of "const to deal with some tricky cases"
-        temp = temp.replace(" const ", "")
+        temp = temp.replace(" const ", " ")
         #And weird templates with no types
         temp = temp.replace("template<>", "")
         # Get rid of " : " case that caused problems in hiphop
@@ -362,10 +405,12 @@ class logChunk:
 
 
         if(Util.DEBUG):
-            print("Checking if function: " + unicode(line, 'utf-8', errors='ignore'))
+            print("Checking if function: \'" + unicode(line, 'utf-8', errors='ignore') + "\'")
         
         #Check for regular and template functions
         if("template" in temp):
+            if(Util.DEBUG):
+                print("template")
             temp = temp.replace("static", "") #Quick fix.
 
             result = re.search(templatePattern1, temp)
@@ -402,6 +447,8 @@ class logChunk:
             return ""
           
         else:
+            if(Util.DEBUG):
+                print("not template")
             result = re.search(anonymousClassPattern, temp)
             if(result!=None):
                 if(Util.DEBUG):
@@ -412,6 +459,7 @@ class logChunk:
                 if(Util.DEBUG):
                     print("PATTERN 1")
                 return result.group(0)
+            print(temp)
             result = re.search(functionPattern2, temp)
             if(result != None):
                 if(Util.DEBUG):
@@ -490,6 +538,22 @@ class logChunk:
             #We need to consider the content of the line before the /*
             line = line.split("/*")[0]
             commentType = lineType
+            if(line.strip() == ""):
+                if(phase == LOOKFOREND): #Make sure to count this line if inside function before continuing
+                    if(lineType == ADD):
+                        fChange = COMADD
+                    elif(lineType == REMOVE):
+                        fChange = COMDEL
+                    else:
+                        fChange = UNCHANGED
+                else:
+                    if(lineType == ADD):
+                        fChange = TOTALADD
+                    elif(lineType == REMOVE):
+                        fChange = TOTALDEL
+                    else:
+                        fChange = UNCHANGED
+                line = ""
         elif(line.find("*/") != -1):
             if(commentFlag): #Normal case were whole /* ... */ comment is changed
                 commentFlag = False
@@ -500,12 +564,20 @@ class logChunk:
             if(len(line) > index + 2): #Case where there is code after comment end.
                 line = line[index + 2:]
             else:
-                if(phase == LOOKFOREND and lineType == ADD): #Make sure to count this line if inside function before continuing
-                    fChange = COMADD
-                elif(phase == LOOKFOREND and lineType == REMOVE):
-                    fChange = COMDEL
+                if(phase == LOOKFOREND): #Make sure to count this line if inside function before continuing
+                    if(lineType == ADD):
+                        fChange = COMADD
+                    elif(lineType == REMOVE):
+                        fChange = COMDEL
+                    else:
+                        fChange = UNCHANGED
                 else:
-                    fChange = UNCHANGED
+                    if(lineType == ADD):
+                        fChange = TOTALADD
+                    elif(lineType == REMOVE):
+                        fChange = TOTALDEL
+                    else:
+                        fChange = UNCHANGED
                 line = ""
         elif(commentFlag): #Inside a block comment
             if(lineType == ADD):
@@ -519,7 +591,7 @@ class logChunk:
                 if(phase == LOOKFOREND): #Make sure to count this line if inside function before continuing
                     fChange = COMDEL
                 else:
-                    fChange = TOTALADD
+                    fChange = TOTALDEL
             if(lineType == OTHER): #If the line is unmodified
                 if(commentType == ADD): #This line has been commented out, with no corresponding block
                     lineType = REMOVE
@@ -613,8 +685,8 @@ class logChunk:
             lineNum += 1
             #Remove whitespace on ends.
             fullLine = line.strip()
-            if not fullLine:
-                continue
+            #if not fullLine:
+            #    continue
                 
             if(Util.DEBUG==1):
                 print("The real line: " + unicode(line, 'utf-8', errors='ignore'))
@@ -628,18 +700,20 @@ class logChunk:
             #Remove all comments from the line
             fChange = UNMARKED
             (line, lineType, commentFlag, commentType, functionName, fChange) = self.removeComments(line, commentFlag, lineType, commentType, functionName, phase)
-            
+
             #Update the function counts if necessary
             if(fChange != UNMARKED):
                 if(fChange == COMADD):
                     if(self.sT.getBlockContext(lineType) != []):
                         keywordDictionary = self.incrementBlockContext(keywordDict, lineType, includedKeywords, blockContext)
-                    ftotal_add += 1
+                    if(self.sT.getFuncContext(lineType) != []):
+                        ftotal_add += 1
                     self.total_add += 1
                 elif(fChange == COMDEL):
                     if(self.sT.getBlockContext(lineType) != []):
                         keywordDictionary = self.incrementBlockContext(keywordDict, lineType, includedKeywords, blockContext)
-                    ftotal_del += 1
+                    if(self.sT.getFuncContext(lineType) != []):
+                        ftotal_del += 1
                     self.total_add += 1
                 elif(fChange == TOTALADD):
                     self.total_add += 1
@@ -649,10 +723,6 @@ class logChunk:
                     assert("Not a valid fChange type.")
 
                 continue
-
-            #TODO: This is not needed any longer?
-            #if lineType!=REMOVE:
-            #    self.bracketMisMatch+=(line.count("{") - line.count("}"))
 
             #TODO: Convert into sub function to update the dictionaries
             if(lineType == ADD):
@@ -666,13 +736,10 @@ class logChunk:
                     if(startFlag==0):
                         ftotal_del += 1
             else:
-                lineType=OTHER
+                assert(lineType==OTHER)
 
             #Extract the name of the function
             if(phase == LOOKFORNAME):
-                #if lineType != REMOVE:
-                #    bracketDepth += line.count("{")
-
                 if(Util.DEBUG == 1):
                     print("Current Name Search: " + unicode(functionName, 'utf-8', errors='ignore'))
 
@@ -702,8 +769,7 @@ class logChunk:
                         isFunction = True
                     elif((classContext != [] and self.isConstructorOrDestructorWithList(functionName, classContext))):
                         isFunction = True
-                        shortFunctionName = functionName # don't do the shortening of the pattern for constructor/ destructor 
-                        #This may be incorrect in general, but I'm just trying to get it to work on the examples I have.
+                        shortFunctionName = re.sub(constructorInheritsPattern, ")", functionName) #Remove inheritance sytnax in C++
                     else:
                         isFunction = False
 
@@ -856,12 +922,16 @@ class logChunk:
                     else:
                         assert(0)
 
-
+                
                 if(self.sT.getFuncContext(lineType) == ""):
                     funcEnd = lineNum
                     #Add this function to our list and reset the trackers.
                     if(Util.DEBUG == 1):
-                      print(str(funcStart) + " : " + str(funcEnd))
+                        print(self.sT.oldVerStack)
+                        print(self.sT.newVerStack)
+                        print(lineType)
+                        print(self.sT.getFuncContext(lineType))
+                        print(str(funcStart) + " : " + str(funcEnd))
                     funcToAdd = PatchMethod(self.parseFunctionName(shortFunctionName), funcStart, funcEnd, ftotal_add, ftotal_del,keywordDictionary,etotal_add,etotal_del,catchLineNumber)
                     
                     self.functions.append(funcToAdd)

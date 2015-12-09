@@ -41,7 +41,7 @@ class logChunktest(unittest.TestCase):
         self.method2 = "int more(int stuff) {"
         self.method3 = "ccv_string * getStuff (int[] stuffToGet) {"
         self.method4 = "int add2to3(int (*functionPtr)(int, int)) {"
-        self.method5 = "public static void other(int one, int (*functionPtr)(int, int) {"
+        self.method5 = "public static void other(int one, int (*functionPtr)(int, int)) {"
         self.method6 = "static void\n multiline(\n int arg1, string arg2\n) {"
         self.method7 = "int lotsOfSpace     (int stuff) {"
         self.method8 = "                .matrix = {"
@@ -54,6 +54,9 @@ class logChunktest(unittest.TestCase):
         self.method15 = "static JSC::UString& globalExceptionString(){"
         self.method16 = "(jint) AWT_WINDOW_LOST_FOCUS, (jint) AWT_WINDOW_DEACTIVATED,  static gboolean window_focus_in_cb (GtkWidget * widget, GdkEventFocus *event, jobject peer) {"
         self.method17 = "LinuxPtraceDumper dumper(getpid()); }  TEST(LinuxPtraceDumperTest, FindMappings) {"
+        self.method18 = "endif  defined(HAVE_ALTIVEC)   include  elif defined(HAVE_SSE2)   include  endif   ONLY64 inline static int idxof(int i) {"
+        self.method19 = "#define UNUSED_VARIABLE(x) (void)(x) const char *sfmt_get_idstring(sfmt_t * sfmt) {"
+
 
         self.testChunk = logChunk.logChunk("")
         #Read in the single tests
@@ -137,8 +140,12 @@ class logChunktest(unittest.TestCase):
         self.assertTrue(temp == "multiline", "Actual: " + temp)
         temp = self.testChunk.parseFunctionName(self.method7)
         self.assertTrue(temp == "lotsOfSpace", "Actual: " + temp)
-        temp = self.testChunk.parseFunctionName(self.method8)
-        self.assertTrue(temp == "", "Actual: " + temp)
+
+        try:
+            temp = self.testChunk.parseFunctionName(self.method8)
+            #self.assertTrue(temp == "", "Actual: " + temp)
+        except ValueError:
+            self.assertTrue(True)
 
         temp = self.testChunk.parseFunctionName(self.method13)
         self.assertTrue(temp == "CeilingLog2", "Actual: " + temp)
@@ -147,6 +154,9 @@ class logChunktest(unittest.TestCase):
         #self.assertTrue(temp == "m_exp", "Actual: " + temp)
         temp = self.testChunk.parseFunctionName(self.method16)
         self.assertTrue(temp == "window_focus_in_cb", "Actual: " + temp)
+
+        temp = self.testChunk.parseFunctionName(self.method18)
+        self.assertTrue(temp == "idxof", "Actual: " + temp)
 
     def test_AssignPattern(self):
         self.assertTrue(self.testChunk.isAssignment(".matrix = {"))
@@ -188,12 +198,14 @@ class logChunktest(unittest.TestCase):
         self.assertTrue(self.testChunk.isFunction(self.method15))
         self.assertTrue(self.testChunk.isFunction(self.method16))
         # self.assertFalse(self.testChunk.isFunction(self.method17))
+        self.assertTrue(self.testChunk.isFunction(self.method18))
+        self.assertTrue(self.testChunk.isFunction(self.method19))
 
     def test_removeComments(self):
         line = "/***********************************************************//**"
         commentFlag = False
         lineType = ADD
-        commentType = UNMARKED
+        commentType = OTHER
         functionName = ""
         phase = LOOKFORNAME
         fChange = UNMARKED
@@ -203,7 +215,7 @@ class logChunktest(unittest.TestCase):
         self.assertTrue(commentFlag == True)
         self.assertTrue(commentType == ADD)
         self.assertTrue(functionName == "")
-        self.assertTrue(fChange == UNMARKED)
+        self.assertTrue(fChange == TOTALADD)
         line = "Replaces the new column values stored in the update vector to the index entry"
         lineType = ADD
         (line, lineType, commentFlag, commentType, functionName, fChange) = self.testChunk.removeComments(line, commentFlag, lineType, commentType, functionName, phase)
@@ -213,6 +225,51 @@ class logChunktest(unittest.TestCase):
         self.assertTrue(commentType == ADD)
         self.assertTrue(functionName == "")
         self.assertTrue(fChange == TOTALADD)
+
+        line = "/*"
+        commentFlag = False
+        lineType = REMOVE
+        commentType = OTHER
+        functionName = ""
+        phase = LOOKFOREND
+        fChange = UNMARKED
+        (line, lineType, commentFlag, commentType, functionName, fChange) = self.testChunk.removeComments(line, commentFlag, lineType, commentType, functionName, phase)
+        self.assertTrue(line == "")
+        self.assertTrue(lineType == REMOVE)
+        self.assertTrue(commentFlag == True)
+        self.assertTrue(commentType == REMOVE)
+        self.assertTrue(functionName == "")
+        self.assertTrue(fChange == COMDEL)
+        self.assertTrue(phase == LOOKFOREND)
+        line = "private void copy(InputStream is, OutputStream os, String encoding, int max) throws IOException{"
+        (line, lineType, commentFlag, commentType, functionName, fChange) = self.testChunk.removeComments(line, commentFlag, lineType, commentType, functionName, phase)
+        self.assertTrue(line == "")
+        self.assertTrue(lineType == REMOVE)
+        self.assertTrue(commentFlag == True)
+        self.assertTrue(commentType == REMOVE)
+        self.assertTrue(functionName == "")
+        self.assertTrue(fChange == COMDEL)
+        self.assertTrue(phase == LOOKFOREND)
+        line = " "
+        lineType = OTHER
+        (line, lineType, commentFlag, commentType, functionName, fChange) = self.testChunk.removeComments(line, commentFlag, lineType, commentType, functionName, phase)
+        self.assertTrue(line == " ")
+        self.assertTrue(lineType == ADD)
+        self.assertTrue(commentFlag == True)
+        self.assertTrue(commentType == REMOVE)
+        self.assertTrue(functionName == "")
+        self.assertTrue(fChange == UNMARKED)
+        self.assertTrue(phase == LOOKFOREND)
+        line = "        Object o = null;"
+        lineType = OTHER
+        (line, lineType, commentFlag, commentType, functionName, fChange) = self.testChunk.removeComments(line, commentFlag, lineType, commentType, functionName, phase)
+        self.assertTrue(line == "        Object o = null;")
+        self.assertTrue(lineType == ADD)
+        self.assertTrue(commentFlag == True)
+        self.assertTrue(commentType == REMOVE)
+        self.assertTrue(functionName == "")
+        self.assertTrue(fChange == UNMARKED)
+        self.assertTrue(phase == LOOKFOREND)
 
     def test_parseText_Single1(self):
         self.chunk1.parseText()
@@ -264,7 +321,7 @@ class logChunktest(unittest.TestCase):
         funcList = self.chunk3.functions
         #self.debugFunctions(funcList)
         self.assertTrue(len(funcList) == 3)
-        self.assertTrue(funcList[0].method=="m_unhandled_errors") #This is wrong, but I'm not sure how to fix it.
+        self.assertTrue(funcList[0].method=="Repair_mrg_table_error_handler")
         self.assertTrue(funcList[0].start==13)
         self.assertTrue(funcList[0].end==13)
         self.assertTrue(funcList[0].total_add == 1)
@@ -334,7 +391,7 @@ class logChunktest(unittest.TestCase):
     def test_parseText_Single8(self):
         self.chunk8.parseText()
         funcList = self.chunk8.functions
-        #self.debugFunctions(funcList)
+        self.debugFunctions(funcList)
         self.assertTrue(len(funcList) == 4)
 
         self.assertTrue(funcList[0].method ==  "GetHelperBinary")
@@ -538,8 +595,20 @@ class logChunktest(unittest.TestCase):
     def test_parseText_Single29(self):
         self.chunk29.parseText()
         funcList = self.chunk29.functions
-        # self.debugFunctions(funcList)
+        #self.debugFunctions(funcList)
         self.assertTrue(len(funcList) == 15)
+
+        self.assertTrue(funcList[0].method == "idxof")
+        testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 0, 'ut_a Dels': 0}
+        self.assertEqual(testDict,funcList[0].keywordDictionary)
+
+        self.assertTrue(funcList[1].method == "idxof")
+        testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 0, 'ut_a Dels': 0}
+        self.assertEqual(testDict,funcList[1].keywordDictionary)
+
+        self.assertTrue(funcList[7].method == "*sfmt_get_idstring")
+        testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 0, 'ut_a Dels': 0}
+        self.assertEqual(testDict,funcList[7].keywordDictionary)
 
         self.assertTrue(funcList[11].method ==  "sfmt_fill_array32")
         testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 3, 'ut_a Dels': 0}
@@ -548,6 +617,7 @@ class logChunktest(unittest.TestCase):
         self.assertTrue(funcList[12].method ==  "sfmt_fill_array64")
         testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 3, 'ut_a Dels': 0}
         self.assertEqual(testDict,funcList[12].keywordDictionary)
+
 
     def test_parseText_Single31(self):
         self.chunk31.parseText() 
@@ -718,19 +788,18 @@ class logChunktest(unittest.TestCase):
 
         self.chunkb5.parseText()
         funcList = self.chunkb5.functions
-        # self.debugFunctions(funcList)
+        #self.debugFunctions(funcList)
 
 
         self.assertTrue(len(funcList) == 1) 
         self.assertTrue(self.chunkb5.bracketMisMatch==0)
         self.assertTrue(funcList[0].method=="copy")
-        self.assertTrue(funcList[0].total_add == 1)
+        self.assertTrue(funcList[0].total_add == 19)
         self.assertTrue(funcList[0].total_del == 5)
 
-        testdict= {'throw  Adds': 0, 'catch Dels': 0, 'try Adds': 0, 'try Dels': 0, 'exception Dels': 1, 'raise Adds': 0, 'catch Adds': 0, 'finally Dels': 0, 'finally Adds': 0, 'throw  Dels': 0, 'exception Adds': 1, 'raise Dels': 0, 'for Adds': 0,'for Dels': 0,'while Adds': 0,'while Dels': 0}
+        testdict= {'throw  Adds': 0, 'catch Dels': 0, 'try Adds': 0, 'try Dels': 0, 'exception Dels': 0, 'raise Adds': 0, 'catch Adds': 0, 'finally Dels': 0, 'finally Adds': 0, 'throw  Dels': 0, 'exception Adds': 1, 'raise Dels': 0, 'for Adds': 0,'for Dels': 0,'while Adds': 0,'while Dels': 0}
 
         self.assertEqual(testdict,funcList[0].keywordDictionary)
-
 
     def test_parseText_Block6(self):
 
