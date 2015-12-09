@@ -56,6 +56,8 @@ class logChunktest(unittest.TestCase):
         self.method17 = "LinuxPtraceDumper dumper(getpid()); }  TEST(LinuxPtraceDumperTest, FindMappings) {"
         self.method18 = "endif  defined(HAVE_ALTIVEC)   include  elif defined(HAVE_SSE2)   include  endif   ONLY64 inline static int idxof(int i) {"
         self.method19 = "#define UNUSED_VARIABLE(x) (void)(x) const char *sfmt_get_idstring(sfmt_t * sfmt) {"
+        self.method20 = "static av_always_inline void hl_motion_420(H264Context *h, uint8_t *dest_y, uint8_t *dest_cb, uint8_t *dest_cr,            qpel_mc_func (*qpix_put)[16], h264_chroma_mc_func (*chroma_put),       qpel_mc_func (*qpix_avg)[16], h264_chroma_mc_func (*chroma_avg),            h264_weight_func *weight_op, h264_biweight_func *weight_avg,             int pixel_shift) {"
+        self.method21 = "        for (j = 0; j < i; j++)             if (!memcmp(h->pps.scaling_matrix8[j], h->pps.scaling_matrix8[i],                         64 * sizeof(uint8_t))) {"
 
 
         self.testChunk = logChunk.logChunk("")
@@ -98,6 +100,7 @@ class logChunktest(unittest.TestCase):
         self.chunk36 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk36.txt")) #Check
         self.chunk37 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk37.txt")) #Check
         self.chunk38 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk38.txt")) #Check
+        self.chunk39 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk39.txt"))
 
         #Read in the block tests
         self.chunkb1 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk1.txt"),"../util/sample_conf2.ini")
@@ -157,6 +160,9 @@ class logChunktest(unittest.TestCase):
 
         temp = self.testChunk.parseFunctionName(self.method18)
         self.assertTrue(temp == "idxof", "Actual: " + temp)
+        temp = self.testChunk.parseFunctionName(self.method20)
+        self.assertTrue(temp == "hl_motion_420", "Actual: " + temp)
+
 
     def test_AssignPattern(self):
         self.assertTrue(self.testChunk.isAssignment(".matrix = {"))
@@ -200,6 +206,12 @@ class logChunktest(unittest.TestCase):
         # self.assertFalse(self.testChunk.isFunction(self.method17))
         self.assertTrue(self.testChunk.isFunction(self.method18))
         self.assertTrue(self.testChunk.isFunction(self.method19))
+        self.assertTrue(self.testChunk.isFunction(self.method20))
+        print("---------------------------------------------------")
+        print(self.testChunk.getFunctionPattern(self.method21))
+        print("---------------------------------------------------")
+
+        self.assertFalse(self.testChunk.isFunction(self.method21))
 
     def test_removeComments(self):
         line = "/***********************************************************//**"
@@ -274,7 +286,7 @@ class logChunktest(unittest.TestCase):
     def test_parseText_Single1(self):
         self.chunk1.parseText()
         funcList = self.chunk1.functions
-        #self.debugFunctions(funcList)
+        self.debugFunctions(funcList)
         self.assertTrue(len(funcList) == 3) 
         self.assertTrue(funcList[0].method=="NdbBlob::getBlobEventName")
         self.assertTrue(funcList[0].total_add == 10)

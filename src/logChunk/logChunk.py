@@ -372,7 +372,8 @@ class logChunk:
         temp = re.sub(" else", "", temp)
         temp = re.sub("^else", "", temp)
         temp = re.sub(" if", "", temp)
-        temp = re.sub("^if", "", temp) 
+        temp = re.sub("^if", "", temp)
+        temp = re.sub(" +\d+ +", "", temp) #Replace numbers
 
 
         if(Util.DEBUG):
@@ -902,7 +903,8 @@ class logChunk:
                                     self.sT.increaseScope(line, lineType, scopeTracker.GENERIC)
                         else:
                             if(self.sT.isScopeDecrease(line)):
-                                shortFunctionName = self.sT.getFuncContext(lineType) #Get the functional context
+                                if(self.sT.getFuncContext(lineType) != ""): #Maybe?
+                                    shortFunctionName = self.sT.getFuncContext(lineType) #Get the functional context
                                 self.sT.decreaseScope(line, lineType)
 
 
@@ -923,11 +925,14 @@ class logChunk:
                     funcEnd = lineNum
                     #Add this function to our list and reset the trackers.
                     if(Util.DEBUG == 1):
+                        print("OLD")
                         print(self.sT.oldVerStack)
+                        print("NEW")
                         print(self.sT.newVerStack)
                         print(lineType)
-                        print(self.sT.getFuncContext(lineType))
+                        print(shortFunctionName)
                         print(str(funcStart) + " : " + str(funcEnd))
+
                     funcToAdd = PatchMethod(self.parseFunctionName(shortFunctionName), funcStart, funcEnd, ftotal_add, ftotal_del,keywordDictionary,etotal_add,etotal_del,catchLineNumber)
                     
                     self.functions.append(funcToAdd)

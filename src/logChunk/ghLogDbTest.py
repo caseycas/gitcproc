@@ -29,7 +29,6 @@ class ghLogDbTest(unittest.TestCase):
 
         self.testCommitb1=ghLogDb.ghLogDb("testfiles/ghLogDbTestBlock/TestCommit1.txt")
 
- 
     def test_Commit1(self):
         self.testCommit1.processLog()
         shas = self.testCommit1.shas
