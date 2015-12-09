@@ -72,6 +72,7 @@ index af7f310..dce917a 100644
  */
  
 @@ -33,81 +62,131 @@ class MDL_lock
+class MDL_lock {
  public:
    typedef I_P_List<MDL_ticket,
                     I_P_List_adapter<MDL_ticket,

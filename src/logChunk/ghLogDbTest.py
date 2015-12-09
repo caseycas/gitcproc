@@ -25,23 +25,13 @@ class ghLogDbTest(unittest.TestCase):
         self.testCommit12 = ghLogDb.ghLogDb("testfiles/ghLogDbTest/TestCommit12.txt")
         #self.testCommit13 = ghLogDb.ghLogDb("testfiles/ghLogDbTest/TestCommit13.txt")
 
-        self.testCommit1.processLog()
-        #self.testCommit2.processLog()
-        #self.testCommit3.processLog()
-        #self.testCommit4.processLog()
-        #self.testCommit5.processLog()
-        #self.testCommit7.processLog()
-        #self.testCommit8.processLog()
-        #self.testCommit9.processLog()
-        #self.testCommit10.processLog()
-        #self.testCommit11.processLog() #Make sure there is no crash
-        #self.testCommit12.processLog() #Make sure there is no crash
-        #self.testCommit13.processLog() #Make sure there is no crash
+        #self.testCommit13.processLog() #Make sure there is no crash -> Hangs a long time
 
         self.testCommitb1=ghLogDb.ghLogDb("testfiles/ghLogDbTestBlock/TestCommit1.txt")
-        self.testCommitb1.processLog("../util/sample_conf2.ini")
+
  
     def test_Commit1(self):
+        self.testCommit1.processLog()
         shas = self.testCommit1.shas
         self.assertTrue(len(shas) == 1) #Just 1 commit.
         self.assertTrue(shas[0].author == "Liu Liu")
@@ -88,8 +78,9 @@ class ghLogDbTest(unittest.TestCase):
         self.assertTrue(patches[3].file_name == "lib/ccv_icf.c")
         methods = patches[3].methods
         self.assertTrue(len(methods)==1)
-'''
+
     def test_Commit2(self):
+        self.testCommit2.processLog()
         shas = self.testCommit2.shas
         self.assertTrue(len(shas) == 1) #Just 1 commit.
         self.assertTrue(shas[0].author == "Liu Liu")
@@ -123,6 +114,7 @@ class ghLogDbTest(unittest.TestCase):
 
 
     def test_Commit3(self):
+        self.testCommit3.processLog()
         shas = self.testCommit3.shas
         self.assertTrue(len(shas) == 1) #Just 1 commit.
         self.assertTrue(shas[0].author == "Liu Liu")
@@ -152,6 +144,7 @@ class ghLogDbTest(unittest.TestCase):
         self.assertEqual(testDict,methods[1].keywordDictionary)
 
     def test_Commit4(self):
+        self.testCommit4.processLog()
         shas = self.testCommit4.shas
         self.assertTrue(len(shas) == 1) #Just 1 commit.
         self.assertTrue(shas[0].author == "Liu Liu")
@@ -186,6 +179,7 @@ class ghLogDbTest(unittest.TestCase):
         self.assertEqual(testDict,methods[1].keywordDictionary)
 
     def test_Commit5(self):
+        self.testCommit5.processLog()
         shas = self.testCommit5.shas
         self.assertTrue(len(shas) == 1) #Just 1 commit.
         self.assertTrue(shas[0].author == "Lars Op den Kamp")
@@ -209,7 +203,7 @@ class ghLogDbTest(unittest.TestCase):
         self.assertTrue(len(methods) == 8)
 
     def test_Commit7(self):
-        #Failing due to constructor regex not being sufficient.
+        self.testCommit7.processLog()
         shas = self.testCommit7.shas
         self.assertTrue(len(shas) == 1) #Just 1 commit.
         self.assertTrue(shas[0].author == "Dmitry Lenev")
@@ -221,9 +215,10 @@ class ghLogDbTest(unittest.TestCase):
         methods = patches[0].methods
         #print(len(methods))
         #print(methods)
-        self.assertTrue(len(methods) == 9) #Should be 9, 8 minus the constructor bug.
+        self.assertTrue(len(methods) == 9)
 
     def test_commit8(self):
+        self.testCommit8.processLog()
         shas = self.testCommit8.shas
         self.assertTrue(len(shas) == 1)
         self.assertTrue(shas[0].author == "Sunny Bains")
@@ -251,9 +246,10 @@ class ghLogDbTest(unittest.TestCase):
         self.assertEqual(testDict,methods[3].keywordDictionary)
 
     def test_commit9(self):
+        self.testCommit9.processLog()
         shas = self.testCommit9.shas
         self.assertTrue(len(shas) == 1)
-        #self.assertTrue(shas[0].author == "davi@mysql.com/endora.local") #It doesn't recognize this?
+        self.assertTrue(shas[0].author == "davi@mysql.com/endora.local") #It doesn't recognize this?
         patches = shas[0].patches
 
         self.assertTrue(len(patches) == 1)
@@ -266,6 +262,7 @@ class ghLogDbTest(unittest.TestCase):
         self.assertEqual(testDict,methods[6].keywordDictionary)
 
     def test_commit10(self):
+        self.testCommit10.processLog()
         shas = self.testCommit10.shas
         self.assertTrue(len(shas) == 1)
         self.assertTrue(shas[0].author == "Liu Liu")
@@ -283,8 +280,14 @@ class ghLogDbTest(unittest.TestCase):
         methods = patches[4].methods
         self.assertTrue(len(methods) == 0) #Can't match the test case examples.
 
-    def test_Commitb1(self):
+    def test_commmit11(self):
+        self.testCommit11.processLog() #Make sure there is no crash
 
+    def test_commmit12(self):
+        self.testCommit12.processLog() #Make sure there is no crash -> Currently crashing
+
+    def test_Commitb1(self):
+        self.testCommitb1.processLog("../util/sample_conf2.ini")
         shas = self.testCommitb1.shas
         self.assertTrue(len(shas) == 1) #Just 1 commit.
         self.assertTrue(shas[0].author == "Kevin Sawicki")
@@ -304,7 +307,6 @@ class ghLogDbTest(unittest.TestCase):
         self.assertTrue(methods[0].total_del == 2)
         dict= {'throw  Adds':0, 'catch Dels': 0, 'throw  Dels': 0, 'try Adds': 0, 'try Dels': 0, 'exception Dels': 0, 'raise Adds': 0, 'catch Adds': 0, 'finally Dels': 0, 'finally Adds': 0, 'exception Adds': 0, 'raise Dels': 0, 'for Adds': 0,'for Dels': 0,'while Adds': 0,'while Dels': 0}
         self.assertEqual(dict,methods[0].keywordDictionary)
-'''
 
 if __name__=="__main__":
     unittest.main()
