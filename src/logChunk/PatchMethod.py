@@ -12,7 +12,7 @@ def toStr(text):
 
 class PatchMethod:
 
-  def __init__(self, name, start=0, end=0, added=0, deleted=0,keyDict={},eadd=0,edel=0,catchLineNumber=[]):
+    def __init__(self, name, start=0, end=0, added=0, deleted=0,keyDict={},eadd=0,edel=0,catchLineNumber=[]):
         self.method = name
         self.start = start
         self.end = end
@@ -23,7 +23,7 @@ class PatchMethod:
         self.etotal_del=edel
         self.catchLineNumber=catchLineNumber[:]
 
-  def printPatch(self):
+    def printPatch(self):
         #retStr  = "\n\t\t------ Method -----\n"
         retStr  = ""
         retStr += "\t\tmethod      = %s\n" % (self.method)
@@ -39,47 +39,47 @@ class PatchMethod:
 
         return retStr
 
-  def dumpMethod(self):
-      dictStr= toStr(self.method)
-      for key, value in self.keywordDictionary.iteritems():
-          dictStr= dictStr+","+ toStr(value)
+    def dumpMethod(self):
+        dictStr= toStr(self.method)
+        for key, value in self.keywordDictionary.iteritems():
+            dictStr= dictStr+","+ toStr(value)
 
-      dictStr += "," + toStr(self.total_add) + "," + toStr(self.total_del)
+        dictStr += "," + toStr(self.total_add) + "," + toStr(self.total_del)
     
-      return dictStr
+        return dictStr
 
-  #Get the Header string for inserting into a database.
-  def getTitleString(self):
-      dictStr= "(project, sha, language, file_name, is_test, method_name"
-      for key, value in self.keywordDictionary.iteritems():
-          dictStr= dictStr+","+ str(key).replace(" ", "_").lower() #ToStr will add ' around the strings...
+    #Get the Header string for inserting into a database.
+    def getTitleString(self):
+        dictStr= "(project, sha, language, file_name, is_test, method_name"
+        for key, value in self.keywordDictionary.iteritems():
+            dictStr= dictStr+","+ str(key).replace(" ", "_").lower() #ToStr will add ' around the strings...
 
-      dictStr += ",total_adds,total_dels)"
+        dictStr += ",total_adds,total_dels)"
     
-      return dictStr
+        return dictStr
 
-  def dictToCsv(self):
-      dictStr=""
-      for key, value in self.keywordDictionary.iteritems():
-          if dictStr=="":
-              dictStr= dictStr+toStr(value)
-          else:
-              dictStr= dictStr+","+ toStr(value)
-          # if dictStr=="":
-          #   dictStr= dictStr+(",").join((str(value)))
-          # else:
-          #   dictStr= dictStr+","+(",").join((str(value)))
+    def dictToCsv(self):
+        dictStr=""
+        for key, value in self.keywordDictionary.iteritems():
+            if dictStr=="":
+                dictStr= dictStr+toStr(value)
+            else:
+                dictStr= dictStr+","+ toStr(value)
+            # if dictStr=="":
+            #   dictStr= dictStr+(",").join((str(value)))
+            # else:
+            #   dictStr= dictStr+","+(",").join((str(value)))
 
-      return str(dictStr)
+        return str(dictStr)
 
 
-  def methodToCsv(self):
-      method      = toStr(self.method).replace(","," ")
-      total_add   = toStr(self.total_add)
-      total_del   = toStr(self.total_del)
-      unique_exception_add=toStr(self.etotal_add)
-      unique_exception_del=toStr(self.etotal_del)
-      methodStr = (",").join((method,total_add,total_del,unique_exception_add,unique_exception_del,self.dictToCsv()))
-      return methodStr
+    def methodToCsv(self):
+        method      = toStr(self.method).replace(","," ")
+        total_add   = toStr(self.total_add)
+        total_del   = toStr(self.total_del)
+        unique_exception_add=toStr(self.etotal_add)
+        unique_exception_del=toStr(self.etotal_del)
+        methodStr = (",").join((method,total_add,total_del,unique_exception_add,unique_exception_del,self.dictToCsv()))
+        return methodStr
 
 

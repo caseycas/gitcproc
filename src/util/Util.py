@@ -33,14 +33,14 @@ class cd:
 def create_dir(path):
 
     try:
-    	print path
+        print path
         os.makedirs(path)
     
     except OSError as exception:
         if exception.errno != errno.EEXIST:
             raise
 
-	
+    
 def copy_dir(src, dst):
     try:
         shutil.copytree(src, dst)
@@ -56,11 +56,11 @@ def cleanup(path):
         print "!!! Cleaning up " , path
         shutil.rmtree(path)
 
-		# var = raw_input("Path %s exists; do you want to delete it?" % (path))
-		# print "you entered", var
-		# if var.lower().startswith('y'):
-		# 	print "!!! Cleaning up " , path
-		# 	shutil.rmtree(path)
+        # var = raw_input("Path %s exists; do you want to delete it?" % (path))
+        # print "you entered", var
+        # if var.lower().startswith('y'):
+        #   print "!!! Cleaning up " , path
+        #   shutil.rmtree(path)
         
     elif os.path.isfile(path):
         print "!!! Removing " , path
