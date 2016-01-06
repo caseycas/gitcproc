@@ -27,11 +27,11 @@ class DatabaseCon:
       print(sql_command)
       self.conn.rollback()
       return
-    #except:
-    #  print "!!! Error"
-    #  print(sql_command)
+    except:
+      print "!!! Error"
+      print(sql_command)
     #  #raise
-    #  return
+      return
 
   def execute(self, sql_command):
     logging.debug("Executing SQL command = %s\n", sql_command)
