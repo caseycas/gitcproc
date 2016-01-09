@@ -905,6 +905,11 @@ class logChunk:
                             if(self.sT.isScopeDecrease(line)):
                                 if(self.sT.getFuncContext(lineType) != ""): #Maybe?
                                     shortFunctionName = self.sT.getFuncContext(lineType) #Get the functional context
+                                if(self.sT.getBlockContext(lineType) != [] and lineType!=OTHER):
+                                    if(Util.DEBUG):
+                                        print("Current block context: " + str(self.sT.getBlockContext(lineType)))
+                                    keywordDictionary = self.parseLineForKeywords(line, lineType, blockKeyWordList, keywordDictionary, self.sT.getBlockContext(lineType))
+
                                 self.sT.decreaseScope(line, lineType)
 
 
