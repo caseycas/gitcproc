@@ -6,12 +6,14 @@
 			 
 +        while (currWidth >= width || currHeight >= height) {
 +            currWidth /= 2;
--            currHeight /= 2;
 +            scale *= 2;
 +        }
 
+-        for (index = 1; index < repos.size(); index++) {)
 +        for (index = 0; index < repos.size(); index++) {
 +            Repository repository = repos.get(index);
+-            if (recentRepos.contains(repository.Id()))
+-                current = recentRepos.getRepo();
 +            if (recentRepos.contains(repository.getId()))
 +                current = repository;
 -            else
