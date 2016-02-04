@@ -840,7 +840,7 @@ class logChunktest(unittest.TestCase):
 
         self.chunkb8.parseText()
         funcList = self.chunkb8.functions
-        self.debugFunctions(funcList)
+        #self.debugFunctions(funcList)
 
         self.assertTrue(len(funcList) == 1) 
         self.assertTrue(funcList[0].method=="getAuthToken")
@@ -870,14 +870,14 @@ class logChunktest(unittest.TestCase):
 
         self.chunkb10.parseText()
         funcList = self.chunkb10.functions
-        #self.debugFunctions(funcList)
+        self.debugFunctions(funcList)
         self.assertTrue(len(funcList) == 1) 
 
 
         self.assertTrue(funcList[0].method=="getToken")
         self.assertTrue(funcList[0].total_add == 8)
-        self.assertTrue(funcList[0].total_del == 3)
-        testdict= {'throw  Adds': 0, 'catch Dels': 0, 'try Adds': 0, 'try Dels': 0, 'exception Dels': 0, 'raise Adds': 0, 'catch Adds': 0, 'finally Dels': 0, 'finally Adds': 0, 'throw  Dels': 0, 'exception Adds': 0, 'raise Dels': 0, 'for Adds': 4,'for Dels': 0,'while Adds': 4,'while Dels': 0}
+        self.assertTrue(funcList[0].total_del == 5)
+        testdict= {'throw  Adds': 0, 'catch Dels': 0, 'try Adds': 0, 'try Dels': 0, 'exception Dels': 0, 'raise Adds': 0, 'catch Adds': 0, 'finally Dels': 0, 'finally Adds': 0, 'throw  Dels': 0, 'exception Adds': 0, 'raise Dels': 0, 'for Adds': 4,'for Dels': 5,'while Adds': 4,'while Dels': 0}
 
         self.assertEqual(testdict,funcList[0].keywordDictionary)
 
