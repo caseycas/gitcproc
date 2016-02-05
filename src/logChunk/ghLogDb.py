@@ -414,7 +414,7 @@ class ghLogDb:
                 listToDict[str(keyword)+" Adds"]=0
                 listToDict[str(keyword)+" Dels"]=0
 
-            inf2.write("project, sha, language, file_name, is_test,isExceptionPatch, method_name,total_add,total_del,uniqueExcepAdd,uniqueExcepDel,%s\n"%",".join(listToDict.keys()))
+            inf2.write("project, sha, language, file_name, is_test,isExceptionPatch, method_name,total_add,total_del,%s\n"%",".join(listToDict.keys()))
 
         inf = codecs.open(self.log_file, "r", "iso-8859-1")
 
@@ -442,7 +442,7 @@ class ghLogDb:
 
                 shaObj = Sha(self.project_name, sha)
                 if(Util.DEBUGLITE): #Save for testing.
-                    self.shas.append(shaObj) #This will become very memory intensive in large git logs. 
+                    self.shas.append(shaObj) #This will become very memory intensive in large git logs.
                 is_diff = False
                 log_mssg = ""
                 
@@ -463,10 +463,10 @@ class ghLogDb:
                 is_no_prev_ver = False
                 is_no_next_ver = False
                 continue
-                '''
+
                 if patchObj != None:
                     shaObj.patches.append(patchObj)
-                '''
+
             elif is_diff == False:
                 if not line.strip():
                     continue
@@ -516,10 +516,10 @@ class ghLogDb:
                 else: #Then we reached a content line.
                     self.processPatch(fullLine, patchObj, curLogChunk)
 
-        '''
+
         if shaObj != None:
             shaObj.patches.append(patchObj)
-        '''
+
 
         #Make sure to get the last patch in the file!
         if(curLogChunk.header != ""): #If there is an existing chunk to parse
@@ -539,6 +539,8 @@ class ghLogDb:
             dl.close()
         
         if(Util.CSV == 1):
+            shaObj.printSha();
+            shaObj.shaToCsv(inf1,inf2,fPtrChangeSummary,fPtrPatchSummary)
             inf1.close()
             inf2.close()
             fPtrChangeSummary.close()
