@@ -43,13 +43,20 @@ class logChunk:
         else:
             return True
 
+    def outputKeyword(self, kw):
+        keyword = str(kw[0])
+        if(keyword.startswith("\"") and keyword.endswith("\"")):
+            return keyword[1:-1]
+        else:
+            return keyword
+
 
     #Read in a file with the following format:
     #Keyword, Inc/Exc, Single/Block 
     #And store them as a list of triples
     def readKeywords(self, lst):
         with open(self.KeyWordFile) as f:
-            reader = csv.reader(f, delimiter=',', quotechar="\"")
+            reader = csv.reader(f, delimiter=',', quotechar="\'")
             for l in reader:
                 l = [w.lower() for w in l]
                 if(self.keywordValidityCheck(l)):
@@ -163,6 +170,16 @@ class logChunk:
 
         return keywordDict
 
+    #String, String --> (String, Boolean)
+    #If the keyword starts and ends with "", match segments not surrounded by alphanumeric keywords
+    #Otherwise use basic "in"
+    def keywordMatch(self, keyword, line):
+        if(keyword.startswith('\"') and keyword.endswith('\"')):
+            exactMatch = "(^|\W+)" + keyword[1:-1] + "(\W+|$)"
+            return (keyword[1:-1],re.match(exactMatch, line) != None)
+        else:
+            return (keyword, keyword in line.lower())
+
     #String, String, list of Strings, dictionary, String -> dictionary
     #Modify the keyword dictionary for this line.  
     def parseLineForKeywords(self, line, lineType, keywords, keywordDict, blockContext = []):
@@ -177,14 +194,17 @@ class logChunk:
             except:
                 print("LINE TO PARSE FOR KEYWORD:" + unicode(line, 'utf-8', errors='ignore'))
         includedKeywords = [k for k in keywords if k[1] == INCLUDED]
+        tmp = line
 
         if(blockContext==[]):
             for keyword in includedKeywords:
-                if(keyword[0] in line.lower()):
+                (k, matched) = self.keywordMatch(keyword[0], tmp)
+                if(matched):
+                    tmp = tmp.replace(k, "") #Then remove so we don't double count
                     if(lineType == ADD):
-                        incrementDict(str(keyword[0]) + " Adds", keywordDict, 1)
+                        incrementDict(str(k) + " Adds", keywordDict, 1)
                     elif(lineType == REMOVE):
-                        incrementDict(str(keyword[0]) + " Dels", keywordDict, 1)
+                        incrementDict(str(k) + " Dels", keywordDict, 1)
                     else: #I don't this case has been handled correctly for blocks.
                         print("Unmodified")
                         assert(0)
@@ -308,17 +328,21 @@ class logChunk:
             return False
 
         temp = line.lower().strip().replace("~", "") #Just remove the "~" for destructors
+        temp = temp.replace("explicit", "")
+        temp = temp.replace("public:", "")
+        temp = temp.replace("private:", "")
+        temp = temp.replace("protected:", "")
         temp = temp.replace("\t", "")
         temp = temp.replace("\r", "")
         temp = temp.replace("\n", "")
-        temp = temp.replace(constructorInheritsPattern, ")")
+        temp = re.sub(constructorInheritsPattern, ") {", temp)
 
         if(Util.DEBUG == 1):
             print("Class context: " + classContext)
             try:
-                print("Checking if a constructor/destructor: " + line)
+                print("Checking if a constructor/destructor: " + temp)
             except:
-                print("Checking if a constructor/destructor: " + unicode(line, 'utf-8', errors='ignore'))
+                print("Checking if a constructor/destructor: " + unicode(temp, 'utf-8', errors='ignore'))
 
         return re.search(classContext + paramPattern, temp)
 
@@ -340,7 +364,8 @@ class logChunk:
     #To start, lets use a regex expression with "<return type> <name> (<0+ parameters>) {"
     #Also, we should handle template methods like: "template <class type> <return type> <name<type>>(<0+ parameters>) {""
     #Returns a string matching the function pattern or "" if no pattern match found.
-    def getFunctionPattern(self, line):
+    #TODO: This needs a complete overhaul to be more compact and to flip on the language of the file.
+    def getFunctionPattern(self, line): 
         #Replace new lines and tabs
         temp = line.strip().replace("\n", "")
         temp = temp.replace("\t", "")
@@ -358,6 +383,7 @@ class logChunk:
         temp = temp.replace("public:", "")
         temp = temp.replace("private:", "")
         temp = temp.replace("protected:", "")
+        temp = temp.replace("explicit", "")
         #Sometimes an # ifdef, etc might appear in the middle of function args.  Purge them!
         if("ifdef" in temp and "#" in temp):
             temp = temp.replace("#", "")
@@ -378,9 +404,9 @@ class logChunk:
 
         if(Util.DEBUG):
             try:
-                print("Checking if function: \'" + line + "\'")
+                print("Checking if function: \'" + temp + "\'")
             except:
-                print("Checking if function: \'" + unicode(line, 'utf-8', errors='ignore') + "\'")
+                print("Checking if function: \'" + unicode(temp, 'utf-8', errors='ignore') + "\'")
         
         #Check for regular and template functions
         if("template" in temp):
@@ -678,19 +704,19 @@ class logChunk:
         #Initialize keywords (This is repeated three times -> make into a subfunction)
         for keyword in singleKeyWordList:
             if(keyword[1] != EXCLUDED):
-                keywordDictionary[str(keyword[0])+" Adds"]=0
-                keywordDictionary[str(keyword[0])+" Dels"]=0
+                keywordDictionary[self.outputKeyword(keyword)+ " Adds"]=0
+                keywordDictionary[self.outputKeyword(keyword)+ " Dels"]=0
                 #Currently only support single line keyword tracking outside of functions
-                outsideFuncKeywordDictionary[str(keyword[0])+" Adds"]=0
-                outsideFuncKeywordDictionary[str(keyword[0])+" Dels"]=0
+                outsideFuncKeywordDictionary[self.outputKeyword(keyword) + " Adds"]=0
+                outsideFuncKeywordDictionary[self.outputKeyword(keyword) + " Dels"]=0
 
         for keyword in blockKeyWordList:
             #Hack to make run with the 'tryDependentCatch' keyword
             if(not isinstance(keyword, list) or len(keyword) != KEYLISTSIZE):
                 continue
             elif(keyword[1] != EXCLUDED):
-                keywordDictionary[str(keyword[0])+" Adds"]=0
-                keywordDictionary[str(keyword[0])+" Dels"]=0
+                keywordDictionary[self.outputKeyword(keyword) + " Adds"]=0
+                keywordDictionary[self.outputKeyword(keyword) + " Dels"]=0
 
         #----------------------------------Initialization----------------------------------#
 
@@ -712,6 +738,8 @@ class logChunk:
             #Remove all strings from the line. (Get rid of weird cases of brackets
             #or comment values being excluded from the line.
             line = self.removeStrings(line)
+            line = line.replace("\\", "") #Remove backslashes.
+            line = line.replace("^M", "")
             
             #Remove all comments from the line
             fChange = UNMARKED
@@ -753,6 +781,10 @@ class logChunk:
                     functionName = self.sT.appendFunctionEnding(line, functionName)
 
                     shortFunctionName = self.getFunctionPattern(functionName)
+                    if(Util.DEBUG):
+                        print("Pattern: " + shortFunctionName)
+
+
                     if(shortFunctionName != ""):
                         isFunction = True
                     elif((classContext != [] and self.isConstructorOrDestructorWithList(functionName, classContext))):
@@ -858,15 +890,15 @@ class logChunk:
                     lineType=OTHER
                     for keyword in singleKeyWordList:
                         if(keyword[1] != EXCLUDED):
-                            keywordDictionary[str(keyword[0])+" Adds"]=0
-                            keywordDictionary[str(keyword[0])+" Dels"]=0
+                            keywordDictionary[self.outputKeyword(keyword) + " Adds"]=0
+                            keywordDictionary[self.outputKeyword(keyword) + " Dels"]=0
                     for keyword in blockKeyWordList:
                         #Hack to make run with the 'tryDependedCatch' keyword
                         if(not isinstance(keyword, list) or len(keyword) != KEYLISTSIZE):
                             continue
                         elif(keyword[1] != EXCLUDED):
-                            keywordDictionary[str(keyword[0])+" Adds"]=0
-                            keywordDictionary[str(keyword[0])+" Dels"]=0
+                            keywordDictionary[self.outputKeyword(keyword) + " Adds"]=0
+                            keywordDictionary[self.outputKeyword(keyword) + " Dels"]=0
 
 
                 if(Util.DEBUG == 1):
@@ -957,15 +989,15 @@ class logChunk:
                     #currentBlock=None
                     for keyword in singleKeyWordList:
                         if(keyword[1] != EXCLUDED):
-                            keywordDictionary[str(keyword[0])+" Adds"]=0
-                            keywordDictionary[str(keyword[0])+" Dels"]=0
+                            keywordDictionary[self.outputKeyword(keyword) + " Adds"]=0
+                            keywordDictionary[self.outputKeyword(keyword) + " Dels"]=0
                     for keyword in blockKeyWordList:
                         #Hack to make run with the 'tryDependedCatch' keyword
                         if(not isinstance(keyword, list) or len(keyword) != KEYLISTSIZE):
                             continue
                         elif(keyword[1] != EXCLUDED):
-                            keywordDictionary[str(keyword[0])+" Adds"]=0
-                            keywordDictionary[str(keyword[0])+" Dels"]=0
+                            keywordDictionary[self.outputKeyword(keyword) + " Adds"]=0
+                            keywordDictionary[self.outputKeyword(keyword) + " Dels"]=0
 
 
         #Suppose we have a function where only the top is modified,

@@ -1,0 +1,8 @@
+ bool CCAnimate::initWithAnimation(CCAnimation *pAnimation)^M
+ {^M
+-       assert(pAnimation != NULL);^M
++       CCAssert(pAnimation != NULL, "");^M
+ ^M
+        return initWithAnimation(pAnimation, true);^M
+ }^M
+ ^M

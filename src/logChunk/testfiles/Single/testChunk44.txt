@@ -1,0 +1,42 @@
++/* auto_copying_data_provider_t */
++
++void auto_copying_data_provider_t::get_data_into_buffers(const buffer_group_t *dest) throw (data_provider_failed_exc_t) {
++
++    int bytes = get_size();
++    rassert((int)dest->get_size() == bytes);
++
++    const const_buffer_group_t *source = get_data_as_buffers();
++    rassert((int)source->get_size() == bytes);
++
++    /* Copy data between source and dest; we have to always copy the minimum of the sizes of the
++    next chunk that each one has */
++    int source_buf = 0, source_off = 0, dest_buf = 0, dest_off = 0;
++    while (bytes > 0) {
++        while (source->buffers[source_buf].size == source_off) {
++            source_buf++;
++            source_off = 0;
++        }
++        while (dest->buffers[dest_buf].size == dest_off) {
++            dest_buf++;
++            dest_off = 0;
++        }
++        int chunk = std::min(
++            source->buffers[source_buf].size - source_off,
++            dest->buffers[dest_buf].size - dest_off);
++        memcpy(
++            reinterpret_cast<char *>(dest->buffers[dest_buf].data) + dest_off,
++            reinterpret_cast<const char *>(source->buffers[source_buf].data) + source_off,
++            chunk);
++        source_off += chunk;
++        dest_off += chunk;
++        bytes -= chunk;
++    }
++
++    /* Make sure we reached the end of both source and dest */
++    rassert(
++        (source_buf == (int)source->buffers.size()     && source_off == 0) ||
++        (source_buf == (int)source->buffers.size() - 1 && source_off == source->buffers[source_buf].size));
++    rassert(
++        (dest_buf == (int)dest->buffers.size()     && dest_off == 0) ||
++        (dest_buf == (int)dest->buffers.size() - 1 && dest_off == dest->buffers[dest_buf].size));
++}
