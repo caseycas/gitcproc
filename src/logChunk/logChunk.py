@@ -689,7 +689,6 @@ class logChunk:
         shortFunctionName = ""
         funcStart = 0
         funcEnd = 0
-        nestingDepth = 0 # How many brackets should be open to say this function is closed?
 
         classContext = [] #If we are parsing inside a class, what is the closest class name?
         ftotal_add=0
@@ -813,8 +812,9 @@ class logChunk:
                         elif(lineType == ADD):
                             ftotal_add = 1
                             startFlag=1
-                    else: #Something that looked like a function at first but wasn't
+                    else: #There was a non-function scope increase.
                         self.sT.increaseScope(line, lineType, scopeTracker.GENERIC)
+                        
                         className = self.getClassPattern(functionName)
                         if(className != ""):
                             if(Util.DEBUG == 1):
@@ -823,28 +823,6 @@ class logChunk:
                                 except:
                                     print("Class:" + unicode(className, 'utf-8', errors='ignore'))
                             classContext.append(self.extractClassName(className)) #Push onto the class stack
-                            nestingDepth += 1 #Functions are inside something now
-                        elif(self.isNamespace(functionName)):
-                            if(Util.DEBUG == 1):
-                                try:
-                                    print("Namespace:" + functionName)
-                                except:
-                                    print("Namespace:" + unicode(functionName, 'utf-8', errors='ignore'))
-                            nestingDepth += 1 #Functions are inside something now
-                        elif(self.isExternBlock(functionName)):
-                            if(Util.DEBUG == 1):
-                                try:
-                                    print("Extern:" + functionName)
-                                except:
-                                    print("Extern:" + unicode(functionName, 'utf-8', errors='ignore'))
-                            nestingDepth +=1
-                        else:
-                            if(Util.DEBUG == 1):
-                                try:
-                                    print("Other type of bracket: " + functionName)
-                                except:
-                                    print("Other type of bracket: " + unicode(functionName, 'utf-8', errors='ignore'))
-                            nestingDepth +=1
                             
                         functionName = "" #Reset name and find next
                 else: #No scope change to cut off, so add the whole line instead
