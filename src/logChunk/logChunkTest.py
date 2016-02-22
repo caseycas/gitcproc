@@ -62,6 +62,15 @@ class logChunktest(unittest.TestCase):
 
 
 
+        self.javaMethod1 = "public static Intent createIntent(Context context, String username, String password) {"
+        self.javaMethod2 = " public <V> V post(final String uri, final Object params, final Type type) \n throws IOException {"
+        self.javaMethod3 = "public static Intent createIntent(final Collection<? extends Issue> issues,\n final Repository repository, final int position) {"
+        self.javaMethod4 = "@Override \n public List<User> run(Account account) throws Exception {"
+        self.javaMethod5 = "private JClass typeBoundsToJClass(GeneratedClassHolder holder, List<? extends TypeMirror> bounds, Map<String, TypeMirror> actualTypes) {"
+        self.javaMethod6 = " public JMethod implementMethod(GeneratedClassHolder holder, List<ExecutableElement> methods, String methodName, String returnType, String... parameterTypes) {"
+
+
+
         self.testChunk = logChunk.logChunk("")
         #Read in the single tests
         self.chunk1 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk1.txt")) #Check
@@ -137,6 +146,30 @@ class logChunktest(unittest.TestCase):
         self.assertTrue(self.testChunk.keywordValidityCheck(self.keyword7))
         self.assertFalse(self.testChunk.keywordValidityCheck(self.keyword8))
         self.assertFalse(self.testChunk.keywordValidityCheck(self.keyword9))
+
+
+    def test_FunctionNameParseJAVA(self):
+        temp = self.testChunk.parseFunctionName(self.javaMethod1)
+        print(temp)
+        self.assertTrue(temp == "createIntent", "Actual: " + temp)
+        temp = self.testChunk.parseFunctionName(self.javaMethod2)
+        print(temp)
+        self.assertTrue(temp == "post", "Actual: " + temp)
+        temp = self.testChunk.parseFunctionName(self.javaMethod3)
+        print(temp)
+        self.assertTrue(temp == "createIntent", "Actual: " + temp)
+        temp = self.testChunk.parseFunctionName(self.javaMethod4)
+        print(temp)
+        self.assertTrue(temp == "run", "Actual: " + temp)
+        temp = self.testChunk.parseFunctionName(self.javaMethod5)
+        print(temp)
+        self.assertTrue(temp == "typeBoundsToJClass", "Actual: " + temp)
+        temp = self.testChunk.parseFunctionName(self.javaMethod6)
+        print(temp)
+        self.assertTrue(temp == "implementMethod", "Actual: " + temp)
+
+
+
 
 
     def test_FunctionNameParse(self):
