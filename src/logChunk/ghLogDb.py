@@ -351,6 +351,7 @@ class ghLogDb:
             if Util.DEBUG == 1:
                 print("Resetting.")
             curLogChunk.reset()
+            curLogChunk.setLang(language) #DOUBLE CHECK ME!
 
             temp_func   = line.split("@@ ")
 
@@ -488,6 +489,7 @@ class ghLogDb:
                         if Util.DEBUG == 1:
                             print("Resetting.")
                         curLogChunk.reset()
+                        curLogChunk.setLang(language) #DOUBLE CHECK ME!
 
                     patchObj = self.createPatch(line)
                     shaObj.patches.append(patchObj)
@@ -510,6 +512,7 @@ class ghLogDb:
                             if Util.DEBUG == 1:
                                 print("Resetting.")
                             curLogChunk.reset()
+                            curLogChunk.setLang(language) #DOUBLE CHECK ME!
 
                     patchObj = self.createPatchWithNoPrevVersion(line)
                     shaObj.patches.append(patchObj)

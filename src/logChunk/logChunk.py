@@ -8,14 +8,16 @@ sys.path.append("../util")
 
 import Util
 import scopeTracker
+import LanguageSwitcherFactory
 from dictUtil import incrementDict, nonZeroCount
 from Config import Config
 from chunkingConstants import *
 
 #A log contains a raw set of text and a set of functions
 #parsed from the text.
+#TODO: Implement a mapping from language extensions to languages
 class logChunk:
-    def __init__(self, text = "", config_file = Util.CONFIG, language = "C"):
+    def __init__(self, text = "", language = "C", config_file = Util.CONFIG):
         #Get the keyword file through the Config and .ini system
         cfg = Config(config_file)
         db_config = cfg.ConfigSectionMap("Keywords")
@@ -27,7 +29,9 @@ class logChunk:
         self.total_add = 0
         self.total_del = 0
         self.header = "" #What is the name given after '@@' in log
-        self.sT = scopeTracker.scopeTracker(language)
+        self.langSwitch = LanguageSwitcherFactory.LanguageSwitcherFactory.createLS(language)
+        self.sT = scopeTracker.scopeTracker(self.langSwitch.getLanguage())
+        
 
     #list of strings --> boolean
     #Returns true if the string conforms to the pattern <keyword>,[included/excluded],[single,block]
@@ -78,6 +82,13 @@ class logChunk:
             func.printFunc()
         print("===========================================")
 
+    
+    def setLang(self, language = "C"):
+        l = determineLanguage(language) #From chunkingConstants
+        self.sT = scopeTracker.scopeTracker(language)
+        self.langSwitch = chunkingConstants.languageSwitcher(language)
+
+
     #TODO: Not all variables refreshed + needs to be set for the correct set of variables.
     #Reset all the variables.
     def reset(self):
@@ -87,6 +98,8 @@ class logChunk:
         self.total_add = 0
         self.total_del = 0
         self.header = "" #What is the name given after '@@' in log
+        self.sT = None
+        self.langSwitch = None
 
     # -- -> Boolean
     #Return true if any function in this chunk has type MOCK
@@ -215,75 +228,17 @@ class logChunk:
 
         return keywordDict
 
-    #String -> String
-    #Given a full function String: "<0-n other modifiers> <return_type> <name>(arg0, ..., argN) {"
-    #Return <name> or raise ValueError if the string is not a function header
-    def parseFunctionName(self, fullName):
-        if(fullName.find("\n") != -1):
-            fullName = fullName.replace("\n", "")
-
-        multiline = fullName.split(";")
-        name = multiline[len(multiline)-1]
-
-        #Want to find the starting "(" that matches the last ")" in name.
-        increaseIndicies = [next.start() for next in re.finditer('\(', name)]
-        decreaseIndicies = [next.start() for next in re.finditer('\)', name)]
-        if(len(decreaseIndicies) < 1 or len(increaseIndicies) < 1):
-            raise ValueError("1. Function Name to parse is malformed.", fullName)
-
-        if(decreaseIndicies[len(decreaseIndicies) - 1] <= increaseIndicies[len(increaseIndicies)-1]): #Last paren should be closing
-            raise ValueError("2. Function Name to parse is malformed.", fullName)
-        parenStack = []
-        matchIndex = -1
-        j = len(decreaseIndicies) - 1
-        k = len(increaseIndicies) - 1
-        for i in range(0, len(increaseIndicies + decreaseIndicies)):
-            if(k < 0):
-                raise ValueError("3. Function Name to parse is malformed.", fullName)
-            elif(j < 0):
-                parenStack.pop()
-                if(parenStack == []):
-                    matchIndex = increaseIndicies[k]
-                    break
-                k -= 1
-            elif(decreaseIndicies[j] > increaseIndicies[k]):
-                parenStack.append(decreaseIndicies[j])
-                j -= 1
-            elif(decreaseIndicies[j] < increaseIndicies[k]):
-                parenStack.pop()
-                if(parenStack == []):
-                    matchIndex = increaseIndicies[k]
-                    break
-                k -= 1
-            else:
-                raise ValueError("4. Function Name to parse is malformed.", fullName)
-
-
-        if(matchIndex == -1):
-            raise ValueError("5. Function Name to parse is malformed.", fullName)
-        else:
-            #Parse out the name
-            pieces = name[:matchIndex].strip().split(" ")
-            return pieces[len(pieces)-1]
-
-    def isExternBlock(self, line):
-        return(re.search(externPattern, line.strip().lower().replace("\n", "")))
-
-    #Determine if the line is a namespace
-    def isNamespace(self, line):
-        return re.search(namespacePattern, line.strip().lower().replace("\n", ""))
-
     #String --> String
     #Given a line, return a pattern for a class declaration if the line ends
     #in a class declaration.  Otherwise, return ""
     def getClassPattern(self, line):
-        temp = line.strip().lower().replace("\n", "")
-        result = re.search(classPattern1, temp)
-        if(result != None):
-            return result.group(0)
-        result = re.search(classPattern2, temp)
-        if(result != None):
-            return result.group(0)
+        temp = self.langSwitch.cleanClassLine(line)
+        classPatterns = self.langSwitch.getClassRegexes()
+
+        for c in classPatterns:
+            result = re.search(c, temp)
+            if(result != None):
+                return result.group(0)
 
         return ""
 
@@ -318,24 +273,14 @@ class logChunk:
 
         return result
 
-
     #Given a string of text and a name of a surrounding class, decide if this is a constructor
     #or destructor for the class.
     def isConstructorOrDestructor(self, line, classContext):
-        if("{" not in line):
-            return False
-        if(not re.search(validClassNamePattern, classContext)):
+        if(not self.langSwitch.isValidClassName(classContext)):
             return False
 
-        temp = line.lower().strip().replace("~", "") #Just remove the "~" for destructors
-        temp = temp.replace("explicit", "")
-        temp = temp.replace("public:", "")
-        temp = temp.replace("private:", "")
-        temp = temp.replace("protected:", "")
-        temp = temp.replace("\t", "")
-        temp = temp.replace("\r", "")
-        temp = temp.replace("\n", "")
-        temp = re.sub(constructorInheritsPattern, ") {", temp)
+        temp = self.langSwitch.cleanConstructorOrDestructorLine(line)
+        constructPatt = self.langSwitch.getConstructorOrDestructorRegex(classContext)
 
         if(Util.DEBUG == 1):
             print("Class context: " + classContext)
@@ -344,7 +289,7 @@ class logChunk:
             except:
                 print("Checking if a constructor/destructor: " + unicode(temp, 'utf-8', errors='ignore'))
 
-        return re.search(classContext + paramPattern, temp)
+        return re.search(constructPatt, temp)
 
     def getBlockPattern(self,line,list):
         for l in list:
@@ -358,145 +303,32 @@ class logChunk:
 
         return None
 
-
     #There are many structures that can be mistaken for a function.  We'll try to
     #ignore as many of them as possible.
     #To start, lets use a regex expression with "<return type> <name> (<0+ parameters>) {"
     #Also, we should handle template methods like: "template <class type> <return type> <name<type>>(<0+ parameters>) {""
     #Returns a string matching the function pattern or "" if no pattern match found.
-    #TODO: This needs a complete overhaul to be more compact and to flip on the language of the file.
     def getFunctionPattern(self, line): 
-        #Replace new lines and tabs
-        temp = line.strip().replace("\n", "")
-        temp = temp.replace("\t", "")
-        temp = temp.replace("\r", "")
-        #There is a weird case in hiphop-php where they included a arg1, arg2, "..."
-        #Therefore, to handle this specific pseudo code case, I'm adding a special line to remove "..."
-        temp = temp.replace("...", "")
-        #Also, I will remove any instances of "const to deal with some tricky cases"
-        temp = temp.replace(" const ", " ")
-        #And weird templates with no types
-        temp = temp.replace("template<>", "")
-        # Get rid of " : " case that caused problems in hiphop
-        temp = temp.replace(" : ", "")
-        # Get rid of visibility modifiers
-        temp = temp.replace("public:", "")
-        temp = temp.replace("private:", "")
-        temp = temp.replace("protected:", "")
-        temp = temp.replace("explicit", "")
-        #Sometimes an # ifdef, etc might appear in the middle of function args.  Purge them!
-        if("ifdef" in temp and "#" in temp):
-            temp = temp.replace("#", "")
-            temp = temp.replace("ifdef", "")
-        if("endif" in temp and "#" in temp):
-            temp = temp.replace("#", "")
-            temp = temp.replace("endif", "")
-        if("ifndef" in temp and "#" in temp):
-            temp = temp.replace("#", "")
-            temp = temp.replace("ifndef", "")
-        #Deal with if statements...
-        temp = re.sub(" else", "", temp)
-        temp = re.sub("^else", "", temp)
-        temp = re.sub(" if", "", temp)
-        temp = re.sub("^if", "", temp)
-        temp = re.sub(" +\d+ +", "", temp) #Replace numbers
-
+        #Remove potentially problematic structures
+        temp = self.langSwitch.cleanFunctionLine(line)
 
         if(Util.DEBUG):
             try:
                 print("Checking if function: \'" + temp + "\'")
             except:
                 print("Checking if function: \'" + unicode(temp, 'utf-8', errors='ignore') + "\'")
-        
-        #Check for regular and template functions
-        if("template" in temp):
-            if(Util.DEBUG):
-                print("template")
-            temp = temp.replace("static", "") #Quick fix.
 
-            result = re.search(templatePattern1, temp)
+        #Select patterns for our language and check against them
+        funcPatterns = self.langSwitch.getFunctionRegexes()
+        for p in funcPatterns:
+            result = re.search(p, temp)
             if(result != None):
                 if(Util.DEBUG):
-                    print("PATTERN T1")
-                return result.group(0)
-            result = re.search(templatePattern2, temp)
-            if(result != None):
-                if(Util.DEBUG):
-                    print("PATTERN T@")
-                return result.group(0)
-            result = re.search(templatePattern3, temp)
-            if(result != None):
-                if(Util.DEBUG):
-                    print("PATTERN T3")
-                return result.group(0)
-            result = re.search(templatePattern4, temp)
-            if(result != None):
-                if(Util.DEBUG):
-                    print("PATTERN T4")
-                return result.group(0)
-            result = re.search(templatePattern5, temp)
-            if(result != None):
-                if(Util.DEBUG):
-                    print("PATTERN T5")
-                return result.group(0)
-            result = re.search(templatePattern6, temp)
-            if(result != None):
-                if(Util.DEBUG):
-                    print("PATTERN T6")
+                    print("Found match with pattern: " + p)
                 return result.group(0)
 
-            return ""
-          
-        else:
-            if(Util.DEBUG):
-                print("not template")
-            result = re.search(anonymousClassPattern, temp)
-            if(result!=None):
-                if(Util.DEBUG):
-                    print("ANONYMOUS CLASS!")
-                return ""
-            result = re.search(functionPattern1, temp)
-            if(result != None):
-                if(Util.DEBUG):
-                    print("PATTERN 1")
-                return result.group(0)
-            result = re.search(functionPattern2, temp)
-            if(result != None):
-                if(Util.DEBUG):
-                    print("PATTERN 2")
-                return result.group(0)
-            result = re.search(functionPattern3, temp)
-            if(result != None):
-                if(Util.DEBUG):
-                    print("PATTERN 3")
-                return result.group(0)
-            result = re.search(functionPattern4, temp)
-            if(result != None):
-                if(Util.DEBUG):
-                    print("PATTERN 4")
-                return result.group(0)
-            result = re.search(functionPattern5, temp)
-            if(result != None):
-                if(Util.DEBUG):
-                    print("PATTERN 5")
-                return result.group(0)
-            result = re.search(functionPattern6, temp)
-            if(result != None):
-                if(Util.DEBUG):
-                    print("PATTERN 6")
-                return result.group(0)
-            result = re.search(functionPattern7, temp)
-            if(result != None):
-                if(Util.DEBUG):
-                    print("PATTERN 7")
-                return result.group(0)
-            result = re.search(functionPattern8, temp)
-            if(result != None):
-                if(Util.DEBUG):
-                    print("PATTERN 8")
-                return result.group(0)
 
-            return ""
+        return ""
             
     def isFunction(self, line):
         return (self.getFunctionPattern(line) != "")
@@ -509,9 +341,7 @@ class logChunk:
     #Given a line of code from a diff statement, return the line with any
     #string literals removed.
     def removeStrings(self, line):
-        line = re.sub(stringPattern, "", line)
-        line = re.sub(stringPattern2, "", line)
-        return line
+        return self.langSwitch.removeStrings(line)
     
     #String, Boolean, String, String, String -> (String, String, Boolean, String, String)
     #Given a line of code from a diff statement, a marker if prior lines were a multiblock
@@ -519,7 +349,6 @@ class logChunk:
     #the current running function name, and returns a 5-tuple containing
     #The modified line, the modified line type, the changed commentFlag, the commentType,
     #the running function name, and any changes if inside a function (this forces a continue)
-    #TODO: Make language independent.
     def removeComments(self, line, commentFlag, lineType, commentType, functionName, phase):
         #Thoughts: if inside block comment and we've added or deleted that line, it can be ignored
         #If it exists as code and has been commented out or added back in, it must have a corresponding line.
@@ -531,9 +360,10 @@ class logChunk:
         fChange = UNMARKED
 
         #Remove single line multi block comments...
-        line = re.sub(commentPattern, "", line)
+        #line = re.sub(commentPattern, "", line)
+        line = self.langSwitch.cleanSingleLineBlockComment(line)
 
-        if(line.find("/*") != -1):
+        if(line.find(self.langSwitch.getBlockCommentStart()) != -1):
             commentFlag = True
             #We need to consider the content of the line before the /*
             line = line.split("/*")[0]
@@ -554,13 +384,13 @@ class logChunk:
                     else:
                         fChange = UNCHANGED
                 line = ""
-        elif(line.find("*/") != -1):
+        elif(line.find(self.langSwitch.getBlockCommentEnd()) != -1):
             if(commentFlag): #Normal case were whole /* ... */ comment is changed
                 commentFlag = False
             elif(phase == LOOKFORNAME): #Case where only bottom part of comment is changed and looking for function name.
                 functionName = "" #Clear the function name
 
-            index = line.find("*/")
+            index = line.find(self.langSwitch.getBlockCommentEnd())
             if(len(line) > index + 2): #Case where there is code after comment end.
                 line = line[index + 2:]
             else:
@@ -602,7 +432,8 @@ class logChunk:
                     line = ""
 
         #Remove single line comments
-        line = re.sub(commentPattern2, "", line)
+        #line = re.sub(commentPattern2, "", line)
+        line = self.langSwitch.cleanSingleLineComment(line)
 
         return (line,lineType, commentFlag, commentType, functionName, fChange)
 
@@ -760,8 +591,8 @@ class logChunk:
                         print("Current Name Search: " + unicode(functionName, 'utf-8', errors='ignore'))
 
                 #What if we've hit a function defintion?
-                #TODO: Is this really needed?
-                if(line.strip().endswith(";")):
+                #TODO: Make language independent
+                if(self.langSwitch.checkForFunctionReset(functionName)):
                     functionName = "" #Clear the name
 
                 #Namespace problem comes in here. we add extra stuff in conjunction with functionName += ... above
@@ -786,9 +617,10 @@ class logChunk:
 
                     if(shortFunctionName != ""):
                         isFunction = True
-                    elif((classContext != [] and self.isConstructorOrDestructorWithList(functionName, classContext))):
+                    elif((classContext != [] and self.isConstructorOrDestructorWithList(functionName, classContext))): #classContext becomes nonempty only for OO languages
                         isFunction = True
-                        shortFunctionName = re.sub(constructorInheritsPattern, ")", functionName) #Remove inheritance sytnax in C++
+                        #Replace with general function.
+                        shortFunctionName = self.langSwitch.shortenConstructorOrDestructor(functionName)
                     else:
                         isFunction = False
 
@@ -814,15 +646,15 @@ class logChunk:
                             startFlag=1
                     else: #There was a non-function scope increase.
                         self.sT.increaseScope(line, lineType, scopeTracker.GENERIC)
-                        
-                        className = self.getClassPattern(functionName)
-                        if(className != ""):
-                            if(Util.DEBUG == 1):
-                                try:
-                                    print("Class:" + className)
-                                except:
-                                    print("Class:" + unicode(className, 'utf-8', errors='ignore'))
-                            classContext.append(self.extractClassName(className)) #Push onto the class stack
+                        if(self.langSwitch.isObjectOrientedLanguage()):
+                            className = self.getClassPattern(functionName) #Would C++ constructors outside class A start with A::?
+                            if(className != ""):
+                                if(Util.DEBUG == 1):
+                                    try:
+                                        print("Class:" + className)
+                                    except:
+                                        print("Class:" + unicode(className, 'utf-8', errors='ignore'))
+                                classContext.append(self.extractClassName(className)) #Push onto the class list
                             
                         functionName = "" #Reset name and find next
                 else: #No scope change to cut off, so add the whole line instead
@@ -850,7 +682,7 @@ class logChunk:
                     #Add this function to our list and reset the trackers.
                     #We use shortFunctionName, which is the string that matched our expected
                     #function pattern regex
-                    funcToAdd = PatchMethod(self.parseFunctionName(shortFunctionName), funcStart, funcEnd, ftotal_add, ftotal_del,keywordDictionary,etotal_add,etotal_del,catchLineNumber)
+                    funcToAdd = PatchMethod(self.langSwitch.parseFunctionName(shortFunctionName), funcStart, funcEnd, ftotal_add, ftotal_del,keywordDictionary,etotal_add,etotal_del,catchLineNumber)
                     
                     #Add assertions from current function
                     self.functions.append(funcToAdd)
@@ -948,7 +780,7 @@ class logChunk:
                         print(shortFunctionName)
                         print(str(funcStart) + " : " + str(funcEnd))
 
-                    funcToAdd = PatchMethod(self.parseFunctionName(shortFunctionName), funcStart, funcEnd, ftotal_add, ftotal_del,keywordDictionary,etotal_add,etotal_del,catchLineNumber)
+                    funcToAdd = PatchMethod(self.langSwitch.parseFunctionName(shortFunctionName), funcStart, funcEnd, ftotal_add, ftotal_del,keywordDictionary,etotal_add,etotal_del,catchLineNumber)
                     
                     self.functions.append(funcToAdd)
 
@@ -986,7 +818,7 @@ class logChunk:
         if(shortFunctionName != ""):
             #The end of the function will be said to be the cutoff of the change.
             funcEnd = lineNum
-            funcToAdd = PatchMethod(self.parseFunctionName(shortFunctionName), funcStart, funcEnd, ftotal_add, ftotal_del,keywordDictionary,etotal_add,etotal_del,catchLineNumber)
+            funcToAdd = PatchMethod(self.langSwitch.parseFunctionName(shortFunctionName), funcStart, funcEnd, ftotal_add, ftotal_del,keywordDictionary,etotal_add,etotal_del,catchLineNumber)
             self.functions.append(funcToAdd)
 
         #Remove any unmodified functions
