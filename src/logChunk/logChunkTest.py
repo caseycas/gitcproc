@@ -60,8 +60,17 @@ class logChunktest(unittest.TestCase):
         self.method21 = "        for (j = 0; j < i; j++)             if (!memcmp(h->pps.scaling_matrix8[j], h->pps.scaling_matrix8[i],                         64 * sizeof(uint8_t))) {"
         self.method22 = " c_type jl_unbox_##j_type(jl_value_t *v)  {"
 
-
         self.testChunk = logChunk.logChunk("", "C++")
+
+        self.javaMethod1 = "public static Intent createIntent(Context context, String username, String password) {"
+        self.javaMethod2 = " public <V> V post(final String uri, final Object params, final Type type) \n throws IOException {"
+        self.javaMethod3 = "public static Intent createIntent(final Collection<? extends Issue> issues,\n final Repository repository, final int position) {"
+        self.javaMethod4 = "@Override \n public List<User> run(Account account) throws Exception {"
+        self.javaMethod5 = "private JClass typeBoundsToJClass(GeneratedClassHolder holder, List<? extends TypeMirror> bounds, Map<String, TypeMirror> actualTypes) {"
+        self.javaMethod6 = " public JMethod implementMethod(GeneratedClassHolder holder, List<ExecutableElement> methods, String methodName, String returnType, String... parameterTypes) {"
+
+        self.testChunk2 = logChunk.logChunk("", "Java")
+
         #Read in the single tests
         self.chunk1 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk1.txt"), "C++") #Check C++
         self.chunk2 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk2.txt"), "C") #Check C
@@ -136,6 +145,30 @@ class logChunktest(unittest.TestCase):
         self.assertTrue(self.testChunk.keywordValidityCheck(self.keyword7))
         self.assertFalse(self.testChunk.keywordValidityCheck(self.keyword8))
         self.assertFalse(self.testChunk.keywordValidityCheck(self.keyword9))
+
+
+    def test_FunctionNameParseJAVA(self):
+        temp = self.testChunk2.langSwitch.parseFunctionName(self.javaMethod1)
+        print(temp)
+        self.assertTrue(temp == "createIntent", "Actual: " + temp)
+        temp = self.testChunk2.langSwitch.parseFunctionName(self.javaMethod2)
+        print(temp)
+        self.assertTrue(temp == "post", "Actual: " + temp)
+        temp = self.testChunk2.langSwitch.parseFunctionName(self.javaMethod3)
+        print(temp)
+        self.assertTrue(temp == "createIntent", "Actual: " + temp)
+        temp = self.testChunk2.langSwitch.parseFunctionName(self.javaMethod4)
+        print(temp)
+        self.assertTrue(temp == "run", "Actual: " + temp)
+        temp = self.testChunk2.langSwitch.parseFunctionName(self.javaMethod5)
+        print(temp)
+        self.assertTrue(temp == "typeBoundsToJClass", "Actual: " + temp)
+        temp = self.testChunk2.langSwitch.parseFunctionName(self.javaMethod6)
+        print(temp)
+        self.assertTrue(temp == "implementMethod", "Actual: " + temp)
+
+
+
 
 
     def test_FunctionNameParse(self):
