@@ -16,7 +16,7 @@ LABELINDEX = 1
 
 BracketLanguages = ["C", "C++", "Java"]
 
-
+#Redo with a polymorphic solution for the languages
 class scopeTracker:
     #string --> -- 
     #The language tells how the scope changes so we can tell when a block or function ends.

@@ -1,0 +1,52 @@
++
++template<class P_parameter>
++void Benchmark<P_parameter>::saveMatlabGraph(const char* filename) const
++{
++    BZPRECONDITION(state_ == done);
++
++    ofstream ofs(filename);
++     
++    assert(ofs.good());
++
++    ofs << "% This matlab file generated automatically by class Benchmark"
++        << endl << "% of the Blitz++ class library." << endl << endl;
++
++    ofs.setf(ios::scientific);
++
++    ofs << "parm = [ ";
++    int i;
++    for (i=0; i < numParameterSettings(); ++i)
++        ofs << setprecision(12) << double(getParameterSetting(i)) << " ";
++    ofs << "]; " << endl << endl;
++
++    ofs << "Mf = [ ";
++    for (i=0; i < numParameterSettings(); ++i)
++    {
++        for (int j=0; j < numImplementations_; ++j)
++        {
++            ofs << setprecision(12) << getMflops(j,i) << " ";
++        }
++        if (i != numParameterSettings()-1)
++            ofs << ";" << endl;
++    }
++    ofs << "] ;" << endl << endl;
++
++    ofs << "semilogx(parm,Mf), title('" << description() << "'), " << endl
++        << "    xlabel('" << parameterDescription() << "'), "
++        << "ylabel('Mflops')" << endl
++        << "legend(";
++    
++    for (int j=0; j < numImplementations_; ++j)
++    {
++        ofs << "'" << implementations_[j]->implementationName()
++            << "'";
++        if (j != numImplementations_ - 1)
++            ofs << ", ";
++    } 
++
++    ofs << ")" << endl;
++}
++
++BZ_NAMESPACE_END
++
++#endif // BZ_BENCH_CC

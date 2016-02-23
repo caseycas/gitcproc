@@ -46,7 +46,7 @@ def main():
 
 
 
-  rootdir = sys.argv[1]
+  rootdir = str(sys.argv[1])
 
   for dir in os.listdir(rootdir):
     path= os.path.join(rootdir,dir)

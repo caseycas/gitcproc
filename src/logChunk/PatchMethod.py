@@ -77,9 +77,9 @@ class PatchMethod:
         method      = toStr(self.method).replace(","," ")
         total_add   = toStr(self.total_add)
         total_del   = toStr(self.total_del)
-        unique_exception_add=toStr(self.etotal_add)
-        unique_exception_del=toStr(self.etotal_del)
-        methodStr = (",").join((method,total_add,total_del,unique_exception_add,unique_exception_del,self.dictToCsv()))
+        # unique_exception_add=toStr(self.etotal_add)
+        # unique_exception_del=toStr(self.etotal_del)
+        methodStr = (",").join((method,total_add,total_del,self.dictToCsv()))
         return methodStr
 
 

@@ -16,7 +16,7 @@ sys.path.append("../util")
 import Util
 from ghLogDb import ghLogDb
 
-LOG_FILE = "all_log_nomerge_function.txt"
+LOG_FILE = "test1.txt"
 
 def dumpLog(projPath):
 
@@ -71,7 +71,7 @@ def main():
         print "!!! Usage: python ghProc.py project"
         sys.exit()
 
-    project = sys.argv[1]
+    project = str(sys.argv[1])
 
     if checkProj(project) == False:
         print("!! Please provide a valid directory")

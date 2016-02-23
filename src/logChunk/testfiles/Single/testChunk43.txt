@@ -1,0 +1,16 @@
++/******************************************************************//**
++Increases flush_list size in bytes with zip_size for compressed page,
++UNIV_PAGE_SIZE for uncompressed page in inline function */
++static inline
++void
++incr_flush_list_size_in_bytes(
++/*==========================*/
++       buf_block_t*    block,          /*!< in: control block */
++       buf_pool_t*     buf_pool)       /*!< in: buffer pool instance */
++{
++       ulint           zip_size;
++       ut_ad(buf_flush_list_mutex_own(buf_pool));
++       zip_size = page_zip_get_size(&block->page.zip);
++       buf_pool->stat.flush_list_bytes += zip_size ? zip_size : UNIV_PAGE_SIZE;
++       ut_ad(buf_pool->stat.flush_list_bytes <= buf_pool->curr_pool_size);
++}

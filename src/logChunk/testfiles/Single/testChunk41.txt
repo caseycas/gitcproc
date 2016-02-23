@@ -1,0 +1,83 @@
++#ifndef MUTEX_H
++#define MUTEX_H
++
++
++#if defined(_WINDOWS)
++
++    #include <Windows.h>
++
++    class Mutex {
++    public:
++
++        Mutex(int spincount=0) {
++            if (spincount)
++                InitializeCriticalSectionAndSpinCount(&_cs, spincount);
++            else
++                InitializeCriticalSection(&_cs);
++        }
++
++        void Lock() {
++            EnterCriticalSection(&_cs);
++        }
++
++        bool Try() { 
++            return TryEnterCriticalSection(&_cs)!=0; 
++        }
++
++        void Unlock() {
++            LeaveCriticalSection(&_cs);
++        }
++
++    private:
++        Mutex(Mutex const &); 
++        Mutex & operator=(Mutex const &);
++
++        CRITICAL_SECTION _cs;
++    };
++
++#elif defined(__APPLE__) or defined(__linux)
++
++    #include <pthread.h>
++    #include <assert.h>
++
++    class Mutex {
++    public:
++
++        Mutex(int spincount=0) : _spincount(spincount) {
++            assert( pthread_mutex_init(&_mutex,NULL) );
++        }
++
++        ~Mutex() {
++            assert( pthread_mutex_destroy(&_mutex)==0 );
++        }
++
++        void Lock() {
++            if (_spincount) {
++                int spincount = _spincount;
++                while (spincount--)
++                    if (pthread_mutex_trylock(&_mutex) == 0) 
++                        return;
++                
++            }
++            assert( pthread_mutex_lock(&_mutex)==0 );
++        }
++        
++        bool Try() {
++            return (pthread_mutex_trylock(&_mutex) == 0);
++        }
++
++        void Unlock() {
++            assert(pthread_mutex_unlock(&_mutex)==0);
++        }
++
++    private:
++        Mutex(Mutex const &); 
++        Mutex & operator=(Mutex const &);
++        
++        pthread_mutex_t _mutex;
++        const int _spincount;
++    };
++
++#endif
++
++#endif // MUTEX_H

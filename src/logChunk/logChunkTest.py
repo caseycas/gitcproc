@@ -58,61 +58,80 @@ class logChunktest(unittest.TestCase):
         self.method19 = "#define UNUSED_VARIABLE(x) (void)(x) const char *sfmt_get_idstring(sfmt_t * sfmt) {"
         self.method20 = "static av_always_inline void hl_motion_420(H264Context *h, uint8_t *dest_y, uint8_t *dest_cb, uint8_t *dest_cr,            qpel_mc_func (*qpix_put)[16], h264_chroma_mc_func (*chroma_put),       qpel_mc_func (*qpix_avg)[16], h264_chroma_mc_func (*chroma_avg),            h264_weight_func *weight_op, h264_biweight_func *weight_avg,             int pixel_shift) {"
         self.method21 = "        for (j = 0; j < i; j++)             if (!memcmp(h->pps.scaling_matrix8[j], h->pps.scaling_matrix8[i],                         64 * sizeof(uint8_t))) {"
+        self.method22 = " c_type jl_unbox_##j_type(jl_value_t *v)  {"
 
+        self.testChunk = logChunk.logChunk("", "C++")
 
-        self.testChunk = logChunk.logChunk("")
+        self.javaMethod1 = "public static Intent createIntent(Context context, String username, String password) {"
+        self.javaMethod2 = " public <V> V post(final String uri, final Object params, final Type type) \n throws IOException {"
+        self.javaMethod3 = "public static Intent createIntent(final Collection<? extends Issue> issues,\n final Repository repository, final int position) {"
+        self.javaMethod4 = "@Override \n public List<User> run(Account account) throws Exception {"
+        self.javaMethod5 = "private JClass typeBoundsToJClass(GeneratedClassHolder holder, List<? extends TypeMirror> bounds, Map<String, TypeMirror> actualTypes) {"
+        self.javaMethod6 = " public JMethod implementMethod(GeneratedClassHolder holder, List<ExecutableElement> methods, String methodName, String returnType, String... parameterTypes) {"
+
+        self.testChunk2 = logChunk.logChunk("", "Java")
+
         #Read in the single tests
-        self.chunk1 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk1.txt")) #Check
-        self.chunk2 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk2.txt")) #Check
-        self.chunk3 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk3.txt")) #Check
+        self.chunk1 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk1.txt"), "C++") #Check C++
+        self.chunk2 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk2.txt"), "C") #Check C
+        self.chunk3 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk3.txt"), "C++") #Check C++
         #self.chunk4 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk4.txt")) #Nope
         #self.chunk5 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk5.txt")) #Nope
-        self.chunk6 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk6.txt")) #Check
-        self.chunk7 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk7.txt")) #Check
-        self.chunk8 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk8.txt")) #Check
-        self.chunk9 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk9.txt")) #Check
-        self.chunk10 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk10.txt")) #Check
-        self.chunk11 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk11.txt")) #Check
-        self.chunk12 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk12.txt")) #Check
-        self.chunk13 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk13.txt")) #Check
-        self.chunk14 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk14.txt")) #Check
-        self.chunk15 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk15.txt")) #Check
+        self.chunk6 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk6.txt"), "C++") #Check C++
+        self.chunk7 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk7.txt"), "C++") #Check C++
+        self.chunk8 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk8.txt"), "C++") #Check C
+        self.chunk9 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk9.txt"), "C++") #Check C++
+        self.chunk10 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk10.txt"), "C++") #Check C++
+        self.chunk11 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk11.txt"), "C++") #Check C++
+        self.chunk12 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk12.txt"), "C++") #Check C++
+        self.chunk13 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk13.txt"), "C++") #Check C++
+        self.chunk14 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk14.txt"), "C++") #Check C++
+        self.chunk15 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk15.txt"), "C++") #Check C++
         #self.chunk16 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk16.txt")) #Nope
         #self.chunk17 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk17.txt")) #Nope
         #self.chunk18 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk18.txt")) #Nope
         #self.chunk19 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk19.txt")) #Nope
         #self.chunk20 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk20.txt")) #Nope
-        self.chunk21 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk21.txt")) #Check
-        self.chunk22 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk22.txt")) #Check
-        self.chunk23 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk23.txt")) #Check
-        self.chunk24 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk24.txt")) #Check
-        self.chunk25 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk25.txt")) #Check
+        self.chunk21 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk21.txt"), "C++") #Check C++ 
+        self.chunk22 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk22.txt"), "C++") #Check C++
+        self.chunk23 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk23.txt"), "C++") #Check C++
+        self.chunk24 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk24.txt"), "C++") #Check C++
+        self.chunk25 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk25.txt"), "C") #Check C
         #self.chunk26 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk26.txt")) #Nope
-        self.chunk27 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk27.txt")) #Check
+        self.chunk27 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk27.txt"), "C") #Check C
         #self.chunk28 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk28.txt")) #Nope
-        self.chunk29 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk29.txt")) #Check
+        self.chunk29 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk29.txt"), "C") #Check C
         #self.chunk30 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk30.txt")) #Maybe?
-        self.chunk31 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk31.txt")) #Check
-        self.chunk32 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk32.txt")) #Check
-        self.chunk33 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk33.txt")) #Check
+        self.chunk31 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk31.txt"), "C++") #Check C++
+        self.chunk32 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk32.txt"), "C++") #Check C++
+        self.chunk33 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk33.txt"), "C++") #Check C++
         #self.chunk34 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk34.txt")) #Nope
-        self.chunk35 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk35.txt")) #Check
-        self.chunk36 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk36.txt")) #Check
-        self.chunk37 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk37.txt")) #Check
-        self.chunk38 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk38.txt")) #Check
-        self.chunk39 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk39.txt"))
+        self.chunk35 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk35.txt"), "C") #Check C
+        self.chunk36 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk36.txt"), "C++") #Check C++
+        self.chunk37 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk37.txt"), "C++") #Check C++
+        self.chunk38 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk38.txt"), "C++") #Check C++
+        self.chunk39 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk39.txt"), "C") #C
+        self.chunk40 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk40.txt"), "C") #Check C
+        self.chunk41 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk41.txt"), "C++") #Check C++
+        self.chunk42 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk42.txt"), "C++") # C++
+        self.chunk43 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk43.txt"), "C") #Check C
+        self.chunk44 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk44.txt"), "C++") # C++
+        self.chunk45 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk45.txt"), "C++") # C++ 
+        self.chunk46 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk46.txt"), "C++") # C++
+        self.chunk47 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk47.txt"), "C++") # C++
+        self.chunk48 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk48.txt"), "C++") # C++
 
         #Read in the block tests
-        self.chunkb1 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk1.txt"),"../util/sample_conf2.ini")
-        self.chunkb2 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk2.txt"),"../util/sample_conf2.ini")
-        self.chunkb3 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk3.txt"),"../util/sample_conf2.ini")
-        self.chunkb4 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk4.txt"),"../util/sample_conf2.ini")
-        self.chunkb5 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk5.txt"),"../util/sample_conf2.ini")
-        self.chunkb6 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk6.txt"),"../util/sample_conf2.ini")
-        self.chunkb7 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk7.txt"),"../util/sample_conf2.ini")
-        self.chunkb8 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk8.txt"),"../util/sample_conf2.ini")
-        self.chunkb9 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk9.txt"),"../util/sample_conf2.ini")
-        self.chunkb10 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk10.txt"),"../util/sample_conf2.ini")
+        self.chunkb1 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk1.txt"), "Java", "../util/sample_conf2.ini")
+        self.chunkb2 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk2.txt"), "Java", "../util/sample_conf2.ini")
+        self.chunkb3 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk3.txt"), "Java", "../util/sample_conf2.ini")
+        self.chunkb4 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk4.txt"), "Java", "../util/sample_conf2.ini")
+        self.chunkb5 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk5.txt"), "Java", "../util/sample_conf2.ini")
+        self.chunkb6 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk6.txt"), "Java", "../util/sample_conf2.ini")
+        self.chunkb7 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk7.txt"), "Java", "../util/sample_conf2.ini")
+        self.chunkb8 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk8.txt"), "Java", "../util/sample_conf2.ini")
+        self.chunkb9 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk9.txt"), "Java", "../util/sample_conf2.ini")
+        self.chunkb10 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk10.txt"), "Java", "../util/sample_conf2.ini")
 
 
 
@@ -128,46 +147,64 @@ class logChunktest(unittest.TestCase):
         self.assertFalse(self.testChunk.keywordValidityCheck(self.keyword9))
 
 
+    def test_FunctionNameParseJAVA(self):
+        temp = self.testChunk2.langSwitch.parseFunctionName(self.javaMethod1)
+        print(temp)
+        self.assertTrue(temp == "createIntent", "Actual: " + temp)
+        temp = self.testChunk2.langSwitch.parseFunctionName(self.javaMethod2)
+        print(temp)
+        self.assertTrue(temp == "post", "Actual: " + temp)
+        temp = self.testChunk2.langSwitch.parseFunctionName(self.javaMethod3)
+        print(temp)
+        self.assertTrue(temp == "createIntent", "Actual: " + temp)
+        temp = self.testChunk2.langSwitch.parseFunctionName(self.javaMethod4)
+        print(temp)
+        self.assertTrue(temp == "run", "Actual: " + temp)
+        temp = self.testChunk2.langSwitch.parseFunctionName(self.javaMethod5)
+        print(temp)
+        self.assertTrue(temp == "typeBoundsToJClass", "Actual: " + temp)
+        temp = self.testChunk2.langSwitch.parseFunctionName(self.javaMethod6)
+        print(temp)
+        self.assertTrue(temp == "implementMethod", "Actual: " + temp)
+
+
+
+
+
     def test_FunctionNameParse(self):
-        temp = self.testChunk.parseFunctionName(self.method1)
+        temp = self.testChunk.langSwitch.parseFunctionName(self.method1)
         self.assertTrue(temp == "blarg", "Actual: " + temp)
-        temp = self.testChunk.parseFunctionName(self.method2)
+        temp = self.testChunk.langSwitch.parseFunctionName(self.method2)
         self.assertTrue(temp == "more", "Actual: " + temp)
-        temp = self.testChunk.parseFunctionName(self.method3)
+        temp = self.testChunk.langSwitch.parseFunctionName(self.method3)
         self.assertTrue(temp == "getStuff", "Actual: " + temp)
-        temp = self.testChunk.parseFunctionName(self.method4)
+        temp = self.testChunk.langSwitch.parseFunctionName(self.method4)
         self.assertTrue(temp == "add2to3", "Actual: " + temp)
-        temp = self.testChunk.parseFunctionName(self.method5)
+        temp = self.testChunk.langSwitch.parseFunctionName(self.method5)
         self.assertTrue(temp == "other", "Actual: " + temp)
-        temp = self.testChunk.parseFunctionName(self.method6)
+        temp = self.testChunk.langSwitch.parseFunctionName(self.method6)
         self.assertTrue(temp == "multiline", "Actual: " + temp)
-        temp = self.testChunk.parseFunctionName(self.method7)
+        temp = self.testChunk.langSwitch.parseFunctionName(self.method7)
         self.assertTrue(temp == "lotsOfSpace", "Actual: " + temp)
 
         try:
-            temp = self.testChunk.parseFunctionName(self.method8)
+            temp = self.testChunk.langSwitch.parseFunctionName(self.method8)
             #self.assertTrue(temp == "", "Actual: " + temp)
         except ValueError:
             self.assertTrue(True)
 
-        temp = self.testChunk.parseFunctionName(self.method13)
+        temp = self.testChunk.langSwitch.parseFunctionName(self.method13)
         self.assertTrue(temp == "CeilingLog2", "Actual: " + temp)
         #print(self.testChunk.getFunctionPattern(self.method14))
         #temp = self.testChunk.parseFunctionName(self.testChunk.getFunctionPattern(self.method14))
         #self.assertTrue(temp == "m_exp", "Actual: " + temp)
-        temp = self.testChunk.parseFunctionName(self.method16)
+        temp = self.testChunk.langSwitch.parseFunctionName(self.method16)
         self.assertTrue(temp == "window_focus_in_cb", "Actual: " + temp)
 
-        temp = self.testChunk.parseFunctionName(self.method18)
+        temp = self.testChunk.langSwitch.parseFunctionName(self.method18)
         self.assertTrue(temp == "idxof", "Actual: " + temp)
-        temp = self.testChunk.parseFunctionName(self.method20)
+        temp = self.testChunk.langSwitch.parseFunctionName(self.method20)
         self.assertTrue(temp == "hl_motion_420", "Actual: " + temp)
-
-
-    def test_AssignPattern(self):
-        self.assertTrue(self.testChunk.isAssignment(".matrix = {"))
-        self.assertTrue(self.testChunk.isAssignment(".blah ={"))
-        self.assertFalse(self.testChunk.isAssignment("realFunction(int default = 0) {"))
 
     def test_isClassDef(self):
         self.assertTrue(self.testChunk.isClassDef("class A {"))
@@ -182,6 +219,7 @@ class logChunktest(unittest.TestCase):
         self.assertTrue(self.testChunk.isConstructorOrDestructor("~StackHelper() {", "stackhelper"))
         self.assertTrue(self.testChunk.isConstructorOrDestructor("WindowProperties(GdkRectangle* geometry, bool toolbarVisible, bool statusbarVisible, bool scrollbarsVisible, bool menubarVisible,                          bool locationbarVisible, bool resizable, bool fullscreen)             : m_isNull(false)             , m_geometry(*geometry)             , m_toolbarVisible(toolbarVisible)             , m_statusbarVisible(statusbarVisible)             , m_scrollbarsVisible(scrollbarsVisible)             , m_menubarVisible(menubarVisible)             , m_locationbarVisible(locationbarVisible)             , m_resizable(resizable)             , m_fullscreen(fullscreen)         {","windowproperties"))
         self.assertTrue(self.testChunk.isConstructorOrDestructorWithList("      UIClientTest()         : m_scriptDialogType(WEBKIT_SCRIPT_DIALOG_ALERT)         , m_scriptDialogConfirmed(true)         , m_allowPermissionRequests(false)         , m_mouseTargetModifiers(0)     {", ["uiclienttest","windowproperties"]))
+        self.assertTrue(self.testChunk.isConstructorOrDestructorWithList("Mutex(int spincount=0) : _spincount(spincount) {", "Mutex"))
 
     def test_isFunction(self):
         self.assertTrue(self.testChunk.isFunction(self.method1))
@@ -207,11 +245,11 @@ class logChunktest(unittest.TestCase):
         self.assertTrue(self.testChunk.isFunction(self.method18))
         self.assertTrue(self.testChunk.isFunction(self.method19))
         self.assertTrue(self.testChunk.isFunction(self.method20))
-        print("---------------------------------------------------")
-        print(self.testChunk.getFunctionPattern(self.method21))
-        print("---------------------------------------------------")
-
+        #print("---------------------------------------------------")
+        #print(self.testChunk.getFunctionPattern(self.method21))
+        #print("---------------------------------------------------")
         self.assertFalse(self.testChunk.isFunction(self.method21))
+        self.assertTrue(self.testChunk.isFunction(self.method22))
 
     def test_removeComments(self):
         line = "/***********************************************************//**"
@@ -286,7 +324,7 @@ class logChunktest(unittest.TestCase):
     def test_parseText_Single1(self):
         self.chunk1.parseText()
         funcList = self.chunk1.functions
-        self.debugFunctions(funcList)
+        #self.debugFunctions(funcList)
         self.assertTrue(len(funcList) == 3) 
         self.assertTrue(funcList[0].method=="NdbBlob::getBlobEventName")
         self.assertTrue(funcList[0].total_add == 10)
@@ -325,7 +363,7 @@ class logChunktest(unittest.TestCase):
         self.assertTrue(funcList[0].total_add == 0)
         self.assertTrue(funcList[0].total_del == 15)
 
-        testDict = {'assert Adds':0, 'assert Dels': 0, 'ut_ad Adds':0, 'ut_ad Dels': 1, 'ut_a Adds':0, 'ut_a Dels': 2}
+        testDict = {'assert Adds':0, 'assert Dels': 0, 'ut_ad Adds':0, 'ut_ad Dels': 1, 'ut_a Adds':0, 'ut_a Dels': 1}
         self.assertEqual(testDict,funcList[0].keywordDictionary)
 
     def test_parseText_Single3(self):
@@ -594,7 +632,7 @@ class logChunktest(unittest.TestCase):
         self.assertTrue(len(funcList) == 4)
 
         self.assertTrue(funcList[2].method ==  "row_upd_index_replace_new_col_vals_index_pos")
-        testDict = { 'ut_ad Adds': 1, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 1, 'assert Adds': 0, 'ut_a Dels': 0}
+        testDict = { 'ut_ad Adds': 1, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 0, 'ut_a Dels': 0}
         self.assertEqual(testDict,funcList[2].keywordDictionary)
 
 
@@ -663,11 +701,11 @@ class logChunktest(unittest.TestCase):
     def test_parseText_Single33(self):
         self.chunk33.parseText()
         #Problems:
-        #Also, get a false assert when we have a function name named assert.
+        #Also, get a false assert? when we have a function name named assert.
         funcList = self.chunk33.functions
         #self.debugFunctions(funcList)
         # print("Length: " + str(len(funcList)))
-        self.assertTrue(len(funcList) == 23)
+        self.assertTrue(len(funcList) == 24)
 
     def test_parseText_Single35(self):
         self.chunk35.parseText()
@@ -719,6 +757,88 @@ class logChunktest(unittest.TestCase):
         self.assertTrue(funcList[2].total_del == 3)
         testDict = { 'ut_ad Adds': 0, 'assert Dels': 1, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 1, 'ut_a Dels': 0}
         self.assertEqual(testDict, funcList[2].keywordDictionary)
+
+    def test_parseText_Single40(self):
+        self.chunk40.parseText()
+        funcList = self.chunk40.functions
+        #self.debugFunctions(funcList)
+        self.assertTrue(len(funcList) == 1)
+        self.assertTrue(funcList[0].method == "jl_unbox_##j_type")
+        self.assertTrue(funcList[0].total_add == 2)
+        self.assertTrue(funcList[0].total_del == 2)
+        testDict = { 'ut_ad Adds': 0, 'assert Dels': 2, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 2, 'ut_a Dels': 0}
+        self.assertEqual(testDict, funcList[0].keywordDictionary)
+
+    def test_parseText_Single41(self):
+        self.chunk41.parseText()
+        funcList = self.chunk41.functions
+        #self.debugFunctions(funcList)
+        self.assertTrue(len(funcList) == 9)
+        self.assertTrue(funcList[0].method == "Mutex")
+        self.assertTrue(funcList[4].method == "Mutex")
+
+    def test_parseText_Single42(self):
+        self.chunk42.parseText()
+        funcList = self.chunk42.functions
+        #self.debugFunctions(funcList)
+        self.assertTrue(len(funcList) == 1)
+        self.assertTrue(funcList[0].method == "Benchmark<P_parameter>::saveMatlabGraph")
+        testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 1, 'ut_a Dels': 0}
+        self.assertEqual(testDict, funcList[0].keywordDictionary)
+
+    def test_parseText_Single43(self):
+        self.chunk43.parseText()
+        funcList = self.chunk43.functions
+        #self.debugFunctions(funcList)
+        self.assertTrue(len(funcList) == 1)
+        self.assertTrue(funcList[0].method == "incr_flush_list_size_in_bytes")
+        testDict = { 'ut_ad Adds': 2, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 0, 'ut_a Dels': 0}
+        self.assertEqual(testDict, funcList[0].keywordDictionary)
+
+    def test_parseText_Single44(self):
+        self.chunk44.parseText()
+        funcList = self.chunk44.functions
+        #self.debugFunctions(funcList)
+        self.assertTrue(len(funcList) == 1)
+        self.assertTrue(funcList[0].method == "auto_copying_data_provider_t::get_data_into_buffers")
+        testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 4, 'ut_a Dels': 0}
+        self.assertEqual(testDict, funcList[0].keywordDictionary)
+
+    def test_parseText_Single45(self): #Not Sure how I want to handle this
+        self.chunk45.parseText()
+        funcList = self.chunk45.functions 
+        #self.debugFunctions(funcList)
+        self.assertTrue(len(funcList) == 1)
+        self.assertTrue(funcList[0].method == "Int32BinopInputShapeTester")
+        testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 0, 'ut_a Dels': 0}
+        self.assertEqual(testDict, funcList[0].keywordDictionary)
+
+    def test_parseText_Single46(self): #Not Sure how I want to handle this
+        self.chunk46.parseText()
+        funcList = self.chunk46.functions 
+        #self.debugFunctions(funcList)
+        self.assertTrue(len(funcList) == 2)
+        self.assertTrue(funcList[0].method == "QuatF::mulP")
+        testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 1, 'ut_a Dels': 0}
+        self.assertEqual(testDict, funcList[1].keywordDictionary)
+
+    def test_parseText_Single47(self): #Not Sure how I want to handle this
+        self.chunk47.parseText()
+        funcList = self.chunk47.functions 
+        #self.debugFunctions(funcList)
+        self.assertTrue(len(funcList) == 1)
+        self.assertTrue(funcList[0].method == "CCAnimate::initWithAnimation")
+        testDict = { 'ut_ad Adds': 0, 'assert Dels': 1, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 1, 'ut_a Dels': 0}
+        self.assertEqual(testDict, funcList[0].keywordDictionary)
+
+    def test_parseText_Single48(self): #Not Sure how I want to handle this
+        self.chunk48.parseText()
+        funcList = self.chunk48.functions 
+        #self.debugFunctions(funcList)
+        self.assertTrue(len(funcList) == 4)
+        self.assertTrue(funcList[0].method == "&=")
+        testDict = { 'ut_ad Adds': 0, 'assert Dels': 1, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 0, 'ut_a Dels': 0}
+        self.assertEqual(testDict, funcList[0].keywordDictionary)
 
     def test_parseText_Block1(self):
 
@@ -870,7 +990,7 @@ class logChunktest(unittest.TestCase):
 
         self.chunkb10.parseText()
         funcList = self.chunkb10.functions
-        self.debugFunctions(funcList)
+        #self.debugFunctions(funcList)
         self.assertTrue(len(funcList) == 1) 
 
 

@@ -1,0 +1,22 @@
++Point3F & QuatF::mulP(const Point3F& p, Point3F* r)
++{
++   QuatF qq;
++   QuatF qi = *this;
++   QuatF qv( p.x, p.y, p.z, 0.0f);
++
++   qi.inverse();
++   qq.mul(qi, qv);
++   qv.mul(qq, *this);
++   r->set(qv.x, qv.y, qv.z);
++   return *r;
++}
++
++QuatF & QuatF::mul( const QuatF &a, const QuatF &b)
++{
++   AssertFatal( &a != this && &b != this, "QuatF::mul: dest should not be same as source" );
++   w = a.w * b.w - a.x * b.x - a.y * b.y - a.z * b.z;
++   x = a.w * b.x + a.x * b.w + a.y * b.z - a.z * b.y;
++   y = a.w * b.y + a.y * b.w + a.z * b.x - a.x * b.z;
++   z = a.w * b.z + a.z * b.w + a.x * b.y - a.y * b.x;
++   return *this;
++}
