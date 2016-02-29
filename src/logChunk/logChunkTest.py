@@ -255,7 +255,7 @@ class logChunktest(unittest.TestCase):
 
     def test_isFuncC(self):
         self.assertTrue(self.testChunk_C.isFunction("ccv_convnet_t* ccv_convnet_new(int use_cwc_accel, ccv_size_t input, ccv_convnet_layer_param_t params[], int count) {"))
-'''
+
     def test_removeComments(self):
         line = "/***********************************************************//**"
         commentFlag = False
@@ -1097,6 +1097,6 @@ class logChunktest(unittest.TestCase):
         #funcList = self.chunk34.functions
         #self.debugFunctions(funcList)
         #self.assertTrue(len(funcList) == 0)
-'''
+
 if __name__=="__main__":
     unittest.main()
