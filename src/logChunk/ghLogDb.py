@@ -229,6 +229,7 @@ class ghLogDb:
         self.log_file = logFile
         self.project_name = None
         self.curr_method = None
+        self.cur_lang = None
         self.shas = []
     
 
@@ -284,11 +285,11 @@ class ghLogDb:
             fileName, extension = os.path.splitext(file_name)
 
             if extension == "":
-                language = ""
+                self.cur_lang = ""
             else:
-                language = extension.split(".")[1]
+                self.cur_lang = extension.split(".")[1]
 
-            patchObj = Patch(file_name, language)
+            patchObj = Patch(file_name, self.cur_lang)
 
             if "test" in fileName:
                 patchObj.is_test = True
@@ -307,11 +308,11 @@ class ghLogDb:
             fileName, extension = os.path.splitext(file_name)
 
             if extension == "":
-                language = ""
+                self.cur_lang = ""
             else:
-                language = extension.split(".")[1]
+                self.cur_lang = extension.split(".")[1]
 
-            patchObj = Patch(file_name, language)
+            patchObj = Patch(file_name, self.cur_lang)
 
             if "test" in fileName:
                 patchObj.is_test = True
@@ -329,11 +330,11 @@ class ghLogDb:
             fileName, extension = os.path.splitext(file_name)
 
             if extension == "":
-                language = ""
+                self.cur_lang = ""
             else:
-                language = extension.split(".")[1]
+                self.cur_lang = extension.split(".")[1]
 
-            patchObj = Patch(file_name, language)
+            patchObj = Patch(file_name, self.cur_lang)
 
             if "test" in fileName:
                 patchObj.is_test = True
@@ -351,7 +352,7 @@ class ghLogDb:
             if Util.DEBUG == 1:
                 print("Resetting.")
             curLogChunk.reset()
-            curLogChunk.setLang(language) #DOUBLE CHECK ME!
+            curLogChunk.setLang("." + self.cur_lang) #DOUBLE CHECK ME!
 
             temp_func   = line.split("@@ ")
 
@@ -408,7 +409,7 @@ class ghLogDb:
 
             lst=[]
             listToDict={}
-            mockChunk=logChunk("")
+            mockChunk=logChunk("", "C")
             mockChunk.readKeywords(lst)
             keywords= [sub_list[0] for sub_list in lst]
             for keyword in keywords:
@@ -425,7 +426,7 @@ class ghLogDb:
         log_mssg = ""
         is_no_prev_ver = False
         is_no_next_ver = False
-        curLogChunk = logChunk("", config)
+        curLogChunk = logChunk("", "C", config)
         linenum = 0
 
         for l in inf:
@@ -489,7 +490,7 @@ class ghLogDb:
                         if Util.DEBUG == 1:
                             print("Resetting.")
                         curLogChunk.reset()
-                        curLogChunk.setLang(language) #DOUBLE CHECK ME!
+                        curLogChunk.setLang("." + self.cur_lang) #DOUBLE CHECK ME!
 
                     patchObj = self.createPatch(line)
                     shaObj.patches.append(patchObj)
@@ -512,7 +513,7 @@ class ghLogDb:
                             if Util.DEBUG == 1:
                                 print("Resetting.")
                             curLogChunk.reset()
-                            curLogChunk.setLang(language) #DOUBLE CHECK ME!
+                            curLogChunk.setLang("." + self.cur_lang) #DOUBLE CHECK ME!
 
                     patchObj = self.createPatchWithNoPrevVersion(line)
                     shaObj.patches.append(patchObj)
@@ -520,8 +521,8 @@ class ghLogDb:
                     self.processPatch(fullLine, patchObj, curLogChunk)
 
 
-        if shaObj != None:
-            shaObj.patches.append(patchObj)
+        #if shaObj != None:
+        #    shaObj.patches.append(patchObj)
 
 
         #Make sure to get the last patch in the file!

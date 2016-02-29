@@ -61,6 +61,7 @@ class logChunktest(unittest.TestCase):
         self.method22 = " c_type jl_unbox_##j_type(jl_value_t *v)  {"
 
         self.testChunk = logChunk.logChunk("", "C++")
+        self.testChunk_C = logChunk.logChunk("", "C")
 
         self.javaMethod1 = "public static Intent createIntent(Context context, String username, String password) {"
         self.javaMethod2 = " public <V> V post(final String uri, final Object params, final Type type) \n throws IOException {"
@@ -250,7 +251,11 @@ class logChunktest(unittest.TestCase):
         #print("---------------------------------------------------")
         self.assertFalse(self.testChunk.isFunction(self.method21))
         self.assertTrue(self.testChunk.isFunction(self.method22))
+        self.assertFalse(self.testChunk.isFunction(" set_max_autoinc: if (auto_inc <= col_max_value) {"))
 
+    def test_isFuncC(self):
+        self.assertTrue(self.testChunk_C.isFunction("ccv_convnet_t* ccv_convnet_new(int use_cwc_accel, ccv_size_t input, ccv_convnet_layer_param_t params[], int count) {"))
+'''
     def test_removeComments(self):
         line = "/***********************************************************//**"
         commentFlag = False
@@ -1092,6 +1097,6 @@ class logChunktest(unittest.TestCase):
         #funcList = self.chunk34.functions
         #self.debugFunctions(funcList)
         #self.assertTrue(len(funcList) == 0)
-
+'''
 if __name__=="__main__":
     unittest.main()

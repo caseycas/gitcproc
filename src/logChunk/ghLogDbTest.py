@@ -18,12 +18,12 @@ class ghLogDbTest(unittest.TestCase):
         self.testCommit5 = ghLogDb.ghLogDb("testfiles/ghLogDbTest/TestCommit5.txt")
      
         self.testCommit7 = ghLogDb.ghLogDb("testfiles/ghLogDbTest/TestCommit7.txt")
-        self.testCommit8 = ghLogDb.ghLogDb("testfiles/ghLogDbTest/TestCommit8.txt")
+        self.testCommit8 = ghLogDb.ghLogDb("testfiles/ghLogDbTest/TestCommit8.txt") #Broken, but I don't think its fixable. Fault of git logger
         self.testCommit9 = ghLogDb.ghLogDb("testfiles/ghLogDbTest/TestCommit9.txt")
         self.testCommit10 = ghLogDb.ghLogDb("testfiles/ghLogDbTest/TestCommit10.txt")
         self.testCommit11 = ghLogDb.ghLogDb("testfiles/ghLogDbTest/TestCommit11.txt")
         self.testCommit12 = ghLogDb.ghLogDb("testfiles/ghLogDbTest/TestCommit12.txt")
-        #self.testCommit13 = ghLogDb.ghLogDb("testfiles/ghLogDbTest/TestCommit13.txt")
+        self.testCommit13 = ghLogDb.ghLogDb("testfiles/ghLogDbTest/TestCommit13.txt")
 
         #self.testCommit13.processLog() #Make sure there is no crash -> Hangs a long time
 

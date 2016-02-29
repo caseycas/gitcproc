@@ -84,9 +84,8 @@ class logChunk:
 
     
     def setLang(self, language = "C"):
-        l = determineLanguage(language) #From chunkingConstants
-        self.sT = scopeTracker.scopeTracker(language)
-        self.langSwitch = chunkingConstants.languageSwitcher(language)
+        self.langSwitch = LanguageSwitcherFactory.LanguageSwitcherFactory.createLS(language)
+        self.sT = scopeTracker.scopeTracker(self.langSwitch.getLanguage())
 
 
     #TODO: Not all variables refreshed + needs to be set for the correct set of variables.
@@ -320,6 +319,9 @@ class logChunk:
 
         #Select patterns for our language and check against them
         funcPatterns = self.langSwitch.getFunctionRegexes()
+        if(Util.DEBUG):
+            print("Checking " + str(len(funcPatterns)) + " patterns.")
+
         for p in funcPatterns:
             result = re.search(p, temp)
             if(result != None):
