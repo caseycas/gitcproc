@@ -288,7 +288,7 @@ class logChunk:
             except:
                 print("Checking if a constructor/destructor: " + unicode(temp, 'utf-8', errors='ignore'))
 
-        return re.search(constructPatt, temp)
+        return re.search(constructPatt, temp,flags=re.IGNORECASE)
 
     def getBlockPattern(self,line,list):
         for l in list:

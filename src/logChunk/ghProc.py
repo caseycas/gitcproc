@@ -16,7 +16,7 @@ sys.path.append("../util")
 import Util
 from ghLogDb import ghLogDb
 
-LOG_FILE = "test1.txt"
+LOG_FILE = "test6.txt"
 
 def dumpLog(projPath):
 

@@ -892,11 +892,11 @@ class logChunktest(unittest.TestCase):
 
         #self.debugFunctions(funcList)
 
-        self.assertTrue(len(funcList) == 1) 
+        self.assertTrue(len(funcList) == 1)
         self.assertTrue(funcList[0].method=="ReflectiveProperty")
-        self.assertTrue(funcList[0].total_add == 12)
-        self.assertTrue(funcList[0].total_del == 3)
-        testdict= {'throw  Adds': 0, 'catch Dels': 1, 'try Adds': 12, 'try Dels': 3, 'exception Dels': 0, 'raise Adds': 0, 'catch Adds': 4, 'finally Dels': 0, 'finally Adds': 0, 'throw  Dels': 0, 'exception Adds': 0, 'raise Dels': 0, 'for Adds': 0,'for Dels': 0,'while Adds': 0,'while Dels': 0}
+        self.assertTrue(funcList[0].total_add == 8)
+        self.assertTrue(funcList[0].total_del == 2)
+        testdict= {'throw  Adds': 0, 'catch Dels': 1, 'try Adds': 8, 'try Dels': 2, 'exception Dels': 0, 'raise Adds': 0, 'catch Adds': 4, 'finally Dels': 0, 'finally Adds': 0, 'throw  Dels': 0, 'exception Adds': 0, 'raise Dels': 0, 'for Adds': 0,'for Dels': 0,'while Adds': 0,'while Dels': 0}
 
         self.assertEqual(testdict,funcList[0].keywordDictionary)
 
