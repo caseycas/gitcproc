@@ -70,7 +70,6 @@ class logChunktest(unittest.TestCase):
         self.javaMethod5 = "private JClass typeBoundsToJClass(GeneratedClassHolder holder, List<? extends TypeMirror> bounds, Map<String, TypeMirror> actualTypes) {"
         self.javaMethod6 = " public JMethod implementMethod(GeneratedClassHolder holder, List<ExecutableElement> methods, String methodName, String returnType, String... parameterTypes) {"
 
-        self.testChunk2 = logChunk.logChunk("", "Java")
 
         #Read in the single tests
         self.chunk1 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk1.txt"), "C++") #Check C++
@@ -122,17 +121,6 @@ class logChunktest(unittest.TestCase):
         self.chunk47 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk47.txt"), "C++") # C++
         self.chunk48 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk48.txt"), "C++") # C++
 
-        #Read in the block tests
-        self.chunkb1 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk1.txt"), "Java", "../util/sample_conf2.ini")
-        self.chunkb2 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk2.txt"), "Java", "../util/sample_conf2.ini")
-        self.chunkb3 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk3.txt"), "Java", "../util/sample_conf2.ini")
-        self.chunkb4 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk4.txt"), "Java", "../util/sample_conf2.ini")
-        self.chunkb5 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk5.txt"), "Java", "../util/sample_conf2.ini")
-        self.chunkb6 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk6.txt"), "Java", "../util/sample_conf2.ini")
-        self.chunkb7 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk7.txt"), "Java", "../util/sample_conf2.ini")
-        self.chunkb8 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk8.txt"), "Java", "../util/sample_conf2.ini")
-        self.chunkb9 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk9.txt"), "Java", "../util/sample_conf2.ini")
-        self.chunkb10 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk10.txt"), "Java", "../util/sample_conf2.ini")
 
 
 
@@ -147,26 +135,6 @@ class logChunktest(unittest.TestCase):
         self.assertFalse(self.testChunk.keywordValidityCheck(self.keyword8))
         self.assertFalse(self.testChunk.keywordValidityCheck(self.keyword9))
 
-
-    def test_FunctionNameParseJAVA(self):
-        temp = self.testChunk2.langSwitch.parseFunctionName(self.javaMethod1)
-        print(temp)
-        self.assertTrue(temp == "createIntent", "Actual: " + temp)
-        temp = self.testChunk2.langSwitch.parseFunctionName(self.javaMethod2)
-        print(temp)
-        self.assertTrue(temp == "post", "Actual: " + temp)
-        temp = self.testChunk2.langSwitch.parseFunctionName(self.javaMethod3)
-        print(temp)
-        self.assertTrue(temp == "createIntent", "Actual: " + temp)
-        temp = self.testChunk2.langSwitch.parseFunctionName(self.javaMethod4)
-        print(temp)
-        self.assertTrue(temp == "run", "Actual: " + temp)
-        temp = self.testChunk2.langSwitch.parseFunctionName(self.javaMethod5)
-        print(temp)
-        self.assertTrue(temp == "typeBoundsToJClass", "Actual: " + temp)
-        temp = self.testChunk2.langSwitch.parseFunctionName(self.javaMethod6)
-        print(temp)
-        self.assertTrue(temp == "implementMethod", "Actual: " + temp)
 
 
 
@@ -845,166 +813,6 @@ class logChunktest(unittest.TestCase):
         testDict = { 'ut_ad Adds': 0, 'assert Dels': 1, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 0, 'ut_a Dels': 0}
         self.assertEqual(testDict, funcList[0].keywordDictionary)
 
-    def test_parseText_Block1(self):
-
-        self.chunkb1.parseText()
-        funcList = self.chunkb1.functions
-        #self.debugFunctions(funcList)
-        self.assertTrue(len(funcList) == 2) 
-
-        self.assertTrue(funcList[0].method=="foo")
-        self.assertTrue(funcList[0].total_add == 2)
-        self.assertTrue(funcList[0].total_del == 1)
-        testDict= {'throw  Adds': 0, 'catch Dels': 0, 'try Adds': 0, 'try Dels': 1, 'exception Dels': 0, 'raise Adds': 0, 'catch Adds': 1, 'finally Dels': 0, 'finally Adds': 0, 'throw  Dels': 0, 'exception Adds': 0, 'raise Dels': 0, 'for Adds': 0,'for Dels': 0,'while Adds': 0,'while Dels': 0}
-
-
-        self.assertEqual(testDict,funcList[0].keywordDictionary)
-        self.assertTrue(funcList[1].method=="foo00022")
-        self.assertTrue(funcList[1].total_add == 4)
-        self.assertTrue(funcList[1].total_del == 2)
-        testDict= {'throw  Adds': 0, 'catch Dels': 0, 'try Adds': 1, 'try Dels': 1, 'exception Dels': 0, 'raise Adds': 0, 'catch Adds': 1, 'finally Dels': 0, 'finally Adds': 0, 'throw  Dels': 0, 'exception Adds': 0, 'raise Dels': 0, 'for Adds': 0,'for Dels': 0,'while Adds': 0,'while Dels': 0}
-
-        self.assertEqual(testDict, funcList[1].keywordDictionary)
-
-    def test_parseText_Block2(self): #ISSUE: the current cannot assign values to multiple blocks.
-
-        self.chunkb2.parseText()
-        funcList = self.chunkb2.functions
-        #self.debugFunctions(funcList)
-        self.assertTrue(len(funcList) == 2) 
-
-        self.assertTrue(funcList[0].method=="getAccounts")
-        self.assertTrue(funcList[0].total_add == 1)
-        self.assertTrue(funcList[0].total_del == 2)
-        testdict= {'throw  Adds': 0, 'catch Dels': 0, 'try Adds': 0, 'try Dels': 0, 'exception Dels': 0, 'raise Adds': 0, 'catch Adds': 0, 'finally Dels': 0, 'finally Adds': 0, 'throw  Dels': 0, 'exception Adds': 0, 'raise Dels': 0, 'for Adds': 0,'for Dels': 0,'while Adds': 0,'while Dels': 0}
-        self.assertEqual(testdict,funcList[0].keywordDictionary)
-
-        self.assertTrue(funcList[1].method=="getAccount")
-        self.assertTrue(funcList[1].total_add == 6)
-        self.assertTrue(funcList[1].total_del == 2)
-        testdict={'throw  Adds': 1, 'catch Dels': 0, 'try Adds': 3, 'try Dels': 2, 'exception Dels': 0, 'raise Adds': 0, 'catch Adds': 4, 'finally Dels': 0, 'finally Adds': 0, 'throw  Dels': 0, 'exception Adds': 2, 'raise Dels': 0, 'for Adds': 0,'for Dels': 0,'while Adds': 2,'while Dels': 2}
-        self.assertEqual(testdict,funcList[1].keywordDictionary)
-
-    def test_parseText_Block3(self):
-
-        self.chunkb3.parseText()
-        funcList = self.chunkb3.functions
-
-        #self.debugFunctions(funcList)
-
-        self.assertTrue(len(funcList) == 1)
-        self.assertTrue(funcList[0].method=="ReflectiveProperty")
-        self.assertTrue(funcList[0].total_add == 8)
-        self.assertTrue(funcList[0].total_del == 2)
-        testdict= {'throw  Adds': 0, 'catch Dels': 1, 'try Adds': 8, 'try Dels': 2, 'exception Dels': 0, 'raise Adds': 0, 'catch Adds': 4, 'finally Dels': 0, 'finally Adds': 0, 'throw  Dels': 0, 'exception Adds': 0, 'raise Dels': 0, 'for Adds': 0,'for Dels': 0,'while Adds': 0,'while Dels': 0}
-
-        self.assertEqual(testdict,funcList[0].keywordDictionary)
-
-    def test_parseText_Block4(self):
-
-        self.chunkb4.parseText()
-        funcList = self.chunkb4.functions
-        # self.debugFunctions(funcList)
-
-        self.assertTrue(len(funcList) == 1) 
-        self.assertTrue(funcList[0].method=="setHandle")
-        self.assertTrue(funcList[0].total_add == 1)
-        self.assertTrue(funcList[0].total_del == 1)
-        testdict= {'throw  Adds': 0, 'catch Dels': 0, 'try Adds': 0, 'try Dels': 0, 'exception Dels': 0, 'raise Adds': 0, 'catch Adds': 0, 'finally Dels': 0, 'finally Adds': 0, 'throw  Dels': 0, 'exception Adds': 0, 'raise Dels': 0, 'for Adds': 0,'for Dels': 0,'while Adds': 0,'while Dels': 0}
-        self.assertEqual(testdict,funcList[0].keywordDictionary)
-
-    def test_parseText_Block5(self):
-
-        self.chunkb5.parseText()
-        funcList = self.chunkb5.functions
-        #self.debugFunctions(funcList)
-
-
-        self.assertTrue(len(funcList) == 1) 
-        self.assertTrue(funcList[0].method=="copy")
-        self.assertTrue(funcList[0].total_add == 19)
-        self.assertTrue(funcList[0].total_del == 5)
-
-        testdict= {'throw  Adds': 0, 'catch Dels': 0, 'try Adds': 0, 'try Dels': 0, 'exception Dels': 0, 'raise Adds': 0, 'catch Adds': 0, 'finally Dels': 0, 'finally Adds': 0, 'throw  Dels': 0, 'exception Adds': 1, 'raise Dels': 0, 'for Adds': 0,'for Dels': 0,'while Adds': 0,'while Dels': 0}
-
-        self.assertEqual(testdict,funcList[0].keywordDictionary)
-
-    def test_parseText_Block6(self):
-
-        self.chunkb6.parseText()
-        funcList = self.chunkb6.functions
-        # self.debugFunctions(funcList)
-
-        self.assertTrue(len(funcList) == 1) 
-
-
-        self.assertTrue(funcList[0].method=="init")
-        self.assertTrue(funcList[0].total_add == 0)
-        self.assertTrue(funcList[0].total_del == 1)
-        testdict= {'throw  Adds': 0, 'catch Dels': 1, 'try Adds': 0, 'try Dels': 0, 'exception Dels': 1, 'raise Adds': 0, 'catch Adds': 0, 'finally Dels': 0, 'finally Adds': 0, 'throw  Dels': 1, 'exception Adds': 0, 'raise Dels': 0, 'for Adds': 0,'for Dels': 0,'while Adds': 0,'while Dels': 0}
-
-        self.assertEqual(testdict,funcList[0].keywordDictionary)
-
-
-    def test_parseText_Block7(self): #Need to update expected result (Question, we seem to not count the } at end of block?)
-
-        self.chunkb7.parseText()
-        funcList = self.chunkb7.functions
-        #self.debugFunctions(funcList)
-        self.assertTrue(len(funcList) == 1) 
-        self.assertTrue(funcList[0].method=="onCreateLoader")
-        self.assertTrue(funcList[0].total_add == 2)
-        self.assertTrue(funcList[0].total_del == 7)
-
-        testdict= {'throw  Adds': 0, 'catch Dels': 4, 'try Adds': 0, 'try Dels': 2, 'exception Dels': 1, 'raise Adds': 0, 'catch Adds': 0, 'finally Dels': 0, 'finally Adds': 0, 'throw  Dels': 0, 'exception Adds': 1, 'raise Dels': 0, 'for Adds': 0,'for Dels': 0,'while Adds': 0,'while Dels': 0, 'for Adds': 0,'for Dels': 0,'while Adds': 0,'while Dels': 0, 'for Adds': 0,'for Dels': 0,'while Adds': 0,'while Dels': 0}
-
-        self.assertEqual(testdict,funcList[0].keywordDictionary)
-
-
-    def test_parseText_Block8(self): #Need to update expected result (Question, we seem to not count the } at end of block?)
-
-        self.chunkb8.parseText()
-        funcList = self.chunkb8.functions
-        #self.debugFunctions(funcList)
-
-        self.assertTrue(len(funcList) == 1) 
-        self.assertTrue(funcList[0].method=="getAuthToken")
-        self.assertTrue(funcList[0].total_add == 2)
-        self.assertTrue(funcList[0].total_del == 2)
-        testdict= {'throw  Adds': 1, 'catch Dels': 1, 'try Adds': 1, 'try Dels': 1, 'exception Dels': 1, 'raise Adds': 0, 'catch Adds': 2, 'finally Dels': 0, 'finally Adds': 0, 'throw  Dels': 0, 'exception Adds': 2, 'raise Dels': 0, 'for Adds': 0,'for Dels': 0,'while Adds': 0,'while Dels': 0}
-        self.assertEqual(testdict,funcList[0].keywordDictionary)
-
-
-    def test_parseText_Block9(self):
-
-        self.chunkb9.parseText()
-        funcList = self.chunkb9.functions
-        #self.debugFunctions(funcList)
-
-        self.assertTrue(len(funcList) == 1) 
-
-        self.assertTrue(funcList[0].method=="getAuthToken")
-        self.assertTrue(funcList[0].total_add == 2)
-        self.assertTrue(funcList[0].total_del == 2)
-        testdict= {'throw  Adds': 1, 'catch Dels': 1, 'try Adds': 0, 'try Dels': 0, 'exception Dels': 1, 'raise Adds': 0, 'catch Adds': 2, 'finally Dels': 0, 'finally Adds': 0, 'throw  Dels': 0, 'exception Adds': 2, 'raise Dels': 0, 'for Adds': 0,'for Dels': 0,'while Adds': 0,'while Dels': 0}
-
-        self.assertEqual(testdict,funcList[0].keywordDictionary)
-
-
-    def test_parseText_Block10(self):
-
-        self.chunkb10.parseText()
-        funcList = self.chunkb10.functions
-        #self.debugFunctions(funcList)
-        self.assertTrue(len(funcList) == 1) 
-
-
-        self.assertTrue(funcList[0].method=="getToken")
-        self.assertTrue(funcList[0].total_add == 8)
-        self.assertTrue(funcList[0].total_del == 5)
-        testdict= {'throw  Adds': 0, 'catch Dels': 0, 'try Adds': 0, 'try Dels': 0, 'exception Dels': 0, 'raise Adds': 0, 'catch Adds': 0, 'finally Dels': 0, 'finally Adds': 0, 'throw  Dels': 0, 'exception Adds': 0, 'raise Dels': 0, 'for Adds': 4,'for Dels': 5,'while Adds': 4,'while Dels': 0}
-
-        self.assertEqual(testdict,funcList[0].keywordDictionary)
 
 
 
@@ -1097,6 +905,7 @@ class logChunktest(unittest.TestCase):
         #funcList = self.chunk34.functions
         #self.debugFunctions(funcList)
         #self.assertTrue(len(funcList) == 0)
+
 
 if __name__=="__main__":
     unittest.main()

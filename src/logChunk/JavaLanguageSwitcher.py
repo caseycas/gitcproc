@@ -2,7 +2,7 @@ import re
 import BracketLanguageSwitcher
 
 #---------------------- Yagnik double check these ----------------------
-
+'''
 JavaFunctionPatterns = [" [\w<>\d:_]+&* *\** +[\w\d_#:~]+&* *\([\w\d_=,\[\]\*\(\)&:<> ]*\) *{$",
                              " [\w<>\d:_]+&* +\** *[\w\d_#:~]+&* *\([\w\d_=,\[\]\*\(\)&:<> ]*\) *{$",
                              "^[\w<>\d:_]+&* *\** +[\w\d_#:~]+&* *\([\w\d_=,\[\]\*\(\)&:<> ]*\) *{$",
@@ -10,10 +10,10 @@ JavaFunctionPatterns = [" [\w<>\d:_]+&* *\** +[\w\d_#:~]+&* *\([\w\d_=,\[\]\*\(\
                              "[\w<>\d:_]+&* *\** *[\w\d_#:~]+&* *\([\w\d_=,\[\]\*\(\)&:<> ]*\)[\s]* throws [\w\W\s]+ *{$",
                              "^[\w<>\d:_]+&* *\** *[\w\d_#:~]+&* *\([\w\d_=,\[\]\*\(\)&:<> ]*\)[\s]* throws [\w\W\s]+ *{$"]
 
-
+'''
 # JavaFunctionPatterns = ["(public|protected|private|static|\s) +[\w\<\>\[\]]+\s+(\w+) *\([^\)]*\) *(\{?|[^;])"]
 
-# JavaFunctionPatterns=["((public|private|protected|static|final|native|synchronized|abstract|transient)+\s)+[\$_\w\<\>\[\]]*\s+[\$_\w]+\([^\)]*\)?\s*\{?[^\}]*\}?"]
+JavaFunctionPatterns=["((public|private|protected|static|final|native|synchronized|abstract|transient)+\s*)+[\$_\w\<\>\[\]]*\s+[\$_\w]+\([^\)]*\)?\s*\{?[^\}]*\}?"]
 
 JavaParamPattern = " *\([\w\d_=,\[\]\*\(\)&:<> ]*\)[^;]*{" #What parameters to a call look like. C/C++/Java specific
 
