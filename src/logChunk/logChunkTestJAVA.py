@@ -30,6 +30,7 @@ class logChunktest(unittest.TestCase):
         self.javaMethod4 = "@Override \n public List<User> run(Account account) throws Exception {"
         self.javaMethod5 = "private JClass typeBoundsToJClass(GeneratedClassHolder holder, List<? extends TypeMirror> bounds, Map<String, TypeMirror> actualTypes) {"
         self.javaMethod6 = " public JMethod implementMethod(GeneratedClassHolder holder, List<ExecutableElement> methods, String methodName, String returnType, String... parameterTypes) {"
+        self.javaMethod7 = "ProgrammerInterview pInstance = new    ProgrammerInterview() {\npublic void read() {"
 
         self.testChunk2 = logChunk.logChunk("", "Java")
 
@@ -66,6 +67,10 @@ class logChunktest(unittest.TestCase):
         temp = self.testChunk2.langSwitch.parseFunctionName(self.javaMethod6)
         print(temp)
         self.assertTrue(temp == "implementMethod", "Actual: " + temp)
+        temp = self.testChunk2.langSwitch.parseFunctionName(self.javaMethod7)
+        print(temp)
+        self.assertTrue(temp == "read", "Actual: " + temp)
+
 
 
 
