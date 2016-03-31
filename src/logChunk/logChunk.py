@@ -9,6 +9,7 @@ sys.path.append("../util")
 import Util
 import scopeTracker
 import LanguageSwitcherFactory
+import ScopeTrackerFactory
 from dictUtil import incrementDict, nonZeroCount
 from Config import Config
 from chunkingConstants import *
@@ -30,7 +31,7 @@ class logChunk:
         self.total_del = 0
         self.header = "" #What is the name given after '@@' in log
         self.langSwitch = LanguageSwitcherFactory.LanguageSwitcherFactory.createLS(language)
-        self.sT = scopeTracker.scopeTracker(self.langSwitch.getLanguage())
+        self.sT = ScopeTrackerFactory.ScopeTrackerFactory.createST(self.langSwitch)
         
 
     #list of strings --> boolean
@@ -85,7 +86,7 @@ class logChunk:
     
     def setLang(self, language = "C"):
         self.langSwitch = LanguageSwitcherFactory.LanguageSwitcherFactory.createLS(language)
-        self.sT = scopeTracker.scopeTracker(self.langSwitch.getLanguage())
+        self.sT = ScopeTrackerFactory.ScopeTrackerFactory.createST(self.langSwitch)
 
 
     #TODO: Not all variables refreshed + needs to be set for the correct set of variables.
