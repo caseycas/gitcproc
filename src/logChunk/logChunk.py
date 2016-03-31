@@ -600,11 +600,11 @@ class logChunk:
 
                 #Namespace problem comes in here. we add extra stuff in conjunction with functionName += ... above
                 #How can we replace if and the { stuff below with scopeTracker methods? No, check for scope change
-                if(self.sT.isScopeIncrease(line)):
+                if(self.sT.isScopeIncrease(line, lineType)):
                     if(Util.DEBUG == 1):
                         print("Scope increase while searching for function.")
 
-                    if(self.sT.scopeIncreaseCount(line) > 1):
+                    if(self.sT.scopeIncreaseCount(line, lineType) > 1):
                         if(Util.DEBUG == 1):
                             print("Parsing of multiscope increases like: ")
                             print(line)
@@ -675,7 +675,7 @@ class logChunk:
                         assert(0)
 
                 #Handle cases where we have a single line function.
-                if(phase == LOOKFOREND and self.sT.isScopeDecrease(line)):
+                if(phase == LOOKFOREND and self.sT.isScopeDecrease(line, lineType)):
                     shortFunctionName = self.sT.getFuncContext(lineType) #Get the functional context
                     self.sT.decreaseScope(line, lineType)
 
@@ -719,7 +719,7 @@ class logChunk:
 
             elif(phase == LOOKFOREND): #determine the end of the function
                 #Handle changes in scope
-                scopeChanges = self.sT.scopeOrder(line)
+                scopeChanges = self.sT.scopeOrder(line, lineType)
                 if(len(scopeChanges) > 2):
                     if(Util.DEBUG == 1):
                         print("Parsing of multiscope changes like: ")
@@ -730,8 +730,8 @@ class logChunk:
                 else:
                     for nextScopeChange in scopeChanges:
                         if(nextScopeChange == INCREASE):
-                            if(self.sT.isScopeIncrease(line)):
-                                if(self.sT.scopeIncreaseCount(line) > 1):
+                            if(self.sT.isScopeIncrease(line, lineType)):
+                                if(self.sT.scopeIncreaseCount(line, lineType) > 1):
                                     if(Util.DEBUG == 1):
                                         print("Parsing of multiscope increases like: ")
                                         print(line)
@@ -747,7 +747,7 @@ class logChunk:
                                 else:
                                     self.sT.increaseScope(line, lineType, scopeTracker.GENERIC)
                         else:
-                            if(self.sT.isScopeDecrease(line)):
+                            if(self.sT.isScopeDecrease(line, lineType)):
                                 if(self.sT.getFuncContext(lineType) != ""): #Maybe?
                                     shortFunctionName = self.sT.getFuncContext(lineType) #Get the functional context
                                 if(self.sT.getBlockContext(lineType) != [] and lineType!=OTHER):

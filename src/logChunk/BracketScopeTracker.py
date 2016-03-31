@@ -37,7 +37,7 @@ class BracketScopeTracker(scopeTracker):
 
     #String -> list
     #Returns a list giving the sequence of scope changes in this line.
-    def scopeOrder(self, line):
+    def scopeOrder(self, line, lineType):
         scopeOrderChanges = []
         #Thanks to http://stackoverflow.com/questions/4664850/find-all-occurrences-of-a-substring-in-python
         increaseIndicies = [next.start() for next in re.finditer('{', line)] 
@@ -63,18 +63,18 @@ class BracketScopeTracker(scopeTracker):
 
         return scopeOrderChanges
         
-    def scopeIncreaseCount(self, line):
+    def scopeIncreaseCount(self, line, lineType):
         return line.count("{")
 
-    def scopeDecreaseCount(self, line):
+    def scopeDecreaseCount(self, line, lineType):
         return line.count("}")
 
     #Returns true if this line contains an increased level of scope.
-    def isScopeIncrease(self, line):
+    def isScopeIncrease(self, line, lineType):
         return line.count("{") > 0
 
     #Returns true if this line contains an decreased level of scope.
-    def isScopeDecrease(self, line):
+    def isScopeDecrease(self, line, lineType):
         return line.count("}") > 0
 
     def appendFunctionEnding(self, line, functionName):

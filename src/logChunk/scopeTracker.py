@@ -14,14 +14,13 @@ GENERIC = "Generic"
 LINEINDEX = 0
 LABELINDEX = 1
 
-BracketLanguages = ["C", "C++", "Java"]
 
 #Redo with a polymorphic solution for the languages
 class scopeTracker:
     #string --> -- 
     #The language tells how the scope changes so we can tell when a block or function ends.
     #For example in C/C++ and Java, a { signifies a increase in code block depth.
-    #In python however, 4 spaces are used.
+    #In python however, indentation is used.
     def __init__(self, language):
         #These are pseudo stacks implemented as lists that track the current 
         #number of open scopes (brackets, tabs, etc), each change gets its own
@@ -48,21 +47,21 @@ class scopeTracker:
 
     #String -> list
     #Returns a list giving the sequence of scope changes in this line.
-    def scopeOrder(self, line):
+    def scopeOrder(self, line, lineType): #Seems to only matter in Bracket Languages
         raise NotImplementedError("Base ScopeTracker is Abstract.")
         
-    def scopeIncreaseCount(self, line):
+    def scopeIncreaseCount(self, line, lineType): #Seems to only matter in Bracket Languages
         raise NotImplementedError("Base ScopeTracker is Abstract.")
 
-    def scopeDecreaseCount(self, line):
+    def scopeDecreaseCount(self, line, lineType): #Seems to only matter in Bracket Languages
         raise NotImplementedError("Base ScopeTracker is Abstract.")
 
     #Returns true if this line contains an increased level of scope.
-    def isScopeIncrease(self, line):
+    def isScopeIncrease(self, line, lineType):
         raise NotImplementedError("Base ScopeTracker is Abstract.")
 
     #Returns true if this line contains an decreased level of scope.
-    def isScopeDecrease(self, line):
+    def isScopeDecrease(self, line, lineType):
         raise NotImplementedError("Base ScopeTracker is Abstract.")
 
     def appendFunctionEnding(self, line, functionName):
