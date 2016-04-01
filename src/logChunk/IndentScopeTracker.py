@@ -14,7 +14,7 @@ from scopeTracker import *
 
 
 #Redo with a polymorphic solution for the languages
-class IndentScopeTracker:
+class IndentScopeTracker(scopeTracker):
     def __init__(self, language):
         #These are pseudo stacks implemented as lists that track the current 
         #number of open scopes (brackets, tabs, etc), each change gets its own

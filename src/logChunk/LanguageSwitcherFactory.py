@@ -3,6 +3,7 @@ import languageSwitcher
 import CPlusPlusLanguageSwitcher
 import CLanguageSwitcher
 import JavaLanguageSwitcher
+import PythonLanguageSwitcher
 from UnsupportedLanguageException import *
 
 class LanguageSwitcherFactory:
@@ -34,6 +35,6 @@ class LanguageSwitcherFactory:
         elif(language.lower() == "java" or language.lower() in LanguageSwitcherFactory.extMap["Java"]["extensions"]):
             return JavaLanguageSwitcher.JavaLanguageSwitcher()
         elif(language.lower() == "python" or language.lower() in LanguageSwitcherFactory.extMap["Python"]["extensions"]):
-            raise UnsupportedLanguageException(language + " not yet supported.")
+            return PythonLanguageSwitcher.PythonLanguageSwitcher()
         else:
             raise UnsupportedLanguageException(language + " not yet supported.")

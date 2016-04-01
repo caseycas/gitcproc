@@ -2,7 +2,7 @@ import re
 import BracketLanguageSwitcher
 
 #How to combine these?
-PythonFunctionPatterns = [" def +\(.*\): *$", "^def +\(.*\): *$"]
+PythonFunctionPatterns = [" def +[A-Za-z_]+[\w]*\(.*\): *$", "^def +[A-Za-z_]+[\w]*\(.*\): *$"]
 
 PythonBlockComments = ["\"\"\"", "\"\"\""] #Problem, Can be ''' or """
 PythonBlockComments2 = ["\'\'\'", "\'\'\'"]
@@ -28,6 +28,8 @@ PythonClassPatterns = [" class +[A-Za-z_]+[\w]* *\([\w. ]*\): *$", "^class +[A-Z
 PythonValidClassNamePattern = "[A-Za-z_]+[\w]*"
 PythonParamPattern = "*\([\w\d_=,\[\]\(\) ]*\):"
 
+PythonConstDestrRegex = "__init__|__del__+ "
+
 
 
 class PythonLanguageSwitcher():
@@ -52,10 +54,10 @@ class PythonLanguageSwitcher():
         return line.strip().lower().replace("\n", "")
 
     def getClassRegexes(self):
-        raise NotImplementedError("Not implemented yet for python.")
+        return PythonClassPatterns
 
-    def isValidClassName(self, name):
-        raise NotImplementedError("Not implemented yet for python.")
+    def isValidClassName(self, classContext):
+        return re.search(PythonValidClassNamePattern, classContext)
 
     def cleanConstructorLine(self, line):
         return temp
@@ -64,10 +66,23 @@ class PythonLanguageSwitcher():
         return toShorten
 
     def getConstructorOrDestructorRegex(self, classContext):
-        raise NotImplementedError("Not implemented yet for python.")
+        #In python these are __init__ and __del__ they don't really need to be
+        #treated as special cases, (so they won't fall through to here), but we should
+        #have the ability to handle them if they fall through.
+        return PythonConstDestrRegex + PythonParamPattern
 
     def parseFunctionName(self, fullName):
-        raise NotImplementedError("Not implemented yet for python.")
+        #def name(): #I think it should be fine to return what falls in between the def and the first "("
+        increaseIndicies = [next.start() for next in re.finditer('\(', name)]
+        defLoc = fullName.find("def")
+        if(defLoc == -1):
+            raise ValueError("1. Function Name to parse is malformed.", fullName)
+        if(len(increaseIndicies) == 0):
+            raise ValueError("2. Function Name to parse is malformed.", fullName)
+        if(defLoc >= increaseIndicies[0]):
+            raise ValueError("3. Function Name to parse is malformed.", fullName)
+
+        return fullName[:increaseIndicies[0]].split(" ")[-1]
 
     def getBlockCommentStart(self):
         start = line.find(PythonBlockComments[0])
