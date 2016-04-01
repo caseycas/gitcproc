@@ -14,6 +14,20 @@ PythonCommentPattern2 = "#.*"
 PythonStringPattern = "\".*?\""
 PythonStringPattern2 = "\'.*?\'"
 
+#Potential Regexes to fill in based on the others.
+
+#Formal definition of Python identifiers
+#identifier ::=  (letter|"_") (letter | digit | "_")*
+#letter     ::=  lowercase | uppercase
+#lowercase  ::=  "a"..."z"
+#uppercase  ::=  "A"..."Z"
+#digit      ::=  "0"..."9"
+
+
+PythonClassPatterns = [" class +[A-Za-z_]+[\w]* *\([\w. ]*\): *$", "^class +[A-Za-z_]+[\w]* *\([\w. ]*\): *$"]
+PythonValidClassNamePattern = "[A-Za-z_]+[\w]*"
+PythonParamPattern = "*\([\w\d_=,\[\]\(\) ]*\):"
+
 
 
 class PythonLanguageSwitcher():
@@ -35,7 +49,7 @@ class PythonLanguageSwitcher():
         return temp
 
     def cleanClassLine(self, line):
-        raise NotImplementedError("Not implemented yet for python.")
+        return line.strip().lower().replace("\n", "")
 
     def getClassRegexes(self):
         raise NotImplementedError("Not implemented yet for python.")
@@ -44,10 +58,10 @@ class PythonLanguageSwitcher():
         raise NotImplementedError("Not implemented yet for python.")
 
     def cleanConstructorLine(self, line):
-        raise NotImplementedError("Not implemented yet for python.")
+        return temp
 
     def shortenConstructorOrDestructor(self, toShorten):
-        raise NotImplementedError("Not implemented yet for python.")
+        return toShorten
 
     def getConstructorOrDestructorRegex(self, classContext):
         raise NotImplementedError("Not implemented yet for python.")

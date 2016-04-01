@@ -56,8 +56,13 @@ class BracketLanguageSwitcher(languageSwitcher.languageSwitcher):
 
 
         if(matchIndex == -1):
-            raise ValueError("5. Function Name to parse is malformed.", fullName)
+            if(len(increaseIndicies) > 0):
+                firstParen = increaseIndicies[0]
+                pieces = name[:firstParen].strip().split(" ")
+                return pieces[-1]
+            else:
+                raise ValueError("5. Function Name to parse is malformed.", fullName)
         else:
             #Parse out the name
             pieces = name[:matchIndex].strip().split(" ")
-            return pieces[len(pieces)-1]
+            return pieces[-1]
