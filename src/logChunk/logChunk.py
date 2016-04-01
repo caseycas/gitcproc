@@ -366,10 +366,10 @@ class logChunk:
         #line = re.sub(commentPattern, "", line)
         line = self.langSwitch.cleanSingleLineBlockComment(line)
 
-        if(line.find(self.langSwitch.getBlockCommentStart()) != -1):
+        if(self.langSwitch.isBlockCommentStart(line)):
             commentFlag = True
             #We need to consider the content of the line before the /*
-            line = line.split("/*")[0]
+            line = self.langSwitch.beforeBlockCommentStart(line)
             commentType = lineType
             if(line.strip() == ""):
                 if(phase == LOOKFOREND): #Make sure to count this line if inside function before continuing
@@ -387,13 +387,13 @@ class logChunk:
                     else:
                         fChange = UNCHANGED
                 line = ""
-        elif(line.find(self.langSwitch.getBlockCommentEnd()) != -1):
+        elif(self.langSwitch.isBlockCommentEnd(line)):
             if(commentFlag): #Normal case were whole /* ... */ comment is changed
                 commentFlag = False
             elif(phase == LOOKFORNAME): #Case where only bottom part of comment is changed and looking for function name.
                 functionName = "" #Clear the function name
 
-            index = line.find(self.langSwitch.getBlockCommentEnd())
+            index = self.langSwitch.getBlockCommentEnd(line)
             if(len(line) > index + 2): #Case where there is code after comment end.
                 line = line[index + 2:]
             else:

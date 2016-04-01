@@ -78,11 +78,27 @@ class JavaLanguageSwitcher(BracketLanguageSwitcher.BracketLanguageSwitcher):
     def getConstructorOrDestructorRegex(self, classContext):
         return classContext + JavaParamPattern
 
-    def getBlockCommentStart(self):
-        return JavaBlockComments[0]
+    def getBlockCommentStart(self, line):
+        return line.find(JavaBlockComments[0])
 
-    def getBlockCommentEnd(self):
-        return JavaBlockComments[1]
+    def getBlockCommentEnd(self, line):
+        return line.find(JavaBlockComments[1])
+
+    def beforeBlockCommentStart(self, line):
+        start = line.find(JavaBlockComments[0])
+
+        if(start == -1):
+            return line
+        else:
+            return line[:start]
+   
+    def afterBlockCommentEnd(self, line):
+        end = line.find(JavaBlockComments[1])
+
+        if(end == -1):
+            return line
+        else:
+            return line[end + len(JavaBlockComments[1]):]
 
 
     def getSingleComment(self):

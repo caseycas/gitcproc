@@ -2,16 +2,17 @@ import re
 import BracketLanguageSwitcher
 
 #How to combine these?
-PythonFunctionPatterns[" def +\(.*\): *$", "^def +\(.*\): *$"]
+PythonFunctionPatterns = [" def +\(.*\): *$", "^def +\(.*\): *$"]
 
 PythonBlockComments = ["\"\"\"", "\"\"\""] #Problem, Can be ''' or """
-PythonSingleComment = ["//"]
+PythonBlockComments2 = ["\'\'\'", "\'\'\'"]
+PythonSingleComment = ["#"]
 
-#CCommentPattern = "/\*.*?\*/"
-#CCommentPattern2 = "#.*"
+PythonCommentPatterns = ["\"\"\".*\"\"\"", "\'\'\'.*\'\'\'"]
+PythonCommentPattern2 = "#.*"
 
-#CStringPattern = "\".*?\""
-#CStringPattern2 = "\'.*?\'"
+PythonStringPattern = "\".*?\""
+PythonStringPattern2 = "\'.*?\'"
 
 
 
@@ -21,71 +22,93 @@ class PythonLanguageSwitcher():
         self.lang = "Python"
 
     def isObjectOrientedLanguage(self):
-        return False
+        return True
 
     def getFunctionRegexes(self):
-        return CFunctionPatterns
+        return PythonFunctionPatterns
         
     def cleanFunctionLine(self, line):
         temp = line.strip().replace("\n", "")
         temp = temp.replace("\t", "")
         temp = temp.replace("\r", "")
-        #Sometimes an # ifdef, etc might appear in the middle of function args.  Purge them!
-        if("ifdef" in temp and "#" in temp):
-            temp = temp.replace("#", "")
-            temp = temp.replace("ifdef", "")
-        if("endif" in temp and "#" in temp):
-            temp = temp.replace("#", "")
-            temp = temp.replace("endif", "")
-        if("ifndef" in temp and "#" in temp):
-            temp = temp.replace("#", "")
-            temp = temp.replace("ifndef", "")
-        #Deal with if statements...
-        temp = re.sub(" else", "", temp)
-        temp = re.sub("^else", "", temp)
-        temp = re.sub(" if", "", temp)
-        temp = re.sub("^if", "", temp)
-        temp = re.sub(" +\d+ +", "", temp) #Replace numbers
-
+   
         return temp
 
     def cleanClassLine(self, line):
-        raise NotImplementedError("C doesn't have classes.")
+        raise NotImplementedError("Not implemented yet for python.")
 
     def getClassRegexes(self):
-        raise NotImplementedError("C doesn't have classes.")
+        raise NotImplementedError("Not implemented yet for python.")
 
     def isValidClassName(self, name):
-        raise NotImplementedError("C doesn't have classes.")
+        raise NotImplementedError("Not implemented yet for python.")
 
     def cleanConstructorLine(self, line):
-        raise NotImplementedError("C doesn't have classes.")
+        raise NotImplementedError("Not implemented yet for python.")
 
     def shortenConstructorOrDestructor(self, toShorten):
-        raise NotImplementedError("C doesn't have classes.")
+        raise NotImplementedError("Not implemented yet for python.")
 
     def getConstructorOrDestructorRegex(self, classContext):
-        raise NotImplementedError("C doesn't have classes.")
+        raise NotImplementedError("Not implemented yet for python.")
+
+    def parseFunctionName(self, fullName):
+        raise NotImplementedError("Not implemented yet for python.")
 
     def getBlockCommentStart(self):
-        return CBlockComments[0]
+        start = line.find(PythonBlockComments[0])
+        if(start == -1):
+            start = line.find(PythonBlockComments2[0])
+
+        return start
 
     def getBlockCommentEnd(self):
-        return CBlockComments[1]
+        end = line.find(PythonBlockComments[1])
+        if(end == -1):
+            end = line.find(PythonBlockComments2[1])
+
+        return end
+
+    def isBlockCommentStart(self):
+        return(line.find(PythonBlockComments[0]) != -1 or line.find(PythonBlockComments2[0]) != -1)
+
+    def isBlockCommentEnd(self):
+        return(line.find(PythonBlockComments[1]) != -1 or line.find(PythonBlockComments2[1]) != -1)
+
+    def beforeBlockCommentStart(self, line):
+        start = line.find(PythonBlockComments[0])
+        if(start == -1):
+            start = line.find(PythonBlockComments2[0])
+
+        if(start == -1):
+            return line
+        else:
+            return line[:start]
+   
+    def afterBlockCommentEnd(self, line):
+        end = line.find(PythonBlockComments[1])
+        if(end == -1):
+            end = line.find(PythonBlockComments2[1])
+
+        if(end == -1):
+            return line
+        else:
+            return line[end + len(PythonBlockComments[1]):]
+
 
     def getSingleComment(self):
-        return CSingleComments
+        return PythonSingleComment
 
     def cleanSingleLineBlockComment(self, line):
-        return re.sub(CCommentPattern, "", line)
+        return re.sub(PythonCommentPatterns[1], "",re.sub(PythonCommentPatterns[0], "", line))
 
     def cleanSingleLineComment(self, line):
-        return re.sub(CCommentPattern2, "", line)
+        return re.sub(PythonCommentPattern2, "", line)
 
     def checkForFunctionReset(self, line):
-        return line.strip().endswith(";")
+        return line.strip().endswith(":")
 
     def removeStrings(self, line):
-        line = re.sub(CStringPattern, "", line)
-        line = re.sub(CStringPattern2, "", line)
+        line = re.sub(PythonStringPattern, "", line)
+        line = re.sub(PythonStringPattern2, "", line)
         return line

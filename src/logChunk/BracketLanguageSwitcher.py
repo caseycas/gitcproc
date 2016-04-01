@@ -4,6 +4,13 @@ import languageSwitcher
 #Abstract class for sharing logic between languages that use { } to designate scope
 class BracketLanguageSwitcher(languageSwitcher.languageSwitcher):
 
+    def isBlockCommentStart(self, line):
+        return(self.getBlockCommentStart(line) != -1)
+
+    def isBlockCommentEnd(self, line):
+        return(self.getBlockCommentEnd(line) != -1)
+
+
     #String -> String
     #Given a full function String: "<0-n other modifiers> <return_type> <name>(arg0, ..., argN) {"
     #Return <name> or raise ValueError if the string is not a function header

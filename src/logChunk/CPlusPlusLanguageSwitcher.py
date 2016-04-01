@@ -111,12 +111,27 @@ class CPlusPlusLanguageSwitcher(BracketLanguageSwitcher.BracketLanguageSwitcher)
     def getConstructorOrDestructorRegex(self, classContext):
         return classContext + CPlusPlusParamPattern
 
-    def getBlockCommentStart(self):
-        return CPlusPlusBlockComments[0]
+    def getBlockCommentStart(self, line):
+        return line.find(CPlusPlusBlockComments[0])
 
-    def getBlockCommentEnd(self):
-        return CPlusPlusBlockComments[1]
+    def getBlockCommentEnd(self, line):
+        return line.find(CPlusPlusBlockComments[1])
 
+    def beforeBlockCommentStart(self, line):
+        start = line.find(CPlusPlusBlockComments[0])
+
+        if(start == -1):
+            return line
+        else:
+            return line[:start]
+   
+    def afterBlockCommentEnd(self, line):
+        end = line.find(CPlusPlusBlockComments[1])
+
+        if(end == -1):
+            return line
+        else:
+            return line[end + len(CPlusPlusBlockComments[1]):]
 
     def getSingleComment(self):
         return CPlusPlusSingleComments

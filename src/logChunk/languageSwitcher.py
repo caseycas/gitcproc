@@ -52,13 +52,25 @@ class languageSwitcher:
     def getConstructorOrDestructorRegex(self, classContext):
         raise NotImplementedError("Base LangSwitcher is Abstract.")
 
-    #Get the indicator for the start of a block comment
-    def getBlockCommentStart(self):
+    #Get the index for the start of a block comment
+    def getBlockCommentStart(self, line):
         raise NotImplementedError("Base LangSwitcher is Abstract.")
 
-    #Get the indicator for the end of a block comment
-    def getBlockCommentEnd(self):
+    #Get the index for the end of a block comment
+    def getBlockCommentEnd(self, line):
         raise NotImplementedError("Base LangSwitcher is Abstract.")
+
+    def isBlockCommentStart(self, line):
+        raise NotImplementedError("Base LangSwitcher is Abstract.")
+
+    def isBlockCommentEnd(self, line):
+        raise NotImplementedError("Base LangSwitcher is Abstract.")
+
+    def beforeBlockCommentStart(self, line):
+        raise NotImplementedError("Base LangSwitcher is Abstract.")
+   
+    def afterBlockCommentEnd(self, line):
+        raise NotImplementedError("Base LangSwitcher is Abstract.") 
 
     #Get the indicator for the start of a single line comment
     def getSingleComment(self):
