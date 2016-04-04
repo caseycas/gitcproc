@@ -88,6 +88,10 @@ class languageSwitcher:
     def checkForFunctionReset(self, line):
         raise NotImplementedError("Base LangSwitcher is Abstract.")
 
+    #Reset the function name after we have identified a scope change.
+    def resetFunctionName(self, line):
+        raise NotImplementedError("Base LangSwitcher is Abstract.")
+
     #Remove all strings from a line
     def removeStrings(self, line):
         raise NotImplementedError("Base LangSwitcher is Abstract.")

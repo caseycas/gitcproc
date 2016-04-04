@@ -32,9 +32,9 @@ class IndentScopeTracker(scopeTracker):
     #String -> list
     #Returns a list giving the sequence of scope changes in this line.
     def scopeOrder(self, line, lineType):
-        if(isScopeIncrease(line,lineType)):
+        if(self.isScopeIncrease(line,lineType)):
             return [INCREASE]
-        elif(isScopeDecrease(line,lineType)):
+        elif(self.isScopeDecrease(line,lineType)):
             return [DECREASE]
         else:
             return []
@@ -53,13 +53,21 @@ class IndentScopeTracker(scopeTracker):
 
     def indentDepth(self, whiteSpace):
         #Make sure there is no mixing of tabs and spaces
+        if(Util.Debug):
+            try:
+                print("Indent Token: \"" + self.indentToken + "\"")
+                print("WhiteSpace: \"" + whiteSpace + "\"")
+            except:
+                print("Indent Token: \"" + unicode(self.indentToken, 'utf-8', errors='ignore') + "\"")
+                print("WhiteSpace: \"" + unicode(whiteSpace, 'utf-8', errors='ignore') + "\"")
+
         assert(self.indentToken != "")
         if(self.indentToken == "\t"):
             assert(" " not in whiteSpace)
         else:
             assert("\t" not in whiteSpace)
 
-        return len(re.findAll(self.indentToken, whiteSpace))
+        return len(re.findall(self.indentToken, whiteSpace))
 
     #Returns true if this line contains an increased level of scope.
     #One possible concern here is a single statement spread over multiple lines.  I don't think that would cause
@@ -76,11 +84,11 @@ class IndentScopeTracker(scopeTracker):
                 #How deep is the indent?
                 depth = self.indentDepth(indent)
                 if(lineType == ADD):
-                    return len(newVerStack) < depth
+                    return len(self.newVerStack) < depth
                 elif(lineType == REMOVE):
-                    return len(oldVerStack) < depth
-                elif(lineTYPE == OTHER): #Can these be different?
-                    return len(oldVerStack) < depth or len(newVerStack) < depth #If these are different, just adjust the stack accordingly
+                    return len(self.oldVerStack) < depth
+                elif(lineType == OTHER): #Can these be different?
+                    return len(self.oldVerStack) < depth or len(self.newVerStack) < depth #If these are different, just adjust the stack accordingly
                 else:
                     assert("Not a valid line type")
         else:
@@ -88,24 +96,28 @@ class IndentScopeTracker(scopeTracker):
 
 
     #Returns true if this line contains an decreased level of scope.
-    def isScopeDecrease(self, line):
+    def isScopeDecrease(self, line, lineType):
         assert(self.indentToken != "") #If Scope is decreasing, if must have increased at some point
-        depth = indentDepth(indent)
+        indent = re.match(r"\s*", line).group() 
+        depth = self.indentDepth(indent)
         if(lineType == ADD):
-            return len(newVerStack) > depth
+            return len(self.newVerStack) > depth
         elif(lineType == REMOVE):
-            return len(oldVerStack) > depth
-        elif(lineTYPE == OTHER): #Can these be different?
-            return len(oldVerStack) > depth or len(newVerStack) > depth #If these are different, just adjust the stack accordingly
+            return len(self.oldVerStack) > depth
+        elif(lineType == OTHER): #Can these be different?
+            return len(self.oldVerStack) > depth or len(self.newVerStack) > depth #If these are different, just adjust the stack accordingly
         else:
             assert("Not a valid line type")
 
     def appendFunctionEnding(self, line, functionName):
-        return functionName #Nothing to do here
+        if(":" in line):
+            functionName += line.split(":")[0] + ":"
+
+        return functionName
 
     def increaseNewIndent(self, line, changeType):
         if(changeType == GENERIC):
-            self.newVerStack.append((indent, GENERIC)) #Should be able to increase only 1 level at a time?
+            self.newVerStack.append((self.indentToken, GENERIC)) #Should be able to increase only 1 level at a time?
         elif(changeType == FUNC):
             self.newVerStack.append((line, FUNC))
             self.lastNewFuncContext = line
@@ -117,7 +129,7 @@ class IndentScopeTracker(scopeTracker):
 
     def increaseOldIndent(self, line, changeType):
         if(changeType == GENERIC):
-            self.oldVerStack.append((indent, GENERIC)) #Should be able to increase only 1 level at a time?
+            self.oldVerStack.append((self.indentToken, GENERIC)) #Should be able to increase only 1 level at a time?
         elif(changeType == FUNC):
             self.oldVerStack.append((line, FUNC))
             self.lastOldFuncContext = line
@@ -130,6 +142,12 @@ class IndentScopeTracker(scopeTracker):
     #string, [ADD|REMOVE|OTHER], [GENERIC|FUNC|BLOCK] -> --
     #Increase the depth of our tracker and add in function or block contexts if they have been discovered.
     def increaseScope(self, line, lineType, changeType):
+        if(Util.DEBUG):
+            try:
+                print("Scope Increasing Line: " + line)
+            except:
+                print("Scope Increasing Line: " + unicode(line, 'utf-8', errors='ignore'))
+
         if(lineType == ADD):
             self.increaseNewIndent(line, changeType)
         elif(lineType == REMOVE):
@@ -138,8 +156,8 @@ class IndentScopeTracker(scopeTracker):
             #TODO: How do I handle this now.
             #If increase relative to old th
             depth = self.indentDepth(line)
-            isOldIncrease = len(oldVerStack) < depth
-            isNewIncrease = len(newVerStack) < depth
+            isOldIncrease = len(self.oldVerStack) < depth
+            isNewIncrease = len(self.newVerStack) < depth
             assert(isOldIncrease or isNewIncrease)
             if(isOldIncrease):
                 self.increaseOldIndent(line, changeType)
@@ -183,19 +201,19 @@ class IndentScopeTracker(scopeTracker):
     #Decrease our current scope and close out any function or block contexts if necessary.
     def decreaseScope(self, line, lineType):
         if(lineType == ADD):
-            self.decreaseNewIndent(line, changeType)
+            self.decreaseNewIndent(line)
         elif(lineType == REMOVE):
-            self.decreaseOldIndent(line, changeType)
+            self.decreaseOldIndent(line)
         elif(lineType == OTHER): 
             #TODO: How do I handle this now.
             #If increase relative to old th
             depth = self.indentDepth(line)
-            isOldDecrease = len(oldVerStack) > depth
-            isNewDecrease = len(newVerStack) > depth
+            isOldDecrease = len(self.oldVerStack) > depth
+            isNewDecrease = len(self.newVerStack) > depth
             assert(isOldDecrease or isNewDecrease)
             if(isOldDecrease):
-                self.decreaseOldIndent(line, changeType)
+                self.decreaseOldIndent(line)
             if(isNewDecrease):
-                self.decreaseNewIndent(line, changeType)
+                self.decreaseNewIndent(line)
         else:
             assert("Not a valid line type")

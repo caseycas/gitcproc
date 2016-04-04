@@ -1,8 +1,8 @@
 import re
-import BracketLanguageSwitcher
+import languageSwitcher
 
 #How to combine these?
-PythonFunctionPatterns = [" def +[A-Za-z_]+[\w]*\(.*\): *$", "^def +[A-Za-z_]+[\w]*\(.*\): *$"]
+PythonFunctionPatterns = [" *def +[A-Za-z_]+[\w]*\(.*\): *$"]
 
 PythonBlockComments = ["\"\"\"", "\"\"\""] #Problem, Can be ''' or """
 PythonBlockComments2 = ["\'\'\'", "\'\'\'"]
@@ -32,7 +32,7 @@ PythonConstDestrRegex = "__init__|__del__+ "
 
 
 
-class PythonLanguageSwitcher():
+class PythonLanguageSwitcher(languageSwitcher.languageSwitcher):
     #Do not call this constructor outside of the Factory
     def __init__(self):
         self.lang = "Python"
@@ -73,7 +73,7 @@ class PythonLanguageSwitcher():
 
     def parseFunctionName(self, fullName):
         #def name(): #I think it should be fine to return what falls in between the def and the first "("
-        increaseIndicies = [next.start() for next in re.finditer('\(', name)]
+        increaseIndicies = [next.start() for next in re.finditer('\(', fullName)]
         defLoc = fullName.find("def")
         if(defLoc == -1):
             raise ValueError("1. Function Name to parse is malformed.", fullName)
@@ -84,24 +84,24 @@ class PythonLanguageSwitcher():
 
         return fullName[:increaseIndicies[0]].split(" ")[-1]
 
-    def getBlockCommentStart(self):
+    def getBlockCommentStart(self, line):
         start = line.find(PythonBlockComments[0])
         if(start == -1):
             start = line.find(PythonBlockComments2[0])
 
         return start
 
-    def getBlockCommentEnd(self):
+    def getBlockCommentEnd(self, line):
         end = line.find(PythonBlockComments[1])
         if(end == -1):
             end = line.find(PythonBlockComments2[1])
 
         return end
 
-    def isBlockCommentStart(self):
+    def isBlockCommentStart(self, line):
         return(line.find(PythonBlockComments[0]) != -1 or line.find(PythonBlockComments2[0]) != -1)
 
-    def isBlockCommentEnd(self):
+    def isBlockCommentEnd(self, line):
         return(line.find(PythonBlockComments[1]) != -1 or line.find(PythonBlockComments2[1]) != -1)
 
     def beforeBlockCommentStart(self, line):
@@ -136,6 +136,10 @@ class PythonLanguageSwitcher():
 
     def checkForFunctionReset(self, line):
         return line.strip().endswith(":")
+
+    #Reset the function name after we have identified a scope change.
+    def resetFunctionName(self, line):
+        return line
 
     def removeStrings(self, line):
         line = re.sub(PythonStringPattern, "", line)

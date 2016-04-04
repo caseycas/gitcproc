@@ -66,3 +66,7 @@ class BracketLanguageSwitcher(languageSwitcher.languageSwitcher):
             #Parse out the name
             pieces = name[:matchIndex].strip().split(" ")
             return pieces[-1]
+
+    #Reset the function name after we have identified a scope change.
+    def resetFunctionName(self, line):
+        return ""

@@ -494,7 +494,10 @@ class logChunk:
         elif(line.startswith("-")):
             return [REMOVE, line[1:]]
         else:
-            return [OTHER, line[0:]]
+            if(len(line) > 0 and line[0] == " "):
+                return [OTHER, line[1:]] #Remove whitespace from +/- row, important for languages like python
+            else:
+                return [OTHER, line]
         
 
     #Main function to parse out the contents loaded into logChunk
@@ -557,8 +560,6 @@ class logChunk:
         for line in self.text.split("\n"):
             startFlag=0
             lineNum += 1
-            #Remove whitespace on ends.
-            fullLine = line.strip()
                 
             if(Util.DEBUG==1):
                 try:
@@ -598,8 +599,8 @@ class logChunk:
                 if(self.langSwitch.checkForFunctionReset(functionName)):
                     functionName = "" #Clear the name
 
-                #Namespace problem comes in here. we add extra stuff in conjunction with functionName += ... above
-                #How can we replace if and the { stuff below with scopeTracker methods? No, check for scope change
+
+                print("Line: \"" + line + "\"")
                 if(self.sT.isScopeIncrease(line, lineType)):
                     if(Util.DEBUG == 1):
                         print("Scope increase while searching for function.")
@@ -613,7 +614,7 @@ class logChunk:
 
                     functionName = self.sT.appendFunctionEnding(line, functionName)
 
-                    shortFunctionName = self.getFunctionPattern(functionName)
+                    shortFunctionName = self.getFunctionPattern(functionName) #Problem, this is dropping whitespace...
                     if(Util.DEBUG):
                         print("Pattern: " + shortFunctionName)
 
@@ -659,7 +660,8 @@ class logChunk:
                                         print("Class:" + unicode(className, 'utf-8', errors='ignore'))
                                 classContext.append(self.extractClassName(className)) #Push onto the class list
                             
-                        functionName = "" #Reset name and find next
+                        #In python the scope change would come before, so this needs to be handled language specific
+                        functionName = self.langSwitch.resetFunctionName(line) #Reset name and find next
                 else: #No scope change to cut off, so add the whole line instead
                     if(Util.DEBUG):
                         print("Extending the function name")

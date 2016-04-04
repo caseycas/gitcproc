@@ -78,7 +78,7 @@ class logChunktest(unittest.TestCase):
 
         self.chunkb1.parseText()
         funcList = self.chunkb1.functions
-        #self.debugFunctions(funcList)
+        self.debugFunctions(funcList)
         self.assertTrue(len(funcList) == 2)
 
         self.assertTrue(funcList[0].method=="foo")
@@ -99,7 +99,7 @@ class logChunktest(unittest.TestCase):
 
         self.chunkb2.parseText()
         funcList = self.chunkb2.functions
-        self.debugFunctions(funcList)
+        #self.debugFunctions(funcList)
         self.assertTrue(len(funcList) == 2)
 
         self.assertTrue(funcList[0].method=="getAccounts")
@@ -119,7 +119,7 @@ class logChunktest(unittest.TestCase):
         self.chunkb3.parseText()
         funcList = self.chunkb3.functions
 
-        self.debugFunctions(funcList)
+        #self.debugFunctions(funcList)
 
         self.assertTrue(len(funcList) == 1)
         self.assertTrue(funcList[0].method=="ReflectiveProperty")

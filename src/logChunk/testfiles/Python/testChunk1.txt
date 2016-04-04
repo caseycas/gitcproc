@@ -1,0 +1,17 @@
+/
+...skipping
+ 
+     def _ask_default(self):
+         print("Please enter the default value now, as valid Python")
+-        print("The datetime and django.utils.timezone modules are available, so you can do e.g. timezone.now()")
++        print("The datetime and django.utils.timezone modules are available, so you can do e.g. timezone.now")
+         while True:
+             if six.PY3:
+                 # Six does not correctly abstract over the fact that
+                 # py3 input returns a unicode string, while py2 raw_input
+                 # returns a bytestring.
+                 code = input(">>> ")
+             else:
+                 code = input(">>> ").decode(sys.stdin.encoding)
+             if not code:
+                 print("Please enter some code, or 'exit' (with no quotes) to exit.")
