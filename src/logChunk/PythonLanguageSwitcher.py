@@ -44,8 +44,7 @@ class PythonLanguageSwitcher(languageSwitcher.languageSwitcher):
         return PythonFunctionPatterns
         
     def cleanFunctionLine(self, line):
-        temp = line.strip().replace("\n", "")
-        temp = temp.replace("\t", "")
+        temp = line.replace("\n", "")
         temp = temp.replace("\r", "")
    
         return temp

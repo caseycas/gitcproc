@@ -40,6 +40,7 @@ class logChunktest(unittest.TestCase):
         self.testChunk = logChunk.logChunk("", "Python")
 
         self.chunk1 = logChunk.logChunk(self.readHelper("testfiles/Python/testChunk1.txt"), "Python", "../util/sample_confPy.ini")
+        self.chunk2 = logChunk.logChunk(self.readHelper("testfiles/Python/testChunk2.txt"), "Python", "../util/sample_confPy.ini")
 
 
     #def test_FunctionNameParse(self):
@@ -61,17 +62,33 @@ class logChunktest(unittest.TestCase):
         self.assertFalse(self.testChunk.isFunction(self.method8))
         self.assertTrue(self.testChunk.isFunction(self.method9))
 
+    def test_cleanFunctionLine(self):
+        self.assertTrue(self.testChunk.langSwitch.cleanFunctionLine("      def path(self, name):") == "      def path(self, name):")
 
     def test_parseText1(self):
         self.chunk1.parseText()
         funcList = self.chunk1.functions
-        self.debugFunctions(funcList)
+        #self.debugFunctions(funcList)
         self.assertTrue(len(funcList) == 1) 
         self.assertTrue(funcList[0].method=="_ask_default")
         self.assertTrue(funcList[0].total_add == 1)
         self.assertTrue(funcList[0].total_del == 1)
 
         testDict = {'print Adds': 1, 'print Dels': 1, 'if Dels': 0, 'if Adds': 0}
+
+        self.assertEqual(testDict,funcList[0].keywordDictionary)
+
+
+    def test_parseText2(self):
+        self.chunk2.parseText()
+        funcList = self.chunk1.functions
+        self.debugFunctions(funcList)
+        self.assertTrue(len(funcList) == 1) 
+        self.assertTrue(funcList[0].method=="url")
+        self.assertTrue(funcList[0].total_add == 4)
+        self.assertTrue(funcList[0].total_del == 1)
+
+        testDict = {'print Adds': 0, 'print Dels': 0, 'if Dels': 0, 'if Adds': 2}
 
         self.assertEqual(testDict,funcList[0].keywordDictionary)
 

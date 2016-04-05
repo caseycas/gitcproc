@@ -599,8 +599,12 @@ class logChunk:
                 if(self.langSwitch.checkForFunctionReset(functionName)):
                     functionName = "" #Clear the name
 
+                if(Util.DEBUG == 1):
+                    try:
+                        print("Line: \"" + line + "\"")
+                    except:
+                        print("Line: \"" + unicode(line, 'utf-8', errors='ignore') + "\"")
 
-                print("Line: \"" + line + "\"")
                 if(self.sT.isScopeIncrease(line, lineType)):
                     if(Util.DEBUG == 1):
                         print("Scope increase while searching for function.")

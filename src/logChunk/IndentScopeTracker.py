@@ -53,13 +53,13 @@ class IndentScopeTracker(scopeTracker):
 
     def indentDepth(self, whiteSpace):
         #Make sure there is no mixing of tabs and spaces
-        if(Util.Debug):
-            try:
-                print("Indent Token: \"" + self.indentToken + "\"")
-                print("WhiteSpace: \"" + whiteSpace + "\"")
-            except:
-                print("Indent Token: \"" + unicode(self.indentToken, 'utf-8', errors='ignore') + "\"")
-                print("WhiteSpace: \"" + unicode(whiteSpace, 'utf-8', errors='ignore') + "\"")
+        #if(Util.DEBUG):
+        #    try:
+        #        print("Indent Token: \"" + self.indentToken + "\"")
+        #        print("WhiteSpace: \"" + whiteSpace + "\"")
+        #    except:
+        #        print("Indent Token: \"" + unicode(self.indentToken, 'utf-8', errors='ignore') + "\"")
+        #        print("WhiteSpace: \"" + unicode(whiteSpace, 'utf-8', errors='ignore') + "\"")
 
         assert(self.indentToken != "")
         if(self.indentToken == "\t"):
@@ -116,6 +116,11 @@ class IndentScopeTracker(scopeTracker):
         return functionName
 
     def increaseNewIndent(self, line, changeType):
+        if(Util.DEBUG):
+            print("Adding: " + str(line))
+            print("Type: " + str(changeType))
+            print("Stack: " + str(self.newVerStack))
+
         if(changeType == GENERIC):
             self.newVerStack.append((self.indentToken, GENERIC)) #Should be able to increase only 1 level at a time?
         elif(changeType == FUNC):
@@ -127,7 +132,14 @@ class IndentScopeTracker(scopeTracker):
         else:
             assert("Not a valid change type.")
 
+        if(Util.DEBUG):
+            print("Stack (After): " + str(self.newVerStack))
+
     def increaseOldIndent(self, line, changeType):
+        if(Util.DEBUG):
+            print("Adding: " + str(line))
+            print("Type: " + str(changeType))
+            print("Stack: " + str(self.oldVerStack))
         if(changeType == GENERIC):
             self.oldVerStack.append((self.indentToken, GENERIC)) #Should be able to increase only 1 level at a time?
         elif(changeType == FUNC):
@@ -138,6 +150,9 @@ class IndentScopeTracker(scopeTracker):
             self.lastOldBlockContext.append(line)
         else:
             assert("Not a valid change type.")
+
+        if(Util.DEBUG):
+            print("Stack (After): " + str(self.oldVerStack))
 
     #string, [ADD|REMOVE|OTHER], [GENERIC|FUNC|BLOCK] -> --
     #Increase the depth of our tracker and add in function or block contexts if they have been discovered.
@@ -174,6 +189,7 @@ class IndentScopeTracker(scopeTracker):
             if(Util.DEBUG):
                 print("Removing: " + str(removed))
                 print("Context: " + str(self.lastNewBlockContext))
+                print("Stack: " + str(self.newVerStack))
             if(removed[LABELINDEX] == FUNC):
                 self.lastNewFuncContext = self.getTopType(self.newVerStack, FUNC)
             elif(removed[LABELINDEX] == SBLOCK):
@@ -189,6 +205,7 @@ class IndentScopeTracker(scopeTracker):
             if(Util.DEBUG):
                 print("Removing: " + str(removed))
                 print("Context: " + str(self.lastOldBlockContext))
+                print("Stack: " + str(self.oldVerStack))
             if(removed[LABELINDEX] == FUNC):
                 self.lastOldFuncContext = self.getTopType(self.oldVerStack, FUNC)
             elif(removed[LABELINDEX] == SBLOCK):
