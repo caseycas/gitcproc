@@ -77,11 +77,14 @@ class BracketScopeTracker(scopeTracker):
     def isScopeDecrease(self, line, lineType):
         return line.count("}") > 0
 
-    def appendFunctionEnding(self, line, functionName):
+    def handleFunctionNameEnding(self, line, functionName, lineType, funcIdentFunc):
         if("{" in line):
             functionName += line.split("{")[0] + "{"
         else:
             functionName += line.split("{")[0]
+        return functionName
+
+    def grabScopeLine(self, functionName, line, lineType):
         return functionName
 
     #Add "{" from the new stack and update the functional and block caches accordingly
@@ -114,7 +117,8 @@ class BracketScopeTracker(scopeTracker):
 
     #string, [ADD|REMOVE|OTHER], [GENERIC|FUNC|BLOCK] -> --
     #Increase the depth of our tracker and add in function or block contexts if they have been discovered.
-    def increaseScope(self, line, lineType, changeType):
+    #Note: LineNum is not used in this implementation.
+    def increaseScope(self, line, lineType, changeType, lineDiff = -1):
         if(lineType == ADD):
             self.increaseNewBrackets(line, changeType)
         elif(lineType == REMOVE):
@@ -171,3 +175,13 @@ class BracketScopeTracker(scopeTracker):
             self.decreaseNewBrackets(line)
         else:
             assert("Not a valid line type")
+
+
+    def decreaseScopeFirst(self):
+        return False
+
+    def beforeDecrease(self, line):
+        return line[:line.find("}")]
+
+    def afterIncrease(self, line):
+        return line[line.find("{")+1:]

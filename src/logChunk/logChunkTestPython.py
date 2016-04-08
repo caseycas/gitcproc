@@ -41,6 +41,8 @@ class logChunktest(unittest.TestCase):
 
         self.chunk1 = logChunk.logChunk(self.readHelper("testfiles/Python/testChunk1.txt"), "Python", "../util/sample_confPy.ini")
         self.chunk2 = logChunk.logChunk(self.readHelper("testfiles/Python/testChunk2.txt"), "Python", "../util/sample_confPy.ini")
+        self.chunk3 = logChunk.logChunk(self.readHelper("testfiles/Python/testChunk3.txt"), "Python", "../util/sample_confPy.ini")
+        self.chunk4 = logChunk.logChunk(self.readHelper("testfiles/Python/testChunk4.txt"), "Python", "../util/sample_confPy.ini")
 
 
     #def test_FunctionNameParse(self):
@@ -81,8 +83,8 @@ class logChunktest(unittest.TestCase):
 
     def test_parseText2(self):
         self.chunk2.parseText()
-        funcList = self.chunk1.functions
-        self.debugFunctions(funcList)
+        funcList = self.chunk2.functions
+        #self.debugFunctions(funcList)
         self.assertTrue(len(funcList) == 1) 
         self.assertTrue(funcList[0].method=="url")
         self.assertTrue(funcList[0].total_add == 4)
@@ -91,6 +93,30 @@ class logChunktest(unittest.TestCase):
         testDict = {'print Adds': 0, 'print Dels': 0, 'if Dels': 0, 'if Adds': 2}
 
         self.assertEqual(testDict,funcList[0].keywordDictionary)
+
+    def test_parseText3(self):
+        self.chunk3.parseText()
+        funcList = self.chunk3.functions
+        #self.debugFunctions(funcList)
+        self.assertTrue(len(funcList) == 2) 
+        self.assertTrue(funcList[0].method=="testFunc")
+        
+        testDict = {'print Adds': 0, 'print Dels': 2, 'if Dels': 2, 'if Adds': 0}
+
+        self.assertEqual(testDict,funcList[0].keywordDictionary)
+
+        self.assertTrue(funcList[1].method=="testFunc")
+        testDict = {'print Adds': 2, 'print Dels': 0, 'if Dels': 0, 'if Adds': 2}
+
+    def test_parseText4(self):
+        self.chunk4.parseText()
+        funcList = self.chunk4.functions
+        self.debugFunctions(funcList)
+        self.assertTrue(len(funcList) == 1) 
+        self.assertTrue(funcList[0].method=="_get_queryset")
+
+        testDict = {'print Adds': 0, 'print Dels': 0, 'if Dels': 3, 'if Adds': 2}
+        
 
 
 

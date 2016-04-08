@@ -137,9 +137,6 @@ class logChunktest(unittest.TestCase):
 
 
 
-
-
-
     def test_FunctionNameParse(self):
         temp = self.testChunk.langSwitch.parseFunctionName(self.method1)
         self.assertTrue(temp == "blarg", "Actual: " + temp)
@@ -342,7 +339,7 @@ class logChunktest(unittest.TestCase):
     def test_parseText_Single3(self):
         self.chunk3.parseText()
         funcList = self.chunk3.functions
-        #self.debugFunctions(funcList)
+        self.debugFunctions(funcList)
         self.assertTrue(len(funcList) == 3)
         self.assertTrue(funcList[0].method=="Repair_mrg_table_error_handler")
         self.assertTrue(funcList[0].start==13)
@@ -372,6 +369,8 @@ class logChunktest(unittest.TestCase):
 
         testDict = {'assert Adds':0, 'assert Dels': 0, 'ut_ad Adds':0, 'ut_ad Dels': 0, 'ut_a Adds':0, 'ut_a Dels': 0}
         self.assertEqual(testDict,funcList[2].keywordDictionary)
+
+
 
     def test_parseText_Single6(self):
         self.chunk6.parseText()
@@ -905,6 +904,7 @@ class logChunktest(unittest.TestCase):
         #funcList = self.chunk34.functions
         #self.debugFunctions(funcList)
         #self.assertTrue(len(funcList) == 0)
+
 
 
 if __name__=="__main__":

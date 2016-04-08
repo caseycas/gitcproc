@@ -70,3 +70,7 @@ class BracketLanguageSwitcher(languageSwitcher.languageSwitcher):
     #Reset the function name after we have identified a scope change.
     def resetFunctionName(self, line):
         return ""
+
+    def clearFunctionRemnants(self,line):
+        assert("{" in line)
+        return line.replace("{", "") #Just want to make sure we don't double increase the scope.

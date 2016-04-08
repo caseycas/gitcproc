@@ -11,6 +11,7 @@ from chunkingConstants import *
 FUNC = "Function"
 SBLOCK = "Block"
 GENERIC = "Generic"
+NULL = "NULL"
 LINEINDEX = 0
 LABELINDEX = 1
 
@@ -64,12 +65,27 @@ class scopeTracker:
     def isScopeDecrease(self, line, lineType):
         raise NotImplementedError("Base ScopeTracker is Abstract.")
 
-    def appendFunctionEnding(self, line, functionName):
+    def handleFunctionNameEnding(self, line, functionName, lineType, funcIdentFunc):
+        raise NotImplementedError("Base ScopeTracker is Abstract.")
+
+    def grabScopeLine(self, functionName, line, lineType):
+        raise NotImplementedError("Base ScopeTracker is Abstract.")
+
+    #Should we call the decrease scope before checking for keywords?
+    def decreaseScopeFirst(self):
         raise NotImplementedError("Base ScopeTracker is Abstract.")
 
     #Returns true if both oldVerStack and newVerStack are empty.
     def areAllContextsClosed(self):
         return self.oldVerStack == [] and self.newVerStack == []
+
+    #Return the portion of the line before the decrease in scope, if applicable
+    def beforeDecrease(self, line):
+        raise NotImplementedError("Base ScopeTracker is Abstract.")
+
+    #Return the portion of the line after the increase in scope, if applicable
+    def afterIncrease(self, line):
+        raise NotImplementedError("Base ScopeTracker is Abstract.")
 
     #Returns a tuple of lists of open function and block contexts in the old and new versions of the
     #program.  If all contexts are closed (matching brackets in C/C++, no indent in python)
@@ -89,9 +105,11 @@ class scopeTracker:
 
         return "" 
 
-    #string, [ADD|REMOVE|OTHER], [GENERIC|FUNC|BLOCK] -> --
+    #string, [ADD|REMOVE|OTHER], [GENERIC|FUNC|BLOCK], -1/0/1 -> --
     #Increase the depth of our tracker and add in function or block contexts if they have been discovered.
-    def increaseScope(self, line, lineType, changeType):
+    #LineDiff designates for functions and keywords if the scope change was on the same line (0) as the keyword match
+    #-1 Means not relevant to behavior
+    def increaseScope(self, line, lineType, changeType, lineDiff = -1):
         raise NotImplementedError("Base ScopeTracker is Abstract.")
 
     #string, [ADD|REMOVE|OTHER] -> --

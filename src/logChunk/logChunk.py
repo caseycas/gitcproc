@@ -10,6 +10,7 @@ import Util
 import scopeTracker
 import LanguageSwitcherFactory
 import ScopeTrackerFactory
+import UnsupportedScopeException
 from dictUtil import incrementDict, nonZeroCount
 from Config import Config
 from chunkingConstants import *
@@ -167,7 +168,10 @@ class logChunk:
         for b in blockContext:
             found = False
             for keyword in includedKeywords:
-                if(b == keyword[0]):
+                tmp = keyword[0]
+                if(tmp.startswith('\"') and tmp.endswith('\"')):
+                    tmp = tmp[1:-1]
+                if(b == tmp):
                     assert(keyword[1] == INCLUDED and keyword[2] == BLOCK)
                     found = True
                     break
@@ -291,15 +295,11 @@ class logChunk:
 
         return re.search(constructPatt, temp,flags=re.IGNORECASE)
 
-    def getBlockPattern(self,line,list):
-        for l in list:
-            l=str(l[0])
-            result = re.search("\\b"+l+"\\b", line)
-            if(result != None):
-                #This is a hack to handle case where block keyword are used in single line. For eg. For loop without {} brackets.
-                # TODO find a permanent solution of this.
-                if("{" in line):
-                    return result.group(0)
+    def getBlockPattern(self,line,keywords):
+        for keyword in keywords:
+            (k, matched) = self.keywordMatch(keyword[0], line)
+            if(matched):
+                return k
 
         return None
 
@@ -498,7 +498,139 @@ class logChunk:
                 return [OTHER, line[1:]] #Remove whitespace from +/- row, important for languages like python
             else:
                 return [OTHER, line]
-        
+  
+
+    #When we know that we're inside a function, we need to process the single and block keywords and update the scope
+    #tracking accordingly.
+    def updateScopeAndKeywords(self, phase, line, lineType, lineNum, sT, foundBlock, blockKeywordLine, blockKeywordType, shortFunctionName, singleKeyWordList, blockKeyWordList, keywordDictionary):
+        scopeChanges = sT.scopeOrder(line, lineType)
+        if(Util.DEBUG):
+            print("Scope Changes:")
+            print(scopeChanges)
+
+        if(len(scopeChanges) > 2):
+            if(Util.DEBUG == 1):
+                print("Parsing of multiscope changes like: ")
+                print(line)
+                print("is not yet supported.")
+            raise UnsupportedScopeException("This ordering of scope changes is not yet supported.")
+
+        elif(len(scopeChanges) > 0):
+            print("THERE!!!")
+            for nextScopeChange in scopeChanges:
+                if(nextScopeChange == INCREASE):
+                    if(sT.isScopeIncrease(line, lineType)):
+                        if(sT.scopeIncreaseCount(line, lineType) > 1):
+                            if(Util.DEBUG == 1):
+                                print("Parsing of multiscope increases like: ")
+                                print(line)
+                                print("is not yet supported.")
+                            raise UnsupportedScopeException("This ordering of scope changes is not yet supported.")
+
+                        if(Util.DEBUG):
+                            print("Scope Increase")
+                        #Here we update the scopeTracker for our block keywords if we have seen
+                        #a block keyword followed by a scope increase either on the same line or
+                        #on the line immediately following it.
+                        if(foundBlock != None): #If we have an existing keyword match from before
+                            if(blockKeywordLine == lineNum - 1):
+                                if(Util.DEBUG):
+                                    print("Block start found (0): " + foundBlock)
+                                sT.increaseScope(foundBlock, blockKeywordType, scopeTracker.SBLOCK, 1)
+                            else: #Ignore scope increases too far away from the block keyword
+                                sT.increaseScope(line, blockKeywordType, scopeTracker.GENERIC)
+                        else:
+                            foundBlock=self.getBlockPattern(line,blockKeyWordList)
+                            if(foundBlock!=None):
+                                if(Util.DEBUG):
+                                    print("Block start found (1): " + foundBlock)
+                                sT.increaseScope(foundBlock, lineType, scopeTracker.SBLOCK, 0)
+                            else:
+                                sT.increaseScope(line, lineType, scopeTracker.GENERIC)
+
+
+                        blockKeywordLine = -1
+                        blockKeywordType = ""
+                        foundBlock = None
+
+                else:
+                    if(sT.isScopeDecrease(line, lineType)):
+                        if(Util.DEBUG):
+                            print("Scope Decrease")
+
+                        #Check if we should decrease scope before updating the dictionaries
+                        if(sT.decreaseScopeFirst()):
+                            sT.decreaseScope(line, lineType)
+
+
+                        if(lineType != OTHER):
+                            #Search for single line keywords BEFORE the scope decrease if in non decrease first language.
+                            keywordDictionary = self.parseLineForKeywords(sT.beforeDecrease(line), lineType, singleKeyWordList, keywordDictionary)
+
+                        if(sT.getFuncContext(lineType) != ""): #Maybe?
+                            shortFunctionName = sT.getFuncContext(lineType) #Get the functional context
+                        if(sT.getBlockContext(lineType) != [] and lineType!=OTHER):
+                            if(Util.DEBUG):
+                                print("Current block context: " + str(sT.getBlockContext(lineType)))
+                            keywordDictionary = self.parseLineForKeywords(line, lineType, blockKeyWordList, keywordDictionary, sT.getBlockContext(lineType))
+
+                        if(not sT.decreaseScopeFirst()):
+                            sT.decreaseScope(line, lineType)
+                        print("Removed!!!!" + str(sT.getBlockContext(lineType)))
+        else: # Still want to check for a block context opening
+            #LIMITATION: Let's force the scope increase associated with a block to be
+            #either on the same line or on the line immediately following.  We'll ignore
+            #other cases
+            print("HERE!!!!!!")
+            print(line)
+            print(blockKeyWordList)
+            foundBlock = self.getBlockPattern(line, blockKeyWordList)
+            print(foundBlock)
+            if(foundBlock != None):
+                if(Util.DEBUG):
+                    print("Keyword match without scope change.")
+                blockKeywordType = lineType
+                blockKeywordLine = lineNum
+
+        if(lineType != OTHER):
+            temp = line
+            if(scopeChanges != [DECREASE] and scopeChanges != [INCREASE, DECREASE]):
+                keywordDictionary = self.parseLineForKeywords(temp, lineType, singleKeyWordList, keywordDictionary)
+
+            if(sT.getBlockContext(lineType) != [] or foundBlock != None):
+                bC = sT.getBlockContext(lineType)
+                if(Util.DEBUG):
+                    print("Current block context: " + str(bC))
+                if(foundBlock != None): 
+                    if(Util.DEBUG):
+                        print("No scope increase yet for block keyword. Adding to the list.")
+                    #This means we have found block keyword, but not yet seen the scope increase
+                    #This will always happen in python, but can happen in { languages if the {
+                    #for the block is not on the same line as the keyword.
+                    bC.add(foundBlock)
+                        
+                keywordDictionary = self.parseLineForKeywords(temp, lineType, blockKeyWordList, keywordDictionary, bC)
+
+        # if(lineType != OTHER):
+        #     if(phase == LOOKFOREND):
+        #         keywordDictionary = self.parseLineForKeywords(line, lineType, singleKeyWordList, keywordDictionary)
+        #         if(sT.getBlockContext(lineType) != [] or foundBlock != None):
+        #             bC = sT.getBlockContext(lineType)
+        #             if(Util.DEBUG):
+        #                 print("Current block context: " + str(bC))
+        #             if(foundBlock != None): 
+        #                 if(Util.DEBUG):
+        #                     print("No scope increase yet for block keyword. Adding to the list.")
+        #                 #This means we have found block keyword, but not yet seen the scope increase
+        #                 #This will always happen in python, but can happen in { languages if the {
+        #                 #for the block is not on the same line as the keyword.
+        #                 bC.add(foundBlock)
+                        
+        #             keywordDictionary = self.parseLineForKeywords(line, lineType, blockKeyWordList, keywordDictionary, bC)
+        #     else:
+        #         assert(0)
+
+        return (foundBlock, blockKeywordLine, blockKeywordType, shortFunctionName, keywordDictionary, sT)      
 
     #Main function to parse out the contents loaded into logChunk
     def parseText(self):
@@ -516,6 +648,10 @@ class logChunk:
         singleKeyWordList = filter(lambda w : w[2] == SINGLE, keyWordList)
         blockKeyWordList = filter(lambda w: w[2] == BLOCK, keyWordList)
 
+        foundBlock = None #This marks a line that matches a block keyword
+        blockKeywordLine = -1 #If the keyword line doesn't have a scope increase, we need to record its line.
+        blockKeywordType = ""
+
         self.initialized = True
         lineNum = 0 # which line we are on, relative to the start of the chunk
         lineType = OTHER
@@ -526,6 +662,7 @@ class logChunk:
         shortFunctionName = ""
         funcStart = 0
         funcEnd = 0
+
 
         classContext = [] #If we are parsing inside a class, what is the closest class name?
         ftotal_add=0
@@ -605,7 +742,7 @@ class logChunk:
                     except:
                         print("Line: \"" + unicode(line, 'utf-8', errors='ignore') + "\"")
 
-                if(self.sT.isScopeIncrease(line, lineType)):
+                if(self.sT.isScopeIncrease(line, lineType)): # Problem, what about half functions at the top for python?
                     if(Util.DEBUG == 1):
                         print("Scope increase while searching for function.")
 
@@ -616,9 +753,11 @@ class logChunk:
                             print("is not yet supported.")
                         continue
 
-                    functionName = self.sT.appendFunctionEnding(line, functionName)
+                    #For Python, need to distinguish in Scope Tracker if this is a Indent on a Function Line
+                    #Or the indent on the following line.
+                    functionName = self.sT.handleFunctionNameEnding(line, functionName, lineType, self.getFunctionPattern)
 
-                    shortFunctionName = self.getFunctionPattern(functionName) #Problem, this is dropping whitespace...
+                    shortFunctionName = self.getFunctionPattern(functionName)
                     if(Util.DEBUG):
                         print("Pattern: " + shortFunctionName)
 
@@ -632,7 +771,7 @@ class logChunk:
                     else:
                         isFunction = False
 
-                    #Update to function scope or other here.
+                    #Problem: I don't want to double process the scope change here...
                     if(isFunction): #Skip things are aren't functions
                         if(Util.DEBUG == 1):
                             try:
@@ -640,7 +779,7 @@ class logChunk:
                             except:
                                  print("Function: " + unicode(shortFunctionName, 'utf-8', errors='ignore'))
 
-                        self.sT.increaseScope(shortFunctionName, lineType, scopeTracker.FUNC)
+                        self.sT.increaseScope(self.sT.grabScopeLine(shortFunctionName, line, lineType), lineType, scopeTracker.FUNC)
                         funcStart = lineNum
                         phase = LOOKFOREND
                         #Count this line as an addition or deletion
@@ -652,6 +791,9 @@ class logChunk:
                         elif(lineType == ADD):
                             ftotal_add = 1
                             startFlag=1
+
+                        #Remove the last of the function 
+                        line = self.langSwitch.clearFunctionRemnants(line)
                     else: #There was a non-function scope increase.
                         self.sT.increaseScope(line, lineType, scopeTracker.GENERIC)
                         if(self.langSwitch.isObjectOrientedLanguage()):
@@ -671,19 +813,31 @@ class logChunk:
                         print("Extending the function name")
                     functionName += line.replace("\n", "") + " " #add the line with no new lines
                         
-                #Check for single line keywords
-                if(lineType != OTHER):
+                # #Check for single line keywords
+                # if(lineType != OTHER):
+                #     if(phase == LOOKFOREND):
+                #         keywordDictionary = self.parseLineForKeywords(line, lineType, singleKeyWordList, keywordDictionary)
+                #     elif(phase == LOOKFORNAME):
+                #         outsideFuncKeywordDictionary = self.parseLineForKeywords(line, lineType, singleKeyWordList, outsideFuncKeywordDictionary)
+                #     else:
+                #         assert(0)
+
+                #TODO: Python Scope can increase immediately on the following line.  I think we need a full check here
+                #Maybe abstract the keyword update into a separate reusuable function.
+                #self.updateScopeAndKeywords() I want to use this this same function to handle single + block keywords here somehow....
+                try:
                     if(phase == LOOKFOREND):
-                        keywordDictionary = self.parseLineForKeywords(line, lineType, singleKeyWordList, keywordDictionary)
+                        (foundBlock, blockKeywordLine, blockKeywordType, shortFunctionName, keywordDictionary, self.sT) = self.updateScopeAndKeywords(phase, line, lineType, lineNum, self.sT, foundBlock, blockKeywordLine, blockKeywordType, shortFunctionName, singleKeyWordList, blockKeyWordList, keywordDictionary)
                     elif(phase == LOOKFORNAME):
-                        outsideFuncKeywordDictionary = self.parseLineForKeywords(line, lineType, singleKeyWordList, outsideFuncKeywordDictionary)
-                    else:
-                        assert(0)
+                        (foundBlock, blockKeywordLine, blockKeywordType, shortFunctionName, outsideFuncKeywordDictionary, self.sT) = self.updateScopeAndKeywords(phase, line, lineType, lineNum, self.sT, foundBlock, blockKeywordLine, blockKeywordType, shortFunctionName, singleKeyWordList, blockKeyWordList, outsideFuncKeywordDictionary)
+                except UnsupportedScopeException:
+                    continue
+
 
                 #Handle cases where we have a single line function.
-                if(phase == LOOKFOREND and self.sT.isScopeDecrease(line, lineType)):
-                    shortFunctionName = self.sT.getFuncContext(lineType) #Get the functional context
-                    self.sT.decreaseScope(line, lineType)
+                #if(phase == LOOKFOREND and self.sT.isScopeDecrease(line, lineType)):
+                #   shortFunctionName = self.sT.getFuncContext(lineType) #Get the functional context
+                #    self.sT.decreaseScope(line, lineType)
 
                 if(self.sT.getFuncContext(lineType) == "" and phase == LOOKFOREND):
                     funcEnd = lineNum
@@ -725,58 +879,13 @@ class logChunk:
 
             elif(phase == LOOKFOREND): #determine the end of the function
                 #Handle changes in scope
-                scopeChanges = self.sT.scopeOrder(line, lineType)
-                if(len(scopeChanges) > 2):
-                    if(Util.DEBUG == 1):
-                        print("Parsing of multiscope changes like: ")
-                        print(line)
-                        print("is not yet supported.")
+                #This has broken the Java tests somehow...
+                try:
+                    (foundBlock, blockKeywordLine, blockKeywordType, shortFunctionName, keywordDictionary, self.sT) = self.updateScopeAndKeywords(phase, line, lineType, lineNum, self.sT, foundBlock, blockKeywordLine, blockKeywordType, shortFunctionName, singleKeyWordList, blockKeyWordList, keywordDictionary)
+                except UnsupportedScopeException:
                     continue
 
-                else:
-                    for nextScopeChange in scopeChanges:
-                        if(nextScopeChange == INCREASE):
-                            if(self.sT.isScopeIncrease(line, lineType)):
-                                if(self.sT.scopeIncreaseCount(line, lineType) > 1):
-                                    if(Util.DEBUG == 1):
-                                        print("Parsing of multiscope increases like: ")
-                                        print(line)
-                                        print("is not yet supported.")
-                                    continue
-
-                                #if(phase2==LOOKFOREXCP):
-                                foundBlock=self.getBlockPattern(line,blockKeyWordList)
-                                if(foundBlock!=None):
-                                    if(Util.DEBUG):
-                                        print("Block start found: " + foundBlock)
-                                    self.sT.increaseScope(foundBlock, lineType, scopeTracker.SBLOCK)
-                                else:
-                                    self.sT.increaseScope(line, lineType, scopeTracker.GENERIC)
-                        else:
-                            if(self.sT.isScopeDecrease(line, lineType)):
-                                if(self.sT.getFuncContext(lineType) != ""): #Maybe?
-                                    shortFunctionName = self.sT.getFuncContext(lineType) #Get the functional context
-                                if(self.sT.getBlockContext(lineType) != [] and lineType!=OTHER):
-                                    if(Util.DEBUG):
-                                        print("Current block context: " + str(self.sT.getBlockContext(lineType)))
-                                    keywordDictionary = self.parseLineForKeywords(line, lineType, blockKeyWordList, keywordDictionary, self.sT.getBlockContext(lineType))
-
-                                self.sT.decreaseScope(line, lineType)
-
-
-                #Problem: This misses the last line of a block context, and if we move it before, it will miss the first
-                #How do we capture a line with multiple block contexts?
-                if(lineType != OTHER):
-                    if(phase == LOOKFOREND):
-                        keywordDictionary = self.parseLineForKeywords(line, lineType, singleKeyWordList, keywordDictionary)
-                        if(self.sT.getBlockContext(lineType) != []):
-                            if(Util.DEBUG):
-                                print("Current block context: " + str(self.sT.getBlockContext(lineType)))
-                            keywordDictionary = self.parseLineForKeywords(line, lineType, blockKeyWordList, keywordDictionary, self.sT.getBlockContext(lineType))
-                    else:
-                        assert(0)
-
-                
+ 
                 if(self.sT.getFuncContext(lineType) == ""):
                     funcEnd = lineNum
                     #Add this function to our list and reset the trackers.
@@ -804,7 +913,7 @@ class logChunk:
                     etotal_del=0
                     phase = LOOKFORNAME
                     catchLineNumber=[]
-                    foundBlock=""
+                    foundBlock=None
                     #currentBlock=None
                     for keyword in singleKeyWordList:
                         if(keyword[1] != EXCLUDED):

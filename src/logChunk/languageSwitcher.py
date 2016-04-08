@@ -92,6 +92,10 @@ class languageSwitcher:
     def resetFunctionName(self, line):
         raise NotImplementedError("Base LangSwitcher is Abstract.")
 
+    #Remove the last piece of the function name from the rest of the name for further processing
+    def clearFunctionRemnants(self,line):
+        raise NotImplementedError("Base LangSwitcher is Abstract.")
+
     #Remove all strings from a line
     def removeStrings(self, line):
         raise NotImplementedError("Base LangSwitcher is Abstract.")

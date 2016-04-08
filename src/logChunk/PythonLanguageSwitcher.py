@@ -134,10 +134,14 @@ class PythonLanguageSwitcher(languageSwitcher.languageSwitcher):
         return re.sub(PythonCommentPattern2, "", line)
 
     def checkForFunctionReset(self, line):
-        return line.strip().endswith(":")
+        return False
 
     #Reset the function name after we have identified a scope change.
     def resetFunctionName(self, line):
+        return line
+
+    def clearFunctionRemnants(self,line):
+        #return line.strip() #Remove indentation so we don't process further scope changes
         return line
 
     def removeStrings(self, line):

@@ -45,6 +45,7 @@ class logChunktest(unittest.TestCase):
         self.chunkb8 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk8.txt"), "Java", "../util/sample_conf2.ini")
         self.chunkb9 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk9.txt"), "Java", "../util/sample_conf2.ini")
         self.chunkb10 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk10.txt"), "Java", "../util/sample_conf2.ini")
+        self.chunkb11 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk11.txt"), "Java", "../util/sample_conf2.ini")
 
 
     def test_FunctionNameParseJAVA(self):
@@ -72,8 +73,6 @@ class logChunktest(unittest.TestCase):
         self.assertTrue(temp == "read", "Actual: " + temp)
 
 
-
-
     def test_parseText_Block1(self):
 
         self.chunkb1.parseText()
@@ -99,7 +98,7 @@ class logChunktest(unittest.TestCase):
 
         self.chunkb2.parseText()
         funcList = self.chunkb2.functions
-        #self.debugFunctions(funcList)
+        self.debugFunctions(funcList)
         self.assertTrue(len(funcList) == 2)
 
         self.assertTrue(funcList[0].method=="getAccounts")
@@ -146,7 +145,7 @@ class logChunktest(unittest.TestCase):
 
         self.chunkb5.parseText()
         funcList = self.chunkb5.functions
-        #self.debugFunctions(funcList)
+        self.debugFunctions(funcList)
 
 
         self.assertTrue(len(funcList) == 1)
@@ -235,7 +234,20 @@ class logChunktest(unittest.TestCase):
 
         self.assertEqual(testdict,funcList[0].keywordDictionary)
 
+    def test_parseText_Block11(self):
 
+        self.chunkb11.parseText()
+        funcList = self.chunkb11.functions
+        #self.debugFunctions(funcList)
+        self.assertTrue(len(funcList) == 1)
+
+
+        self.assertTrue(funcList[0].method=="blockTest")
+        self.assertTrue(funcList[0].total_add == 1)
+        self.assertTrue(funcList[0].total_del == 1)
+        testdict= {'throw  Adds': 0, 'catch Dels': 0, 'try Adds': 1, 'try Dels': 1, 'exception Dels': 0, 'raise Adds': 0, 'catch Adds': 0, 'finally Dels': 0, 'finally Adds': 0, 'throw  Dels': 0, 'exception Adds': 0, 'raise Dels': 0, 'for Adds': 0,'for Dels': 0,'while Adds': 0,'while Dels': 0}
+
+        self.assertEqual(testdict,funcList[0].keywordDictionary)
 
 
 if __name__=="__main__":

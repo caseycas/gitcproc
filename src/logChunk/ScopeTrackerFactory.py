@@ -1,7 +1,7 @@
 import yaml #PyYAML must be installed
 import scopeTracker
 import BracketScopeTracker
-import IndentScopeTracker
+import PythonScopeTracker
 from UnsupportedLanguageException import *
 
 BracketLanguages = ["C", "C++", "Java"]
@@ -17,7 +17,7 @@ class ScopeTrackerFactory:
         if(lang in BracketLanguages):
             return BracketScopeTracker.BracketScopeTracker(lang)
         elif(lang in IndentLanguages):
-            return IndentScopeTracker.IndentScopeTracker(lang)
+            return PythonScopeTracker.PythonScopeTracker(lang)
         else:
             raise UnsupportedLanguageException(language + " is not yet supported.")
         

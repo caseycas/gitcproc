@@ -113,10 +113,6 @@ class JavaLanguageSwitcher(BracketLanguageSwitcher.BracketLanguageSwitcher):
     def checkForFunctionReset(self, line):
         return line.strip().endswith(";")
 
-    #Reset the function name after we have identified a scope change.
-    def resetFunctionName(self, line):
-        return ""
-
     def removeStrings(self, line):
         line = re.sub(JavaStringPattern, "", line)
         line = re.sub(JavaStringPattern2, "", line)

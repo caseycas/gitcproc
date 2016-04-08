@@ -5,7 +5,6 @@ sys.path.append("../util")
 
 import Util
 import UnsupportedLanguageException
-import
 from chunkingConstants import *
 from scopeTracker import *
 
@@ -24,14 +23,17 @@ class PythonScopeTracker(scopeTracker):
         self.oldVerStack = []
         self.newVerStack = []
         self.indentToken = "" #This tells us what the indent token for the file is.  Can be a number of spaces or tab
-        self.lastNewContext = ""
-        self.lastNewContextType = NULL #Used to identify if the previous line was the start of a group or function scope.
-        self.lastOldContext = ""
-        self.lastOldContextType = NULL #Used to identify if the previous line was the start of a group or function scope.
+        self.funcNewLine = -1 #Did the last indentation contain a function name? (-1 is uninitialized)
+        self.blockNewLine = 0 #Did the last indentation contain a block match?
+        self.funcOldLine = -1 #Did the last indentation contain a function name? (-1 is uninitialized)
+        self.blockOldLine = 0 #Did the last indentation contain a block match?
+        self.newBlockKeyword = ""
+        self.oldBlockKeyword = ""
+
         self.lastOldFuncContext = ""
-        self.lastOldBlockContext = []
+        self.lastOldBlockContext = set()
         self.lastNewFuncContext = ""
-        self.lastNewBlockContext = []
+        self.lastNewBlockContext = set()
         self.language = language
 
     #String -> list
@@ -99,12 +101,18 @@ class PythonScopeTracker(scopeTracker):
         else:
             return False
 
-
     #Returns true if this line contains an decreased level of scope.
     def isScopeDecrease(self, line, lineType):
-        assert(self.indentToken != "") #If Scope is decreasing, if must have increased at some point
+        print("IN isScopeDecrease")
+        print("Indent Token: \"" + self.indentToken + "\"")
+        if(self.indentToken == ""): #If Scope is decreasing, if must have increased at some point
+            return False
+
         indent = re.match(r"\s*", line).group() 
         depth = self.indentDepth(indent)
+        print("Depth:" + str(depth))
+        print("Line: \"" + line + "\"")
+        print("Old Stack: " + str(self.oldVerStack))
         if(lineType == ADD):
             return len(self.newVerStack) > depth
         elif(lineType == REMOVE):
@@ -114,68 +122,123 @@ class PythonScopeTracker(scopeTracker):
         else:
             assert("Not a valid line type")
 
-    def handleFunctionNameEnding(self, line, functionName):
+    def handleFunctionNameEnding(self, line, functionName, lineType, funcIdentFunc):
         #Our job here is to distinguish between a indented line with a function def
         #and the indented line following the function.
-        if("def " in line):
-        #    functionName += line.split(":")[0] + ":"
+        if(Util.DEBUG):
+            print("Handle Ending")
+            print("FunctionName: " + functionName)
+            print("Line: " + line)
+            print("Old Context:" + self.lastOldFuncContext)
+            print("New Context:" + self.lastNewFuncContext)
 
+        if(funcIdentFunc(functionName) != ""): #This is the line containing the followup
+            #This is not returning the name correctly
+            if(Util.DEBUG):
+                print("1")
+            if(lineType == ADD):
+                self.funcNewLine = 1
+                self.lastNewFuncContext = functionName #Double check these...
+            elif(lineType == REMOVE):
+                self.funcOldLine = 1
+                self.lastOldFuncContext = functionName
+            elif(lineType == OTHER):
+                self.funcOldLine = 1
+                self.funcNewLine = 1
+                self.lastNewFuncContext = functionName
+                self.lastOldFuncContext = functionName
+            else:
+                assert("Not a valid line type")
 
-        return functionName
-
-    #Private function to update the stack for the shift at the next 
-    def updateStack(self, changeType, stack, contextType, context, line):
-        if(changeType == FUNC): #This is an indented function, the actual function indent must come later
-            contextType == FUNC
-            context = line
-            stack.append((self.indentToken, GENERIC)) #Should be able to increase only 1 level at a time?
-        elif(changeType == SBLOCK):
-            contextType == SBLOCK
-            context = line
-            stack.append((self.indentToken, GENERIC)) #Should be able to increase only 1 level at a time?
-        elif(changeType == NULL): #Reset the values, don't update the stack.
-            contextType == NULL
-            context = ""
-        elif(changeType == GENERIC):
-            stack.append((self.indentToken, GENERIC)) #Should be able to increase only 1 level at a time?
+            return functionName
+        elif(funcIdentFunc(functionName + " " + line) != ""): # This is the line containing the function
+            if(Util.DEBUG):
+                print("2")
+            if(lineType == ADD):
+                self.funcNewLine = 0
+            elif(lineType == REMOVE):
+                print("Changing Old Line to 0")
+                self.funcOldLine = 0
+            elif(lineType == OTHER):
+                print("Changging Old Line to 0")
+                self.funcNewLine = 0
+                self.funcOldLine = 0
+            else:
+                 assert("Not a valid line type")
+            return functionName + " " + line
         else:
-            assert("Not a valid change type.")
+            if(Util.DEBUG):
+                print("3")
+            if(lineType == ADD):
+                self.funcNewLine = -1
+            elif(lineType == REMOVE):
+                self.funcOldLine = -1
+            elif(lineType == OTHER):
+                self.funcOldLine = -1
+                self.funcNewLine = -1
+            else:
+                assert("Not a valid line type")
 
+            return ""
+
+    def grabScopeLine(self, functionName, line, lineType):
+        if(lineType == ADD or lineType == OTHER):
+            if(self.funcNewLine == 1):
+                return(line)
+            elif(self.funcNewLine == 0):
+                return(functionName)
+            else:
+                assert("Parse error, if this is a function we should be either at it or the line following.")
+        elif(lineType == REMOVE):
+            if(self.funcOldLine == 1):
+                return(line)
+            elif(self.funcOldLine == 0):
+                return(functionName)
+            else:
+                assert("Parse error, if this is a function we should be either at it or the line following.")
+        else:
+            assert("Not a valid line type")
         
-        return (stack, contextType, context)
 
     def increaseNewIndent(self, line, changeType, lineDiff):
         if(Util.DEBUG):
+            print("New Indent Increase")
             print("Adding: " + str(line))
             print("Type: " + str(changeType))
             print("Stack: " + str(self.newVerStack))
 
-        # #If we haven't seen a scope increase yet, what is causing the scope change
-        # if(self.lastContextType == NULL):
-        #     (self.newVerStack, self.lastNewContextType, self.lastNewContext) = updateStack(changeType, self.newVerStack, self.lastNewContextType, self.lastNewContext, line)
-
-        # elif(self.lastContextType == GENERIC):
-        # elif(self.lastContextType == FUNC):
-        #     self.oldVerStack.append((self.lastNewContext, FUNC))
-        #     self.lastOldFuncContext = line
-        #     (self.newVerStack, self.lastNewContextType, self.lastNewContext) = updateStack(changeType, self.newVerStack, self.lastNewContextType, self.lastNewContext, line)
-        # elif(self.lastContextType == SBLOCK):
-        # else:
-        #     assert("Not a valid change type.")
-
-
         if(changeType == GENERIC):
-            self.oldVerStack.append((self.indentToken, GENERIC)) #Should be able to increase only 1 level at a time?
+            if(self.funcNewLine != 1 and self.blockNewLine == 0):
+                self.newVerStack.append((self.indentToken, GENERIC)) #Should be able to increase only 1 level at a time?
+            elif(self.blockNewLine == 1):
+                assert(self.funcNewLine != 1)
+                assert(self.newBlockKeyword != "")
+                self.newVerStack.append((self.newBlockKeyword, SBLOCK))
+                self.lastNewBlockContext.add(self.newBlockKeyword)
+                self.blockNewLine = 0
+                self.newBlockKeyword = ""
+            else: # This is actually the indentation after a function that was also idented.
+                self.newVerStack.append((self.lastNewFuncContext, FUNC))
+                self.funcNewLine = -1  #Reset after the handle function.
         elif(changeType == FUNC):
-            #Mark that we've seen the function...          
-            self.newVerStack.append((line, FUNC))
-            self.lastNewFuncContext = line
+            #Mark that we've seen the function... 
+            if(self.funcNewLine == 0): #Func line that is indented
+                self.newVerStack.append((self.indentToken, GENERIC))
+                self.lastNewFuncContext = line
+                self.funcNewLine = 1
+            elif(self.funcNewLine == 1): #Indent after a func line, outside code would've passed the func name here after a match.
+                self.newVerStack.append((self.lastNewFuncContext, FUNC))
+                self.funcNewLine = -1  #Reset after the handle function.
+            else:
+                assert("Parse error.  Scope tracker expected a FUNC tag.")
         elif(changeType == SBLOCK):
             if(lineDiff == 0): #This is not the indent for the Block, but a Block keyword that is indented
-                #TODO
-            elif(lineDiff == 1):
+                self.blockNewLine = 1
+                self.newBlockKeyword = line
+                self.newVerStack.append((self.indentToken, GENERIC))
+            elif(lineDiff == 1): #Indent after a Block line.
                 self.newVerStack.append((line, SBLOCK))
-                self.lastNewBlockContext.append(line)
+                self.lastNewBlockContext.add(line)
         else:
             assert("Not a valid change type.")
 
@@ -184,17 +247,48 @@ class PythonScopeTracker(scopeTracker):
 
     def increaseOldIndent(self, line, changeType, lineDiff):
         if(Util.DEBUG):
+            print("Old Indent Increase")
             print("Adding: " + str(line))
             print("Type: " + str(changeType))
             print("Stack: " + str(self.oldVerStack))
+
         if(changeType == GENERIC):
-            self.oldVerStack.append((self.indentToken, GENERIC)) #Should be able to increase only 1 level at a time?
+            print("GENERIC!")
+            print("Func Old Line: " + str(self.funcOldLine))
+            print("Block Old Line: " + str(self.blockOldLine))
+            if(self.funcOldLine != 1 and self.blockOldLine == 0):
+                self.oldVerStack.append((self.indentToken, GENERIC)) #Should be able to increase only 1 level at a time?
+            elif(self.blockOldLine == 1):
+                assert(self.oldBlockKeyword != "")
+                self.oldVerStack.append((self.oldBlockKeyword, SBLOCK))
+                self.lastOldBlockContext.add(self.oldBlockKeyword)
+                self.blockOldLine = 0
+                self.oldBlockKeyword = ""
+            else: # This is actually the indentation after a function that was also idented.
+                self.oldVerStack.append((self.lastOldFuncContext, FUNC))
+                self.funcOldLine = -1  #Reset after the handle function.
         elif(changeType == FUNC):
-            self.oldVerStack.append((line, FUNC))
-            self.lastOldFuncContext = line
+            #Mark that we've seen the function... 
+            if(self.funcOldLine == 0): #Func line that is indented
+                print("Changing Old Line to 1")
+                self.oldVerStack.append((self.indentToken, GENERIC))
+                self.lastOldFuncContext = line
+                self.funcOldLine = 1
+                print("Func Old Line: " + str(self.funcOldLine))
+            elif(self.funcOldLine == 1): #Indent after a func line
+                self.oldVerStack.append((self.lastOldFuncContext, FUNC))
+                self.funcOldLine = -1  
+            else:
+                assert("Parse error.  Scope tracker expected a FUNC tag.")
+
         elif(changeType == SBLOCK):
-            self.oldVerStack.append((line, SBLOCK))
-            self.lastOldBlockContext.append(line)
+            if(lineDiff == 0): #This is not the indent for the Block, but a Block keyword that is indented
+                self.blockOldLine = 1
+                self.oldBlockKeyword = line
+                self.oldVerStack.append((self.indentToken, GENERIC))
+            elif(lineDiff == 1): #Indent after a Block line.
+                self.oldVerStack.append((line, SBLOCK))
+                self.lastOldBlockContext.add(line)
         else:
             assert("Not a valid change type.")
 
@@ -203,8 +297,8 @@ class PythonScopeTracker(scopeTracker):
 
     #string, [ADD|REMOVE|OTHER], [GENERIC|FUNC|BLOCK] -> --
     #Increase the depth of our tracker and add in function or block contexts if they have been discovered.
-    def increaseScope(self, line, lineType, changeType, lineDiff):
-        if(Util.DEBUG):
+    def increaseScope(self, line, lineType, changeType, lineDiff = -1):
+        if(Util.DEBUG): 
             try:
                 print("Scope Increasing Line: " + line)
             except:
@@ -220,7 +314,6 @@ class PythonScopeTracker(scopeTracker):
             depth = self.indentDepth(line)
             isOldIncrease = len(self.oldVerStack) < depth
             isNewIncrease = len(self.newVerStack) < depth
-            assert(isOldIncrease or isNewIncrease)
             if(isOldIncrease):
                 self.increaseOldIndent(line, changeType, lineDiff)
             if(isNewIncrease):
@@ -274,10 +367,18 @@ class PythonScopeTracker(scopeTracker):
             depth = self.indentDepth(line)
             isOldDecrease = len(self.oldVerStack) > depth
             isNewDecrease = len(self.newVerStack) > depth
-            assert(isOldDecrease or isNewDecrease)
             if(isOldDecrease):
                 self.decreaseOldIndent(line)
             if(isNewDecrease):
                 self.decreaseNewIndent(line)
         else:
             assert("Not a valid line type")
+
+    def decreaseScopeFirst(self):
+        return True
+
+    def beforeDecrease(self, line): #A decrease always happens at the start of a line, so return nothing.
+        return ""
+
+    def afterIncrease(self, line): #No need to do anything here. We can't have code before the indentation.
+        return line
