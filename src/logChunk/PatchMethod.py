@@ -12,6 +12,7 @@ def toStr(text):
 
 class PatchMethod:
 
+    #Todo - get rid of catchLineNumber
     def __init__(self, name, start=0, end=0, added=0, deleted=0,keyDict={},eadd=0,edel=0,catchLineNumber=[]):
         self.method = name
         self.start = start

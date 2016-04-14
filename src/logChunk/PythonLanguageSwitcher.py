@@ -1,5 +1,6 @@
 import re
 import languageSwitcher
+from InvalidCodeException import *
 
 #How to combine these?
 PythonFunctionPatterns = [" *def +[A-Za-z_]+[\w]*\(.*\): *$"]
@@ -13,6 +14,10 @@ PythonCommentPattern2 = "#.*"
 
 PythonStringPattern = "\".*?\""
 PythonStringPattern2 = "\'.*?\'"
+
+#Regex to match to see if we should expect the next line to be a continuation line
+#This can happen if we are in between (), {}, or [], or with an explicit \
+PythonExplicitContinuationRegex = ".*\\ *"
 
 #Potential Regexes to fill in based on the others.
 
@@ -143,6 +148,51 @@ class PythonLanguageSwitcher(languageSwitcher.languageSwitcher):
     def clearFunctionRemnants(self,line):
         #return line.strip() #Remove indentation so we don't process further scope changes
         return line
+
+    def isContinuationLine(self, line, priorStatus):
+        if(line.strip() == ""):
+            return priorStatus
+        """
+        In Python a line counts as a continuation line under two circumstances - explicit and implicit.
+        Explicit continuation lines must end in \
+        Implicit continuation lines must have a Start in a ( or { or [ but have not match at the end.
+        """
+        if(re.search(PythonExplicitContinuationRegex, line)):
+            return languageSwitcher.CONTINUATION
+        else: #Check if this is an implicit continuation
+            BracketStack = []
+            for char in line:
+                if(char in "{[("):
+                    BracketStack.append(char)
+                elif(char == "}"):
+                    if(BracketStack != [] and (BracketStack[-1] == "(" or BracketStack[-1] == "[")):
+                        raise InvalidCodeException("Brackets: {} did not match in the code.")
+                    elif(BracketStack != []):
+                        BracketStack.append(char)
+                    else:
+                        BracketStack.pop()
+                elif(char == "]"):
+                    if(BracketStack != [] and (BracketStack[-1] == "(" or BracketStack[-1] == "{")):
+                        raise InvalidCodeException("Braces: [] did not match in the code.")
+                    elif(BracketStack != []):
+                        BracketStack.append(char)
+                    else:
+                        BracketStack.pop()
+                elif(char == ")"):
+                    if(BracketStack != [] and  (BracketStack[-1] == "{" or BracketStack[-1] == "[")):
+                        raise InvalidCodeException("Parantheses: () did not match in the code.")
+                    elif(BracketStack != []):
+                        BracketStack.append(char)
+                    else:
+                        BracketStack.pop()
+
+            if(BracketStack == []):
+                return languageSwitcher.NOT_CONTINUATION
+            elif(BracketStack[-1] in "}])"):
+                return languageSwitcher.CONTINUATION_END
+            else:
+                return languageSwitcher.CONTINUATION
+
 
     def removeStrings(self, line):
         line = re.sub(PythonStringPattern, "", line)

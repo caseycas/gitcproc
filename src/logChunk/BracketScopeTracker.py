@@ -25,6 +25,7 @@ class BracketScopeTracker(scopeTracker):
         self.lastNewFuncContext = ""
         self.lastNewBlockContext = []
         self.language = language
+        self.isContinuation = False
 
 
     def clearScope(self):
@@ -76,6 +77,9 @@ class BracketScopeTracker(scopeTracker):
     #Returns true if this line contains an decreased level of scope.
     def isScopeDecrease(self, line, lineType):
         return line.count("}") > 0
+
+    def isFunctionalScopeChange(self, line, lineType):
+        return self.isScopeIncrease(line, lineType)
 
     def handleFunctionNameEnding(self, line, functionName, lineType, funcIdentFunc):
         if("{" in line):
@@ -177,7 +181,7 @@ class BracketScopeTracker(scopeTracker):
             assert("Not a valid line type")
 
 
-    def decreaseScopeFirst(self):
+    def changeScopeFirst(self):
         return False
 
     def beforeDecrease(self, line):

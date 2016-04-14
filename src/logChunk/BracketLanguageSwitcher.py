@@ -10,7 +10,6 @@ class BracketLanguageSwitcher(languageSwitcher.languageSwitcher):
     def isBlockCommentEnd(self, line):
         return(self.getBlockCommentEnd(line) != -1)
 
-
     #String -> String
     #Given a full function String: "<0-n other modifiers> <return_type> <name>(arg0, ..., argN) {"
     #Return <name> or raise ValueError if the string is not a function header
@@ -74,3 +73,6 @@ class BracketLanguageSwitcher(languageSwitcher.languageSwitcher):
     def clearFunctionRemnants(self,line):
         assert("{" in line)
         return line.replace("{", "") #Just want to make sure we don't double increase the scope.
+
+    def isContinuationLine(self, line, priorStatus):
+        raise NotImplementedError("Continuation Lines not currently tracked in bracket languages.")

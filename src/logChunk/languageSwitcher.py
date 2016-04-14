@@ -1,3 +1,7 @@
+NOT_CONTINUATION = -1
+CONTINUATION = 0
+CONTINUATION_END = 1 
+
 #A function that returns the correct set of language regex expressions for functions
 #and function like objects.
 class languageSwitcher:
@@ -94,6 +98,13 @@ class languageSwitcher:
 
     #Remove the last piece of the function name from the rest of the name for further processing
     def clearFunctionRemnants(self,line):
+        raise NotImplementedError("Base LangSwitcher is Abstract.")
+
+    #Returns [NOT_CONTINUATION, CONTINUATION_START, CONTINUATION_END]
+    #depending on whether or not this line wraps to the next, is in the middle of such a state
+    #or at the end of one.  Prior Status tells us if the previous line was a continuation line.
+    #Prior status is just a True/False Value. 
+    def isContinuationLine(self, line, priorStatus):
         raise NotImplementedError("Base LangSwitcher is Abstract.")
 
     #Remove all strings from a line

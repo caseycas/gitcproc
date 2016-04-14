@@ -38,6 +38,8 @@ class scopeTracker:
         else:
             raise UnsupportedLanguageException(language + "is not yet supported.")
 
+        self.isContinuation = False #Flag for if the last line parsed is going to wrap to the next line.
+
     def clearScope(self):
         self.oldVerStack = []
         self.newVerStack = []
@@ -65,6 +67,10 @@ class scopeTracker:
     def isScopeDecrease(self, line, lineType):
         raise NotImplementedError("Base ScopeTracker is Abstract.")
 
+    #Tells us if we can check this line for a function.
+    def isFunctionalScopeChange(self, line, lineType):
+        raise NotImplementedError("Base ScopeTracker is Abstract.")
+
     def handleFunctionNameEnding(self, line, functionName, lineType, funcIdentFunc):
         raise NotImplementedError("Base ScopeTracker is Abstract.")
 
@@ -72,7 +78,7 @@ class scopeTracker:
         raise NotImplementedError("Base ScopeTracker is Abstract.")
 
     #Should we call the decrease scope before checking for keywords?
-    def decreaseScopeFirst(self):
+    def changeScopeFirst(self):
         raise NotImplementedError("Base ScopeTracker is Abstract.")
 
     #Returns true if both oldVerStack and newVerStack are empty.
@@ -134,6 +140,12 @@ class scopeTracker:
             return self.lastOldBlockContext
         else:
             assert("Not a valid line type")
+
+    def setContinuationFlag(self):
+        self.isContinuation = not self.isContinuation
+
+    def getContinuationFlag(self):
+        return self.isContinuation
 
     #A debug function for printing the objects variables.
     def printScope(self):

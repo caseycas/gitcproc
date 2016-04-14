@@ -35,6 +35,7 @@ class PythonScopeTracker(scopeTracker):
         self.lastNewFuncContext = ""
         self.lastNewBlockContext = set()
         self.language = language
+        self.isContinuation = False
 
     #String -> list
     #Returns a list giving the sequence of scope changes in this line.
@@ -80,6 +81,8 @@ class PythonScopeTracker(scopeTracker):
     #One possible concern here is a single statement spread over multiple lines.  I don't think that would cause
     #issues if we treat them like any other indent, but it could be a problem.
     def isScopeIncrease(self, line, lineType):
+        if(self.isContinuation): #Ignore Scope changes from continuation lines.
+            return False
         #Match beginning whitespace.  Credit to kennytm here: 
         #http://stackoverflow.com/questions/2268532/grab-a-lines-whitespace-indention-with-python
         indent = re.match(r"\s*", line).group() 
@@ -105,7 +108,14 @@ class PythonScopeTracker(scopeTracker):
     def isScopeDecrease(self, line, lineType):
         print("IN isScopeDecrease")
         print("Indent Token: \"" + self.indentToken + "\"")
+        print("Line: \"" + line + "\"")
         if(self.indentToken == ""): #If Scope is decreasing, if must have increased at some point
+            return False
+        #We need to ignore blank lines for scope Decreases?
+        if(line == ""):
+            return False
+
+        if(self.isContinuation): #Ignore Scope changes from continuation lines.
             return False
 
         indent = re.match(r"\s*", line).group() 
@@ -122,9 +132,13 @@ class PythonScopeTracker(scopeTracker):
         else:
             assert("Not a valid line type")
 
+    def isFunctionalScopeChange(self, line, lineType):
+        return (self.isScopeIncrease(line, lineType) or self.isScopeDecrease(line, lineType))
+
     def handleFunctionNameEnding(self, line, functionName, lineType, funcIdentFunc):
         #Our job here is to distinguish between a indented line with a function def
         #and the indented line following the function.
+        #What if we have a class name?
         if(Util.DEBUG):
             print("Handle Ending")
             print("FunctionName: " + functionName)
@@ -374,7 +388,7 @@ class PythonScopeTracker(scopeTracker):
         else:
             assert("Not a valid line type")
 
-    def decreaseScopeFirst(self):
+    def changeScopeFirst(self):
         return True
 
     def beforeDecrease(self, line): #A decrease always happens at the start of a line, so return nothing.
