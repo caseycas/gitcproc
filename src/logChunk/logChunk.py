@@ -748,35 +748,14 @@ class logChunk:
                         
                 keywordDictionary = self.parseLineForKeywords(temp, lineType, blockKeyWordList, keywordDictionary, bC)
 
-        # if(lineType != OTHER):
-        #     if(phase == LOOKFOREND):
-        #         keywordDictionary = self.parseLineForKeywords(line, lineType, singleKeyWordList, keywordDictionary)
-        #         if(sT.getBlockContext(lineType) != [] or foundBlock != None):
-        #             bC = sT.getBlockContext(lineType)
-        #             if(Util.DEBUG):
-        #                 print("Current block context: " + str(bC))
-        #             if(foundBlock != None): 
-        #                 if(Util.DEBUG):
-        #                     print("No scope increase yet for block keyword. Adding to the list.")
-        #                 #This means we have found block keyword, but not yet seen the scope increase
-        #                 #This will always happen in python, but can happen in { languages if the {
-        #                 #for the block is not on the same line as the keyword.
-        #                 bC.add(foundBlock)
-                        
-        #             keywordDictionary = self.parseLineForKeywords(line, lineType, blockKeyWordList, keywordDictionary, bC)
-        #     else:
-        #         assert(0)
-
         return (foundBlock, blockKeywordLine, blockKeywordType, shortFunctionName, keywordDictionary, sT)      
 
     #Main function to parse out the contents loaded into logChunk
     def parseText(self):
 
         '''
-        Preprocess the log to swap the - } catch (*Exception) {
-        and                            + } catch (#Exception) {
+        Main function to parse out the contents loaded into logChunk
         '''
-
         #----------------------------------Initialization----------------------------------#
 
         #New keyword list for both single and block keywords.  This is a list of triples.
@@ -800,7 +779,6 @@ class logChunk:
         funcStart = 0
         funcEnd = 0
 
-
         classContext = [] #If we are parsing inside a class, what is the closest class name?
         ftotal_add=0
         ftotal_del=0
@@ -808,7 +786,6 @@ class logChunk:
         etotal_del=0
         keywordDictionary = OrderedDict()
         outsideFuncKeywordDictionary = OrderedDict() # A grouping for all keywords found outside function contexts
-        tryList=[]
 
         #Initialize keywords (This is repeated three times -> make into a subfunction)
         for keyword in singleKeyWordList:
@@ -894,89 +871,11 @@ class logChunk:
                         (phase, line, lineType, lineNum, functionName, classContext, funcStart, startFlag, ftotal_add, ftotal_del) = self.checkForFunctionName(phase, line, lineType, lineNum, functionName, classContext, funcStart, startFlag, ftotal_add, ftotal_del)
                     except UnsupportedScopeException:
                         continue
-
-
-                    # if(Util.DEBUG == 1):
-                    #     print("Scope increase while searching for function.")
-
-                    # if(self.sT.scopeIncreaseCount(line, lineType) > 1):
-                    #     if(Util.DEBUG == 1):
-                    #         print("Parsing of multiscope increases like: ")
-                    #         print(line)
-                    #         print("is not yet supported.")
-                    #     continue
-
-                    # #For Python, need to distinguish in Scope Tracker if this is a Indent on a Function Line
-                    # #Or the indent on the following line.
-                    # functionName = self.sT.handleFunctionNameEnding(line, functionName, lineType, self.getFunctionPattern)
-
-                    # shortFunctionName = self.getFunctionPattern(functionName)
-                    # if(Util.DEBUG):
-                    #     print("Pattern: " + shortFunctionName)
-
-
-                    # if(shortFunctionName != ""):
-                    #     isFunction = True
-                    # elif((classContext != [] and self.isConstructorOrDestructorWithList(functionName, classContext))): #classContext becomes nonempty only for OO languages
-                    #     isFunction = True
-                    #     #Replace with general function.
-                    #     shortFunctionName = self.langSwitch.shortenConstructorOrDestructor(functionName)
-                    # else:
-                    #     isFunction = False
-
-                    # #Problem: I don't want to double process the scope change here...
-                    # if(isFunction): #Skip things are aren't functions
-                    #     if(Util.DEBUG == 1):
-                    #         try:
-                    #              print("Function: " + shortFunctionName)
-                    #         except:
-                    #              print("Function: " + unicode(shortFunctionName, 'utf-8', errors='ignore'))
-
-                    #     self.sT.increaseScope(self.sT.grabScopeLine(shortFunctionName, line, lineType), lineType, scopeTracker.FUNC)
-                    #     funcStart = lineNum
-                    #     phase = LOOKFOREND
-                    #     #Count this line as an addition or deletion
-                    #     #this means either a { will be counted or part
-                    #     #of the function name. 
-                    #     if(lineType == REMOVE):
-                    #         ftotal_del = 1
-                    #         startFlag=1
-                    #     elif(lineType == ADD):
-                    #         ftotal_add = 1
-                    #         startFlag=1
-
-                    #     #Remove the last of the function 
-                    #     line = self.langSwitch.clearFunctionRemnants(line)
-                    # else: #There was a non-function scope increase.
-                    #     if(Util.DEBUG):
-                    #         print("Non function scope increase while searching for function name.")
-                    #     self.sT.increaseScope(line, lineType, scopeTracker.GENERIC)
-                    #     if(self.langSwitch.isObjectOrientedLanguage()):
-                    #         className = self.getClassPattern(functionName) #Would C++ constructors outside class A start with A::?
-                    #         if(className != ""):
-                    #             if(Util.DEBUG == 1):
-                    #                 try:
-                    #                     print("Class:" + className)
-                    #                 except:
-                    #                     print("Class:" + unicode(className, 'utf-8', errors='ignore'))
-                    #             classContext.append(self.extractClassName(className)) #Push onto the class list
-                            
-                    #     #In python the scope change would come before, so this needs to be handled language specific
-                    #     functionName = self.langSwitch.resetFunctionName(line) #Reset name and find next
                 else: #No scope change to cut off, so add the whole line instead
                     if(Util.DEBUG):
                         print("Extending the function name")
                     functionName += line.replace("\n", "") + " " #add the line with no new lines
                         
-                # #Check for single line keywords
-                # if(lineType != OTHER):
-                #     if(phase == LOOKFOREND):
-                #         keywordDictionary = self.parseLineForKeywords(line, lineType, singleKeyWordList, keywordDictionary)
-                #     elif(phase == LOOKFORNAME):
-                #         outsideFuncKeywordDictionary = self.parseLineForKeywords(line, lineType, singleKeyWordList, outsideFuncKeywordDictionary)
-                #     else:
-                #         assert(0)
-
                 #TODO: Python Scope can increase immediately on the following line.  I think we need a full check here
                 #Maybe abstract the keyword update into a separate reusuable function.
                 #self.updateScopeAndKeywords() I want to use this this same function to handle single + block keywords here somehow....
@@ -988,49 +887,8 @@ class logChunk:
                 except UnsupportedScopeException:
                     continue
 
-
-                #Handle cases where we have a single line function.
-                #if(phase == LOOKFOREND and self.sT.isScopeDecrease(line, lineType)):
-                #   shortFunctionName = self.sT.getFuncContext(lineType) #Get the functional context
-                #    self.sT.decreaseScope(line, lineType)
-
+                #Wrap up the function if necessary
                 (lineType, lineNum, phase, funcStart, funcEnd, functionName, shortFunctionName, ftotal_add, ftotal_del, etotal_add, etotal_del, foundBlock, singleKeyWordList, blockKeyWordList, keywordDictionary) = self.checkForFunctionEnd(lineType, lineNum, phase, funcStart, funcEnd, functionName, shortFunctionName, ftotal_add, ftotal_del, etotal_add, etotal_del, foundBlock, singleKeyWordList, blockKeyWordList, keywordDictionary)
-
-                #I think to deal with python, I must be able to handle function endings in multiple places. 
-                # if(self.sT.getFuncContext(lineType) == "" and phase == LOOKFOREND):
-                #     funcEnd = lineNum
-
-                #     #Add this function to our list and reset the trackers.
-                #     #We use shortFunctionName, which is the string that matched our expected
-                #     #function pattern regex
-                #     funcToAdd = PatchMethod(self.langSwitch.parseFunctionName(shortFunctionName), funcStart, funcEnd, ftotal_add, ftotal_del,keywordDictionary,etotal_add,etotal_del)
-                    
-                #     #Add assertions from current function
-                #     self.functions.append(funcToAdd)
-              
-                #     #Reset asserts to current function
-                #     functionName = ""
-                #     shortFunctionName = ""
-                #     funcStart = 0
-                #     funcEnd = 0
-                #     ftotal_add = 0
-                #     ftotal_del = 0
-                #     etotal_add = 0
-                #     etotal_del = 0
-                #     phase = LOOKFORNAME
-                #     lineType=OTHER
-                #     for keyword in singleKeyWordList:
-                #         if(keyword[1] != EXCLUDED):
-                #             keywordDictionary[self.outputKeyword(keyword) + " Adds"]=0
-                #             keywordDictionary[self.outputKeyword(keyword) + " Dels"]=0
-                #     for keyword in blockKeyWordList:
-                #         #Hack to make run with the 'tryDependedCatch' keyword
-                #         if(not isinstance(keyword, list) or len(keyword) != KEYLISTSIZE):
-                #             continue
-                #         elif(keyword[1] != EXCLUDED):
-                #             keywordDictionary[self.outputKeyword(keyword) + " Adds"]=0
-                #             keywordDictionary[self.outputKeyword(keyword) + " Dels"]=0
-
 
                 if(Util.DEBUG == 1):
                     print(classContext)
@@ -1043,49 +901,8 @@ class logChunk:
                 except UnsupportedScopeException:
                     continue
 
+                #Wrap up the function if necessary
                 (lineType, lineNum, phase, funcStart, funcEnd, functionName, shortFunctionName, ftotal_add, ftotal_del, etotal_add, etotal_del, foundBlock, singleKeyWordList, blockKeyWordList, keywordDictionary) = self.checkForFunctionEnd(lineType, lineNum, phase, funcStart, funcEnd, functionName, shortFunctionName, ftotal_add, ftotal_del, etotal_add, etotal_del, foundBlock, singleKeyWordList, blockKeyWordList, keywordDictionary)
-
- 
-                # if(self.sT.getFuncContext(lineType) == ""):
-                #     funcEnd = lineNum
-                #     #Add this function to our list and reset the trackers.
-                #     if(Util.DEBUG == 1):
-                #         print("OLD")
-                #         print(self.sT.oldVerStack)
-                #         print("NEW")
-                #         print(self.sT.newVerStack)
-                #         print(lineType)
-                #         print(shortFunctionName)
-                #         print(str(funcStart) + " : " + str(funcEnd))
-
-                #     funcToAdd = PatchMethod(self.langSwitch.parseFunctionName(shortFunctionName), funcStart, funcEnd, ftotal_add, ftotal_del,keywordDictionary,etotal_add,etotal_del)
-                    
-                #     self.functions.append(funcToAdd)
-
-                #     #Reset asserts to current function
-                #     functionName = ""
-                #     shortFunctionName = ""
-                #     funcStart = 0
-                #     funcEnd = 0
-                #     ftotal_add=0
-                #     ftotal_del=0
-                #     etotal_add=0
-                #     etotal_del=0
-                #     phase = LOOKFORNAME
-                #     foundBlock=None
-                #     #currentBlock=None
-                #     for keyword in singleKeyWordList:
-                #         if(keyword[1] != EXCLUDED):
-                #             keywordDictionary[self.outputKeyword(keyword) + " Adds"]=0
-                #             keywordDictionary[self.outputKeyword(keyword) + " Dels"]=0
-                #     for keyword in blockKeyWordList:
-                #         #Hack to make run with the 'tryDependedCatch' keyword
-                #         if(not isinstance(keyword, list) or len(keyword) != KEYLISTSIZE):
-                #             continue
-                #         elif(keyword[1] != EXCLUDED):
-                #             keywordDictionary[self.outputKeyword(keyword) + " Adds"]=0
-                #             keywordDictionary[self.outputKeyword(keyword) + " Dels"]=0
-
 
         #Suppose we have a function where only the top is modified,
         # e.g.
