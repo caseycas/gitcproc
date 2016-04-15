@@ -533,6 +533,7 @@ class logChunk:
 
         #For Python, need to distinguish in Scope Tracker if this is a Indent on a Function Line
         #Or the indent on the following line.
+        #Can this handle a scope decrease?
         functionName = self.sT.handleFunctionNameEnding(line, functionName, lineType, self.getFunctionPattern)
 
         shortFunctionName = self.getFunctionPattern(functionName)
@@ -558,6 +559,7 @@ class logChunk:
 
             #Must update to deal with potential changes.
             self.sT.increaseScope(self.sT.grabScopeLine(shortFunctionName, line, lineType), lineType, scopeTracker.FUNC)
+
             funcStart = lineNum
             phase = LOOKFOREND
             #Count this line as an addition or deletion
@@ -846,7 +848,6 @@ class logChunk:
             except NotImplementedError:
                 pass
 
-
             #Extract the name of the function
             if(phase == LOOKFORNAME):
                 if(Util.DEBUG == 1):
@@ -875,7 +876,7 @@ class logChunk:
                     if(Util.DEBUG):
                         print("Extending the function name")
                     functionName += line.replace("\n", "") + " " #add the line with no new lines
-                        
+
                 #TODO: Python Scope can increase immediately on the following line.  I think we need a full check here
                 #Maybe abstract the keyword update into a separate reusuable function.
                 #self.updateScopeAndKeywords() I want to use this this same function to handle single + block keywords here somehow....
@@ -903,6 +904,12 @@ class logChunk:
 
                 #Wrap up the function if necessary
                 (lineType, lineNum, phase, funcStart, funcEnd, functionName, shortFunctionName, ftotal_add, ftotal_del, etotal_add, etotal_del, foundBlock, singleKeyWordList, blockKeyWordList, keywordDictionary) = self.checkForFunctionEnd(lineType, lineNum, phase, funcStart, funcEnd, functionName, shortFunctionName, ftotal_add, ftotal_del, etotal_add, etotal_del, foundBlock, singleKeyWordList, blockKeyWordList, keywordDictionary)
+                
+                #What if we have a scope decrease AND a new function?
+                #Update the function name with the line and handle it when we see the scope increase later...
+                if(phase == LOOKFORNAME):
+                    functionName += self.sT.afterDecrease(line)
+
 
         #Suppose we have a function where only the top is modified,
         # e.g.
@@ -921,7 +928,7 @@ class logChunk:
         #Clear out the scope.
         self.sT.clearScope()
         
-        #Create a mock function for any asserts that do not fall into another function's list
+        #Create a mock function for any single line keywords that do not fall into another function's list
         if nonZeroCount(outsideFuncKeywordDictionary):
             mockFunction = PatchMethod(MOCK, 0, 0, 0, 0, outsideFuncKeywordDictionary, 0, 0)
             self.functions.append(mockFunction)

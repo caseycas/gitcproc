@@ -184,8 +184,14 @@ class BracketScopeTracker(scopeTracker):
     def changeScopeFirst(self):
         return False
 
+    def afterDecrease(self, line):
+        return line[line.find("}")+1:]
+
     def beforeDecrease(self, line):
         return line[:line.find("}")]
+
+    def beforeIncrease(self, line):
+        return line[:line.find("{")]
 
     def afterIncrease(self, line):
         return line[line.find("{")+1:]

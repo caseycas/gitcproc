@@ -85,12 +85,20 @@ class scopeTracker:
     def areAllContextsClosed(self):
         return self.oldVerStack == [] and self.newVerStack == []
 
+    #Note: These set of functions will need to change if/when we support multiple scope changes per line...
+    def afterDecrease(self, line):
+        raise NotImplementedError("Base ScopeTracker is Abstract.")
+
     #Return the portion of the line before the decrease in scope, if applicable
     def beforeDecrease(self, line):
         raise NotImplementedError("Base ScopeTracker is Abstract.")
 
     #Return the portion of the line after the increase in scope, if applicable
     def afterIncrease(self, line):
+        raise NotImplementedError("Base ScopeTracker is Abstract.")
+
+    #Return the portion of the line before the increase in scope, if applicable
+    def beforeIncrease(self, line):
         raise NotImplementedError("Base ScopeTracker is Abstract.")
 
     #Returns a tuple of lists of open function and block contexts in the old and new versions of the

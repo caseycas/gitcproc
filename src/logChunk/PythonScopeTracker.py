@@ -43,7 +43,7 @@ class PythonScopeTracker(scopeTracker):
         if(self.isScopeIncrease(line,lineType)):
             return [INCREASE]
         elif(self.isScopeDecrease(line,lineType)):
-            return [DECREASE]
+            return [DECREASE] #Report all numbers of scope decreases equally.
         else:
             return []
         
@@ -371,19 +371,26 @@ class PythonScopeTracker(scopeTracker):
     #string, [ADD|REMOVE|OTHER] -> --
     #Decrease our current scope and close out any function or block contexts if necessary.
     def decreaseScope(self, line, lineType):
+        #We are allowed to decrease the scope by how ever much we want
+        depth = self.indentDepth(line)
         if(lineType == ADD):
-            self.decreaseNewIndent(line)
+            decreases = len(self.newVerStack) - depth
+            while(decreases > 0):
+                decreases -= 1
+                self.decreaseNewIndent(line)
         elif(lineType == REMOVE):
-            self.decreaseOldIndent(line)
-        elif(lineType == OTHER): 
-            #TODO: How do I handle this now.
-            #If increase relative to old th
-            depth = self.indentDepth(line)
-            isOldDecrease = len(self.oldVerStack) > depth
-            isNewDecrease = len(self.newVerStack) > depth
-            if(isOldDecrease):
+            decreases = len(self.oldVerStack) - depth
+            while(decreases > 0):
+                decreases -= 1
                 self.decreaseOldIndent(line)
-            if(isNewDecrease):
+        elif(lineType == OTHER): 
+            oldDecreases = len(self.oldVerStack) > depth
+            newDecreases = len(self.newVerStack) > depth
+            while(oldDecreases > 0):
+                oldDecreases -= 1
+                self.decreaseOldIndent(line)
+            while(newDecreases > 0):
+                newDecreases -= 1
                 self.decreaseNewIndent(line)
         else:
             assert("Not a valid line type")
@@ -391,7 +398,14 @@ class PythonScopeTracker(scopeTracker):
     def changeScopeFirst(self):
         return True
 
+
+    def afterDecrease(self, line): #A decrease always happens at the start of a line, so return nothing.
+        return line
+
     def beforeDecrease(self, line): #A decrease always happens at the start of a line, so return nothing.
+        return ""
+
+    def beforeIncrease(self, line): #No need to do anything here. We can't have code before the indentation.
         return ""
 
     def afterIncrease(self, line): #No need to do anything here. We can't have code before the indentation.
