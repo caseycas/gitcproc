@@ -10,10 +10,10 @@
 +    the job.
      """
 -    if isinstance(klass, QuerySet):
+-        return klass
 +    # If it is a model class or anything else with ._default_manager
 +    if hasattr(klass, '_default_manager'):
 +        return klass._default_manager.all()
-         return klass
 -    elif isinstance(klass, Manager):
 -        manager = klass
 -    elif isinstance(klass, ModelBase):

@@ -180,6 +180,8 @@ class BracketScopeTracker(scopeTracker):
         else:
             assert("Not a valid line type")
 
+    def functionUpdateWithoutScopeChange(self, line, lineType, functionName, funcIdentFunc):
+        raise NotImplementedError("Don't exist in Bracket Scope Tracker.")
 
     def changeScopeFirst(self):
         return False
@@ -195,3 +197,6 @@ class BracketScopeTracker(scopeTracker):
 
     def afterIncrease(self, line):
         return line[line.find("{")+1:]
+
+    def adjustFunctionBorders(self, start, end, adds, deletes):
+        return (start, end, adds, deletes)

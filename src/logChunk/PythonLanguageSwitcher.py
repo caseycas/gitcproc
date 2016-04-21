@@ -17,7 +17,7 @@ PythonStringPattern2 = "\'.*?\'"
 
 #Regex to match to see if we should expect the next line to be a continuation line
 #This can happen if we are in between (), {}, or [], or with an explicit \
-PythonExplicitContinuationRegex = ".*\\ *"
+PythonExplicitContinuationRegex = ".*\\\\ *"
 
 #Potential Regexes to fill in based on the others.
 
@@ -63,8 +63,8 @@ class PythonLanguageSwitcher(languageSwitcher.languageSwitcher):
     def isValidClassName(self, classContext):
         return re.search(PythonValidClassNamePattern, classContext)
 
-    def cleanConstructorLine(self, line):
-        return temp
+    def cleanConstructorOrDestructorLine(self, line):
+        return line
 
     def shortenConstructorOrDestructor(self, toShorten):
         return toShorten
@@ -150,15 +150,16 @@ class PythonLanguageSwitcher(languageSwitcher.languageSwitcher):
         return line
 
     def isContinuationLine(self, line, priorStatus):
-        if(line.strip() == ""):
-            return priorStatus
         """
         In Python a line counts as a continuation line under two circumstances - explicit and implicit.
         Explicit continuation lines must end in \
         Implicit continuation lines must have a Start in a ( or { or [ but have not match at the end.
         """
-        if(re.search(PythonExplicitContinuationRegex, line)):
-            return languageSwitcher.CONTINUATION
+        if(line.strip() == ""):
+            return priorStatus
+
+        if(re.search(PythonExplicitContinuationRegex, line) != None):
+            return languageSwitcher.CONTINUATION_EXPLICIT
         else: #Check if this is an implicit continuation
             BracketStack = []
             for char in line:
@@ -167,31 +168,35 @@ class PythonLanguageSwitcher(languageSwitcher.languageSwitcher):
                 elif(char == "}"):
                     if(BracketStack != [] and (BracketStack[-1] == "(" or BracketStack[-1] == "[")):
                         raise InvalidCodeException("Brackets: {} did not match in the code.")
-                    elif(BracketStack != []):
-                        BracketStack.append(char)
-                    else:
+                    elif(BracketStack != [] and BracketStack[-1] == "{"):
                         BracketStack.pop()
+                    else:
+                        BracketStack.append(char)     
                 elif(char == "]"):
                     if(BracketStack != [] and (BracketStack[-1] == "(" or BracketStack[-1] == "{")):
                         raise InvalidCodeException("Braces: [] did not match in the code.")
-                    elif(BracketStack != []):
-                        BracketStack.append(char)
-                    else:
+                    elif(BracketStack != [] and BracketStack[-1] == "["):
                         BracketStack.pop()
+                    else:
+                        BracketStack.append(char)         
                 elif(char == ")"):
                     if(BracketStack != [] and  (BracketStack[-1] == "{" or BracketStack[-1] == "[")):
                         raise InvalidCodeException("Parantheses: () did not match in the code.")
-                    elif(BracketStack != []):
-                        BracketStack.append(char)
-                    else:
+                    elif(BracketStack != [] and BracketStack[-1] == "("):
                         BracketStack.pop()
+                    else:
+                        BracketStack.append(char) 
 
             if(BracketStack == []):
-                return languageSwitcher.NOT_CONTINUATION
-            elif(BracketStack[-1] in "}])"):
-                return languageSwitcher.CONTINUATION_END
+                if(priorStatus in [languageSwitcher.CONTINUATION, languageSwitcher.CONTINUATION_START]):
+                    return languageSwitcher.CONTINUATION
+                else:
+                    return languageSwitcher.NOT_CONTINUATION
             else:
-                return languageSwitcher.CONTINUATION
+                if(BracketStack[-1] in "}])"):
+                    return languageSwitcher.CONTINUATION_END
+                else:
+                    return languageSwitcher.CONTINUATION_START
 
 
     def removeStrings(self, line):

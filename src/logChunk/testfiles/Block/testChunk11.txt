@@ -1,9 +1,9 @@
 public static void blockTest(Integer[] x, y)
 {
-	try
+	try 
 	{
 -		System.out.println(x[y]);
-+		System.out.println(x[y+1])
++		System.out.println(x[y+1]);
 
 	}
 	catch(Exception e)

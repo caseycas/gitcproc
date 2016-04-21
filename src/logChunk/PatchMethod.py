@@ -13,15 +13,13 @@ def toStr(text):
 class PatchMethod:
 
     #Todo - get rid of catchLineNumber
-    def __init__(self, name, start=0, end=0, added=0, deleted=0,keyDict={},eadd=0,edel=0,catchLineNumber=[]):
+    def __init__(self, name, start=0, end=0, added=0, deleted=0,keyDict={},catchLineNumber=[]):
         self.method = name
         self.start = start
         self.end = end
         self.total_add = added
         self.total_del = deleted
         self.keywordDictionary= keyDict.copy()
-        self.etotal_add=eadd
-        self.etotal_del=edel
         self.catchLineNumber=catchLineNumber[:]
 
     def printPatch(self):

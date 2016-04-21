@@ -1,0 +1,4 @@
++    def test1(self, name):
++        return 1
++    def test2(self, name):
++        return 2

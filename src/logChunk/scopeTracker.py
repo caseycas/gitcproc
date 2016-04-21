@@ -6,6 +6,7 @@ sys.path.append("../util")
 import Util
 import UnsupportedLanguageException
 from chunkingConstants import *
+from languageSwitcher import *
 
 # Types of elements on our version stacks
 FUNC = "Function"
@@ -38,7 +39,7 @@ class scopeTracker:
         else:
             raise UnsupportedLanguageException(language + "is not yet supported.")
 
-        self.isContinuation = False #Flag for if the last line parsed is going to wrap to the next line.
+        self.isContinuation = NOT_CONTINUATION #Flag for if the last line parsed is going to wrap to the next line.
 
     def clearScope(self):
         self.oldVerStack = []
@@ -149,11 +150,18 @@ class scopeTracker:
         else:
             assert("Not a valid line type")
 
-    def setContinuationFlag(self):
-        self.isContinuation = not self.isContinuation
+    def setContinuationFlag(self, status):
+        self.isContinuation = status
 
     def getContinuationFlag(self):
         return self.isContinuation
+
+    def functionUpdateWithoutScopeChange(self, line, lineType, functionName, funcIdentFunc):
+        raise NotImplementedError("Base ScopeTracker is Abstract.")
+
+    def adjustFunctionBorders(self, start, end, adds, deletes):
+        raise NotImplementedError("Base ScopeTracker is Abstract.")
+
 
     #A debug function for printing the objects variables.
     def printScope(self):

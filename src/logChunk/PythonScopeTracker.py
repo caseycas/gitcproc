@@ -31,11 +31,13 @@ class PythonScopeTracker(scopeTracker):
         self.oldBlockKeyword = ""
 
         self.lastOldFuncContext = ""
-        self.lastOldBlockContext = set()
+        #self.lastOldBlockContext = []
         self.lastNewFuncContext = ""
-        self.lastNewBlockContext = set()
+        #self.lastNewBlockContext = []
         self.language = language
-        self.isContinuation = False
+        self.isContinuation = NOT_CONTINUATION
+        self.shiftStart = False
+        self.startType = OTHER
 
     #String -> list
     #Returns a list giving the sequence of scope changes in this line.
@@ -81,7 +83,7 @@ class PythonScopeTracker(scopeTracker):
     #One possible concern here is a single statement spread over multiple lines.  I don't think that would cause
     #issues if we treat them like any other indent, but it could be a problem.
     def isScopeIncrease(self, line, lineType):
-        if(self.isContinuation): #Ignore Scope changes from continuation lines.
+        if(self.isContinuation in [CONTINUATION, CONTINUATION_END,CONTINUATION_EXPLICIT]): #Ignore Scope changes from continuation lines.
             return False
         #Match beginning whitespace.  Credit to kennytm here: 
         #http://stackoverflow.com/questions/2268532/grab-a-lines-whitespace-indention-with-python
@@ -115,7 +117,7 @@ class PythonScopeTracker(scopeTracker):
         if(line == ""):
             return False
 
-        if(self.isContinuation): #Ignore Scope changes from continuation lines.
+        if(self.isContinuation in [CONTINUATION, CONTINUATION_END, CONTINUATION_EXPLICIT]): #Ignore Scope changes from continuation lines.
             return False
 
         indent = re.match(r"\s*", line).group() 
@@ -134,6 +136,31 @@ class PythonScopeTracker(scopeTracker):
 
     def isFunctionalScopeChange(self, line, lineType):
         return (self.isScopeIncrease(line, lineType) or self.isScopeDecrease(line, lineType))
+
+
+    def functionUpdateWithoutScopeChange(self, line, lineType, functionName, funcIdentFunc):
+        """
+        Goal here is track if we've seen a complete function pattern, but without an indent increase on the
+        function line itself.  (Thought:  Maybe need to do this on a scope decrease as well.)
+        """
+        if(funcIdentFunc(functionName + " " + line) != ""):
+            if(Util.DEBUG):
+                print("Function Name Found before scope INCREASE")
+            if(lineType == ADD):
+                self.funcNewLine = 1
+                self.lastNewFuncContext = functionName + " " + line #Double check these...
+            elif(lineType == REMOVE):
+                self.funcOldLine = 1
+                self.lastOldFuncContext = functionName + " " + line
+            elif(lineType == OTHER):
+                self.funcOldLine = 1
+                self.funcNewLine = 1
+                self.lastNewFuncContext = functionName + " " + line
+                self.lastOldFuncContext = functionName + " " + line
+            else:
+                assert("Not a valid line type")
+
+
 
     def handleFunctionNameEnding(self, line, functionName, lineType, funcIdentFunc):
         #Our job here is to distinguish between a indented line with a function def
@@ -166,21 +193,25 @@ class PythonScopeTracker(scopeTracker):
 
             return functionName
         elif(funcIdentFunc(functionName + " " + line) != ""): # This is the line containing the function
+            #Issue is that we are counting this line as the function start in this case
+            self.shiftStart = True
+            self.startType = lineType
             if(Util.DEBUG):
                 print("2")
             if(lineType == ADD):
+                print("Changing function new Line to 0")
                 self.funcNewLine = 0
             elif(lineType == REMOVE):
-                print("Changing Old Line to 0")
+                print("Changing function Old Line to 0")
                 self.funcOldLine = 0
             elif(lineType == OTHER):
-                print("Changging Old Line to 0")
+                print("Changing function Old and New Line to 0")
                 self.funcNewLine = 0
                 self.funcOldLine = 0
             else:
                  assert("Not a valid line type")
             return functionName + " " + line
-        else:
+        else: #This is not a function
             if(Util.DEBUG):
                 print("3")
             if(lineType == ADD):
@@ -228,7 +259,7 @@ class PythonScopeTracker(scopeTracker):
                 assert(self.funcNewLine != 1)
                 assert(self.newBlockKeyword != "")
                 self.newVerStack.append((self.newBlockKeyword, SBLOCK))
-                self.lastNewBlockContext.add(self.newBlockKeyword)
+                #self.lastNewBlockContext.append(self.newBlockKeyword)
                 self.blockNewLine = 0
                 self.newBlockKeyword = ""
             else: # This is actually the indentation after a function that was also idented.
@@ -249,10 +280,12 @@ class PythonScopeTracker(scopeTracker):
             if(lineDiff == 0): #This is not the indent for the Block, but a Block keyword that is indented
                 self.blockNewLine = 1
                 self.newBlockKeyword = line
+                #self.lastNewBlockContext.append(line)
                 self.newVerStack.append((self.indentToken, GENERIC))
             elif(lineDiff == 1): #Indent after a Block line.
+                self.blockNewLine = 0
                 self.newVerStack.append((line, SBLOCK))
-                self.lastNewBlockContext.add(line)
+                #self.lastNewBlockContext.append(line)
         else:
             assert("Not a valid change type.")
 
@@ -275,7 +308,7 @@ class PythonScopeTracker(scopeTracker):
             elif(self.blockOldLine == 1):
                 assert(self.oldBlockKeyword != "")
                 self.oldVerStack.append((self.oldBlockKeyword, SBLOCK))
-                self.lastOldBlockContext.add(self.oldBlockKeyword)
+                #self.lastOldBlockContext.append(self.oldBlockKeyword)
                 self.blockOldLine = 0
                 self.oldBlockKeyword = ""
             else: # This is actually the indentation after a function that was also idented.
@@ -300,9 +333,11 @@ class PythonScopeTracker(scopeTracker):
                 self.blockOldLine = 1
                 self.oldBlockKeyword = line
                 self.oldVerStack.append((self.indentToken, GENERIC))
+                #self.lastOldBlockContext.append(line)
             elif(lineDiff == 1): #Indent after a Block line.
+                self.blockOldLine = 0
                 self.oldVerStack.append((line, SBLOCK))
-                self.lastOldBlockContext.add(line)
+                #self.lastOldBlockContext.append(line)
         else:
             assert("Not a valid change type.")
 
@@ -342,12 +377,12 @@ class PythonScopeTracker(scopeTracker):
             removed = self.newVerStack.pop()
             if(Util.DEBUG):
                 print("Removing: " + str(removed))
-                print("Context: " + str(self.lastNewBlockContext))
+                #print("Context: " + str(self.lastNewBlockContext))
                 print("Stack: " + str(self.newVerStack))
             if(removed[LABELINDEX] == FUNC):
                 self.lastNewFuncContext = self.getTopType(self.newVerStack, FUNC)
-            elif(removed[LABELINDEX] == SBLOCK):
-                self.lastNewBlockContext.remove(removed[LINEINDEX])
+            #elif(removed[LABELINDEX] == SBLOCK):
+            #    self.lastNewBlockContext.remove(removed[LINEINDEX])
         else:#Bracket overclosing -> estimating...
             if(Util.DEBUG):
                 print("Popped from empty new Stack.")
@@ -358,12 +393,13 @@ class PythonScopeTracker(scopeTracker):
             removed = self.oldVerStack.pop()
             if(Util.DEBUG):
                 print("Removing: " + str(removed))
-                print("Context: " + str(self.lastOldBlockContext))
+                #print("Context: " + str(self.lastOldBlockContext))
                 print("Stack: " + str(self.oldVerStack))
             if(removed[LABELINDEX] == FUNC):
                 self.lastOldFuncContext = self.getTopType(self.oldVerStack, FUNC)
-            elif(removed[LABELINDEX] == SBLOCK):
-                self.lastOldBlockContext.remove(removed[LINEINDEX])
+            #elif(removed[LABELINDEX] == SBLOCK):
+                #self.lastOldBlockContext.remove(removed[LINEINDEX])
+                #print("Current block context: " + str(self.lastOldBlockContext))
         else:#Bracket overclosing -> estimating...
             if(Util.DEBUG):
                 print("Popped from empty old Stack.")
@@ -397,6 +433,41 @@ class PythonScopeTracker(scopeTracker):
 
     def changeScopeFirst(self):
         return True
+
+    def adjustFunctionBorders(self, start, end, adds, deletes):
+        if(self.shiftStart):
+            self.shiftStart = False
+            if(self.startType == ADD):
+                return (start - 1, end, adds - 1 , deletes)
+            elif(self.startType == REMOVE):
+                return (start - 1, end, adds , deletes - 1)
+            elif(self.startType == OTHER):
+                return (start - 1, end, adds, deletes)
+            else:
+                assert("Invalid line type.")
+        else:
+            return (start, end, adds, deletes)
+
+    def getBlocksFromStack(self, stack):
+        subList = []
+        print("Grabbing block context from stack!!!")
+        print("Stack:" + str(stack))
+        for item in stack:
+            if(item[LABELINDEX] == SBLOCK):
+                subList.append(item[LINEINDEX])
+
+        print("Context: " + str(subList))
+        return subList
+
+
+    #Return the surrounding block contexts or [] if not on the stack
+    def getBlockContext(self, lineType):
+        if(lineType == ADD or lineType == OTHER):
+            return self.getBlocksFromStack(self.newVerStack)
+        elif(lineType == REMOVE):
+            return self.getBlocksFromStack(self.oldVerStack)
+        else:
+            assert("Not a valid line type")
 
 
     def afterDecrease(self, line): #A decrease always happens at the start of a line, so return nothing.

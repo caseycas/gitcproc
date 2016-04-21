@@ -1,0 +1,7 @@
+-def changeArgs(a,b):
++def changeArgs(a,b,output):
+     tmp = a*a + b*b
+     c = sqrt(tmp)
++    if(isInt(c))
++        print(output)    
+     return c

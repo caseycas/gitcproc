@@ -73,6 +73,7 @@ class logChunktest(unittest.TestCase):
         self.assertTrue(temp == "read", "Actual: " + temp)
 
 
+
     def test_parseText_Block1(self):
 
         self.chunkb1.parseText()
@@ -173,12 +174,11 @@ class logChunktest(unittest.TestCase):
 
         self.assertEqual(testdict,funcList[0].keywordDictionary)
 
-
     def test_parseText_Block7(self): #Need to update expected result (Question, we seem to not count the } at end of block?)
 
         self.chunkb7.parseText()
         funcList = self.chunkb7.functions
-        #self.debugFunctions(funcList)
+        self.debugFunctions(funcList)
         self.assertTrue(len(funcList) == 1)
         self.assertTrue(funcList[0].method=="onCreateLoader")
         self.assertTrue(funcList[0].total_add == 2)

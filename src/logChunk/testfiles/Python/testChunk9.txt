@@ -1,0 +1,13 @@
+ class Scheduler(object):
+ 
++    def __init__(self, dupefilter, jobdir=None, dqclass=None, mqclass=None,
++                 logunser=False, stats=None, pqclass=None):
++        self.df = dupefilter
++        self.dqdir = self._dqdir(jobdir)
+
+     def open(self, spider):
+         self.spider = spider
+-        self.mqs = PriorityQueue(self._newmq)
++        self.mqs = self.pqclass(self._newmq)
+         self.dqs = self._dq() if self.dqdir else None
+         return self.df.open()

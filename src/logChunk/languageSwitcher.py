@@ -1,6 +1,8 @@
 NOT_CONTINUATION = -1
-CONTINUATION = 0
-CONTINUATION_END = 1 
+CONTINUATION_START = 0
+CONTINUATION = 1
+CONTINUATION_END = 2 
+CONTINUATION_EXPLICIT = 3
 
 #A function that returns the correct set of language regex expressions for functions
 #and function like objects.
