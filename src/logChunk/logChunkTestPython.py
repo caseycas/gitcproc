@@ -48,6 +48,10 @@ class logChunktest(unittest.TestCase):
         self.chunk6 = logChunk.logChunk(self.readHelper("testfiles/Python/testChunk6.txt"), "Python", "../util/sample_confPy.ini")
         self.chunk7 = logChunk.logChunk(self.readHelper("testfiles/Python/testChunk7.txt"), "Python", "../util/sample_confPy.ini")
         self.chunk8 = logChunk.logChunk(self.readHelper("testfiles/Python/testChunk8.txt"), "Python", "../util/sample_confPy.ini")
+        self.chunk9 = logChunk.logChunk(self.readHelper("testfiles/Python/testChunk9.txt"), "Python", "../util/sample_confPy.ini")
+        self.chunk10 = logChunk.logChunk(self.readHelper("testfiles/Python/testChunk10.txt"), "Python", "../util/sample_confPy.ini")
+        self.chunk11 = logChunk.logChunk(self.readHelper("testfiles/Python/testChunk11.txt"), "Python", "../util/sample_confPy.ini")
+
 
     #def test_FunctionNameParse(self):
 
@@ -201,6 +205,26 @@ class logChunktest(unittest.TestCase):
 
         testDict = {'print Adds': 0, 'print Dels': 0, 'if Dels': 0, 'if Adds': 0}
         self.assertEqual(testDict,funcList[0].keywordDictionary)
+
+    def test_parseText9(self):
+        self.chunk9.parseText()
+        funcList = self.chunk9.functions
+        self.debugFunctions(funcList)
+        self.assertTrue(len(funcList) == 2) 
+        self.assertTrue(funcList[0].method=="__init__")
+        self.assertTrue(funcList[0].total_add == 2)
+        self.assertTrue(funcList[0].total_del == 0)
+
+        testDict = {'print Adds': 0, 'print Dels': 0, 'if Dels': 0, 'if Adds': 0}
+        self.assertEqual(testDict,funcList[0].keywordDictionary)
+
+        self.assertTrue(funcList[1].method=="open")
+        self.assertTrue(funcList[1].total_add == 1)
+        self.assertTrue(funcList[1].total_del == 1)
+
+        testDict = {'print Adds': 0, 'print Dels': 0, 'if Dels': 0, 'if Adds': 0}
+        self.assertEqual(testDict,funcList[1].keywordDictionary)
+
 
 
 if __name__=="__main__":

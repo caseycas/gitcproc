@@ -41,22 +41,31 @@ class PythonScopeTracker(scopeTracker):
 
     #String -> list
     #Returns a list giving the sequence of scope changes in this line.
+    #TODO: Update me!
     def scopeOrder(self, line, lineType):
-        if(self.isScopeIncrease(line,lineType)):
+        print("LineType: " + str(lineType))
+        incVal = self.isScopeIncrease(line,lineType)
+        decVal = self.isScopeDecrease(line,lineType)
+        if(incVal == S_YES):
             return [INCREASE]
-        elif(self.isScopeDecrease(line,lineType)):
+        elif(decVal == S_YES):
             return [DECREASE] #Report all numbers of scope decreases equally.
+        elif(incVal == S_SIMUL):
+            print(incVal)
+            print(decVal)
+            assert(decVal == S_SIMUL) #Why is this failing?
+            return [S_SIMUL]
         else:
             return []
         
     def scopeIncreaseCount(self, line, lineType):
-        if(self.isScopeIncrease(line,lineType)):
+        if(self.isScopeIncrease(line,lineType) in [S_YES, S_SIMUL]):
             return 1
         else:
             return 0
 
     def scopeDecreaseCount(self, line, lineType):
-        if(self.isScopeDecrease(line, lineType)):
+        if(self.isScopeDecrease(line, lineType) in [S_YES, S_SIMUL]):
             return 1
         else:
             return 0
@@ -84,27 +93,36 @@ class PythonScopeTracker(scopeTracker):
     #issues if we treat them like any other indent, but it could be a problem.
     def isScopeIncrease(self, line, lineType):
         if(self.isContinuation in [CONTINUATION, CONTINUATION_END,CONTINUATION_EXPLICIT]): #Ignore Scope changes from continuation lines.
-            return False
+            return S_NO
         #Match beginning whitespace.  Credit to kennytm here: 
         #http://stackoverflow.com/questions/2268532/grab-a-lines-whitespace-indention-with-python
         indent = re.match(r"\s*", line).group() 
         if(indent != ""):
             if(self.indentToken == ""): #Is this the first indent in the file?  Use this to determine future indentation
                 self.indentToken = indent
-                return True
+                return S_YES
             else:
                 #How deep is the indent?
                 depth = self.indentDepth(indent)
                 if(lineType == ADD):
-                    return len(self.newVerStack) < depth
+                    if(len(self.newVerStack) < depth):
+                        return S_YES
                 elif(lineType == REMOVE):
-                    return len(self.oldVerStack) < depth
+                    if(len(self.oldVerStack) < depth):
+                        return S_YES
                 elif(lineType == OTHER): #Can these be different?
-                    return len(self.oldVerStack) < depth or len(self.newVerStack) < depth #If these are different, just adjust the stack accordingly
+                    oldDiff = len(self.oldVerStack) < depth
+                    newDiff = len(self.newVerStack) < depth 
+                    if(oldDiff != newDiff): #Scope is decreasing from the perspective of one stack and increasing from the other.
+                        return S_SIMUL
+                    elif(oldDiff == True):
+                        return S_YES
+                    else:
+                        return S_NO
                 else:
                     assert("Not a valid line type")
         else:
-            return False
+            return S_NO
 
     #Returns true if this line contains an decreased level of scope.
     def isScopeDecrease(self, line, lineType):
@@ -112,13 +130,13 @@ class PythonScopeTracker(scopeTracker):
         print("Indent Token: \"" + self.indentToken + "\"")
         print("Line: \"" + line + "\"")
         if(self.indentToken == ""): #If Scope is decreasing, if must have increased at some point
-            return False
+            return S_NO
         #We need to ignore blank lines for scope Decreases?
         if(line == ""):
-            return False
+            return S_NO
 
         if(self.isContinuation in [CONTINUATION, CONTINUATION_END, CONTINUATION_EXPLICIT]): #Ignore Scope changes from continuation lines.
-            return False
+            return S_NO
 
         indent = re.match(r"\s*", line).group() 
         depth = self.indentDepth(indent)
@@ -126,11 +144,22 @@ class PythonScopeTracker(scopeTracker):
         print("Line: \"" + line + "\"")
         print("Old Stack: " + str(self.oldVerStack))
         if(lineType == ADD):
-            return len(self.newVerStack) > depth
+            if(len(self.newVerStack) > depth):
+                return S_YES
         elif(lineType == REMOVE):
-            return len(self.oldVerStack) > depth
+            if(len(self.oldVerStack) > depth):
+                return S_YES
         elif(lineType == OTHER): #Can these be different?
-            return len(self.oldVerStack) > depth or len(self.newVerStack) > depth #If these are different, just adjust the stack accordingly
+            oldDiff = len(self.oldVerStack) > depth
+            newDiff = len(self.newVerStack) > depth 
+            print("Old Diff:" + str(oldDiff))
+            print("New Diff:" + str(newDiff))
+            if(oldDiff != newDiff): #Scope is decreasing from the perspective of one stack and increasing from the other.
+                return S_SIMUL
+            elif(oldDiff == True):
+                return S_YES
+            else:
+                return S_NO
         else:
             assert("Not a valid line type")
 
@@ -153,6 +182,8 @@ class PythonScopeTracker(scopeTracker):
                 self.funcOldLine = 1
                 self.lastOldFuncContext = functionName + " " + line
             elif(lineType == OTHER):
+                #TODO: Something about these flags may need to change in SIMUL?
+                #Actually possibly not, because this is only called on a S_NO
                 self.funcOldLine = 1
                 self.funcNewLine = 1
                 self.lastNewFuncContext = functionName + " " + line
@@ -166,6 +197,8 @@ class PythonScopeTracker(scopeTracker):
         #Our job here is to distinguish between a indented line with a function def
         #and the indented line following the function.
         #What if we have a class name?
+        #TODO: In Simul cases, I don't think this function is behaving correctly, its non
+        #increase counterpart is likely also not behaving correctly.
         if(Util.DEBUG):
             print("Handle Ending")
             print("FunctionName: " + functionName)
@@ -174,7 +207,6 @@ class PythonScopeTracker(scopeTracker):
             print("New Context:" + self.lastNewFuncContext)
 
         if(funcIdentFunc(functionName) != ""): #This is the line containing the followup
-            #This is not returning the name correctly
             if(Util.DEBUG):
                 print("1")
             if(lineType == ADD):
@@ -184,6 +216,7 @@ class PythonScopeTracker(scopeTracker):
                 self.funcOldLine = 1
                 self.lastOldFuncContext = functionName
             elif(lineType == OTHER):
+                #TODO:Something about these flags needs to be different for SIMUL I think...
                 self.funcOldLine = 1
                 self.funcNewLine = 1
                 self.lastNewFuncContext = functionName
@@ -206,6 +239,7 @@ class PythonScopeTracker(scopeTracker):
                 self.funcOldLine = 0
             elif(lineType == OTHER):
                 print("Changing function Old and New Line to 0")
+                #TODO:Something about these flags needs to be different for SIMUL I think...
                 self.funcNewLine = 0
                 self.funcOldLine = 0
             else:
@@ -243,7 +277,28 @@ class PythonScopeTracker(scopeTracker):
                 assert("Parse error, if this is a function we should be either at it or the line following.")
         else:
             assert("Not a valid line type")
-        
+
+    #Handle the scope change for a line where we have simultaneously a scope increase and a scope decrease
+    #depending on if you are measuring from the old stack or the new stack.    
+    def simulScopeChange(self, line, lineType, changeType, depth, lineDiff):
+            oldChange = len(self.oldVerStack) - depth
+            newChange = len(self.newVerStack) - depth
+            assert((oldChange < 0 and newChange > 0) or (oldChange > 0 and newChange < 0))
+            if(oldChange > 0):
+                while(oldChange > 0):
+                    oldChange -= 1
+                    self.decreaseOldIndent(line)
+            else:
+                assert(oldChange == -1) #Only permitted one increase at a time.
+                self.increaseOldIndent(line, changeType, lineDiff) #TODO lineDiff = ??
+            if(newChange > 0):
+                while(newChange > 0):
+                    newChange -= 1
+                    self.decreaseNewIndent(line)
+            else:
+                assert(newChange == -1) #Only permitted one increase at a time.
+                self.increaseNewIndent(line, changeType, lineDiff) #TODO lineDiff = ??
+
 
     def increaseNewIndent(self, line, changeType, lineDiff):
         if(Util.DEBUG):
@@ -346,7 +401,7 @@ class PythonScopeTracker(scopeTracker):
 
     #string, [ADD|REMOVE|OTHER], [GENERIC|FUNC|BLOCK] -> --
     #Increase the depth of our tracker and add in function or block contexts if they have been discovered.
-    def increaseScope(self, line, lineType, changeType, lineDiff = -1):
+    def increaseScope(self, line, lineType, changeType, lineDiff = -1, isSimul = False):
         if(Util.DEBUG): 
             try:
                 print("Scope Increasing Line: " + line)
@@ -357,16 +412,17 @@ class PythonScopeTracker(scopeTracker):
             self.increaseNewIndent(line, changeType, lineDiff)
         elif(lineType == REMOVE):
             self.increaseOldIndent(line, changeType, lineDiff)
-        elif(lineType == OTHER): 
-            #TODO: How do I handle this now.
-            #If increase relative to old th
+        elif(lineType == OTHER): # Need to handle this differently in case of a SIMUL
             depth = self.indentDepth(line)
-            isOldIncrease = len(self.oldVerStack) < depth
-            isNewIncrease = len(self.newVerStack) < depth
-            if(isOldIncrease):
-                self.increaseOldIndent(line, changeType, lineDiff)
-            if(isNewIncrease):
-                self.increaseNewIndent(line, changeType, lineDiff)
+            if(isSimul):
+                self.simulScopeChange(line, lineType, changeType, depth, lineDiff)
+            else:
+                isOldIncrease = len(self.oldVerStack) < depth
+                isNewIncrease = len(self.newVerStack) < depth
+                if(isOldIncrease):
+                    self.increaseOldIndent(line, changeType, lineDiff)
+                if(isNewIncrease):
+                    self.increaseNewIndent(line, changeType, lineDiff)
         else:
             assert("Not a valid line type")
 
@@ -406,7 +462,7 @@ class PythonScopeTracker(scopeTracker):
 
     #string, [ADD|REMOVE|OTHER] -> --
     #Decrease our current scope and close out any function or block contexts if necessary.
-    def decreaseScope(self, line, lineType):
+    def decreaseScope(self, line, lineType, lineDiff = -1, isSimul = False):
         #We are allowed to decrease the scope by how ever much we want
         depth = self.indentDepth(line)
         if(lineType == ADD):
@@ -419,15 +475,19 @@ class PythonScopeTracker(scopeTracker):
             while(decreases > 0):
                 decreases -= 1
                 self.decreaseOldIndent(line)
-        elif(lineType == OTHER): 
-            oldDecreases = len(self.oldVerStack) > depth
-            newDecreases = len(self.newVerStack) > depth
-            while(oldDecreases > 0):
-                oldDecreases -= 1
-                self.decreaseOldIndent(line)
-            while(newDecreases > 0):
-                newDecreases -= 1
-                self.decreaseNewIndent(line)
+        elif(lineType == OTHER):
+            if(isSimul):
+                #TODO: I need to pass in the lineDiff for SIMUL
+                self.simulScopeChange(line, lineType, changeType, depth, lineDiff)
+            else:
+                oldDecreases = len(self.oldVerStack) - depth
+                newDecreases = len(self.newVerStack) - depth
+                while(oldDecreases > 0):
+                    oldDecreases -= 1
+                    self.decreaseOldIndent(line)
+                while(newDecreases > 0):
+                    newDecreases -= 1
+                    self.decreaseNewIndent(line)
         else:
             assert("Not a valid line type")
 

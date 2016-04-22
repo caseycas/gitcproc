@@ -667,7 +667,7 @@ class logChunk:
             print("THERE!!!")
             for nextScopeChange in scopeChanges:
                 if(nextScopeChange == INCREASE):
-                    if(sT.isScopeIncrease(line, lineType)):
+                    if(sT.isScopeIncrease(line, lineType) == scopeTracker.S_YES):
                         if(sT.scopeIncreaseCount(line, lineType) > 1):
                             if(Util.DEBUG == 1):
                                 print("Parsing of multiscope increases like: ")
@@ -707,8 +707,8 @@ class logChunk:
                             blockKeywordType = ""
                             foundBlock = None
 
-                else:
-                    if(sT.isScopeDecrease(line, lineType)):
+                elif(nextScopeChange == DECREASE):
+                    if(sT.isScopeDecrease(line, lineType) == scopeTracker.S_YES):
                         if(Util.DEBUG):
                             print("Scope Decrease")
 
@@ -738,6 +738,56 @@ class logChunk:
                         if(not sT.changeScopeFirst()):
                             sT.decreaseScope(line, lineType)
                         print("Removed!!!!" + str(sT.getBlockContext(lineType)))
+                else: #A SIMUL change!!!
+                    if(sT.changeScopeFirst()): #Shouldn't be possible in bracket based languages.
+                        assert(sT.isScopeIncrease(line, lineType) == scopeTracker.S_SIMUL)
+                        #Get function context first
+                        if(sT.getFuncContext(lineType) != ""):
+                            shortFunctionName = sT.getFuncContext(lineType) #Get the functional context
+
+                        if(foundBlock != None): #If we have an existing keyword match from before
+                            if(blockKeywordLine == lineNum - 1):
+                                if(Util.DEBUG):
+                                    print("Block start found (0): " + foundBlock)
+                                sT.increaseScope(foundBlock, blockKeywordType, scopeTracker.SBLOCK, 1, True)
+                            else: #Ignore scope increases too far away from the block keyword
+                                sT.increaseScope(line, blockKeywordType, scopeTracker.GENERIC, True)
+
+                            blockKeywordLine = -1
+                            blockKeywordType = ""
+                            foundBlock = None
+                        else:
+                            foundBlock=self.getBlockPattern(line,blockKeyWordList)
+                            if(foundBlock!=None):
+                                if(Util.DEBUG):
+                                    print("Block start found (1): " + foundBlock)
+                                sT.increaseScope(foundBlock, lineType, scopeTracker.SBLOCK, 0, True) #This shouldn't set the block yet.
+                                #Reset block after this line.
+                                reset = True
+                            else:
+                                sT.increaseScope(line, lineType, scopeTracker.GENERIC, -1, True)
+
+
+                        #sT.decreaseScope(line, lineType) I don't think this change is need b/c the "INCREASE"
+                        #does the decrease as well.
+                        #Check if function has ended...
+                        if(self.sT.getFuncContext(lineType) == "" and phase == LOOKFOREND):
+                            #Then we ignore further block single line keywords....
+                            print("Back tracking!!!")
+                            return (foundBlock, blockKeywordLine, blockKeywordType, shortFunctionName, keywordDictionary, sT, True)
+
+
+                        if(lineType != OTHER):
+                            #Search for single line keywords BEFORE the scope decrease if in non decrease first language.
+                            keywordDictionary = self.parseLineForKeywords(sT.beforeDecrease(line), lineType, singleKeyWordList, keywordDictionary)
+
+                        if(sT.getBlockContext(lineType) != [] and lineType!=OTHER):
+                            if(Util.DEBUG):
+                                print("Current block context: " + str(sT.getBlockContext(lineType)))
+                            keywordDictionary = self.parseLineForKeywords(line, lineType, blockKeyWordList, keywordDictionary, sT.getBlockContext(lineType))
+
+                        #Scope Decrease Relative to one...
+                        #Scope Increase Relative to another...
         else: # Still want to check for a block context opening
             #LIMITATION: Let's force the scope increase associated with a block to be
             #either on the same line or on the line immediately following.  We'll ignore
@@ -758,7 +808,7 @@ class logChunk:
         #Problem is figuring out when this is appropriate to call...
         if(lineType != OTHER):
             temp = line
-            if(scopeChanges != [DECREASE] and scopeChanges != [INCREASE, DECREASE]):
+            if(scopeChanges != [DECREASE] and scopeChanges != [INCREASE, DECREASE] and scopeChanges != [scopeTracker.S_SIMUL]):
                 keywordDictionary = self.parseLineForKeywords(temp, lineType, singleKeyWordList, keywordDictionary)
           
                 if(sT.getBlockContext(lineType) != [] or foundBlock != None):
@@ -906,18 +956,28 @@ class logChunk:
                         print("Line: \"" + unicode(line, 'utf-8', errors='ignore') + "\"")
 
                 #if(self.sT.isFunctionalScopeChange(line,lineType)):
-                if(self.sT.isScopeIncrease(line, lineType)): #Problem, in python we can see a function on a line with a scope decrease
+                sResult = self.sT.isScopeIncrease(line, lineType)
+                if(sResult == scopeTracker.S_YES): #Problem, in python we can see a function on a line with a scope decrease
                     try:
                         (phase, line, lineType, lineNum, functionName, classContext, funcStart, startFlag, ftotal_add, ftotal_del) = self.checkForFunctionName(phase, line, lineType, lineNum, functionName, classContext, funcStart, startFlag, ftotal_add, ftotal_del)
                     except UnsupportedScopeException:
                         continue
-                else: #No scope change to cut off, so add the whole line instead
+                elif(sResult == scopeTracker.S_NO): #No scope change to cut off, so add the whole line instead
                     if(self.sT.changeScopeFirst()):
                         #If this contains a function pattern without a scope increase, we need to record it now.
                         self.sT.functionUpdateWithoutScopeChange(line, lineType, functionName, self.getFunctionPattern)
                     if(Util.DEBUG):
                         print("Extending the function name")
                     functionName += line.replace("\n", "") + " " #add the line with no new lines
+                else:
+                    #TODO: What do we do on a S_SIMUL???
+                    #Decrease scope of one to decrease first, then do function update???
+                    self.sT.scopeDecrease(line, lineType, -1, True)
+                    try:
+                        (phase, line, lineType, lineNum, functionName, classContext, funcStart, startFlag, ftotal_add, ftotal_del) = self.checkForFunctionName(phase, line, lineType, lineNum, functionName, classContext, funcStart, startFlag, ftotal_add, ftotal_del)
+                    except UnsupportedScopeException:
+                        continue
+                    pass
 
                 #TODO: Python Scope can increase immediately on the following line.  I think we need a full check here
                 #Maybe abstract the keyword update into a separate reusuable function.

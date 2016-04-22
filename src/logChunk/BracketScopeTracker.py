@@ -72,11 +72,17 @@ class BracketScopeTracker(scopeTracker):
 
     #Returns true if this line contains an increased level of scope.
     def isScopeIncrease(self, line, lineType):
-        return line.count("{") > 0
+        if(line.count("{") > 0):
+            return S_YES
+        else: 
+            return S_NO
 
     #Returns true if this line contains an decreased level of scope.
     def isScopeDecrease(self, line, lineType):
-        return line.count("}") > 0
+        if(line.count("}") > 0):
+            return S_YES
+        else:
+            return S_NO
 
     def isFunctionalScopeChange(self, line, lineType):
         return self.isScopeIncrease(line, lineType)
@@ -122,7 +128,7 @@ class BracketScopeTracker(scopeTracker):
     #string, [ADD|REMOVE|OTHER], [GENERIC|FUNC|BLOCK] -> --
     #Increase the depth of our tracker and add in function or block contexts if they have been discovered.
     #Note: LineNum is not used in this implementation.
-    def increaseScope(self, line, lineType, changeType, lineDiff = -1):
+    def increaseScope(self, line, lineType, changeType, lineDiff = -1, isSimul = False):
         if(lineType == ADD):
             self.increaseNewBrackets(line, changeType)
         elif(lineType == REMOVE):
@@ -169,7 +175,7 @@ class BracketScopeTracker(scopeTracker):
 
     #string, [ADD|REMOVE|OTHER] -> --
     #Decrease our current scope and close out any function or block contexts if necessary.
-    def decreaseScope(self, line, lineType):
+    def decreaseScope(self, line, lineType, lineDiff = -1, isSimul = False):
         if(lineType == ADD):
             self.decreaseNewBrackets(line)
         elif(lineType == REMOVE):

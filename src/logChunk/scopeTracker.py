@@ -16,6 +16,10 @@ NULL = "NULL"
 LINEINDEX = 0
 LABELINDEX = 1
 
+S_YES = "YES"
+S_NO = "NO"
+S_SIMUL = "SIMUL"
+
 
 #Redo with a polymorphic solution for the languages
 class scopeTracker:
@@ -60,11 +64,13 @@ class scopeTracker:
     def scopeDecreaseCount(self, line, lineType): #Seems to only matter in Bracket Languages
         raise NotImplementedError("Base ScopeTracker is Abstract.")
 
-    #Returns true if this line contains an increased level of scope.
+    #Returns [S_YES, S_NO, S_SIMUL] designating the type of scope change relative to the question
+    #is this a decrease in scope?
     def isScopeIncrease(self, line, lineType):
         raise NotImplementedError("Base ScopeTracker is Abstract.")
 
-    #Returns true if this line contains an decreased level of scope.
+    #Returns [S_YES, S_NO, S_SIMUL] designating the type of scope change relative to the question
+    #is this a decrease in scope?
     def isScopeDecrease(self, line, lineType):
         raise NotImplementedError("Base ScopeTracker is Abstract.")
 
@@ -120,16 +126,19 @@ class scopeTracker:
 
         return "" 
 
-    #string, [ADD|REMOVE|OTHER], [GENERIC|FUNC|BLOCK], -1/0/1 -> --
+    #string, [ADD|REMOVE|OTHER], [GENERIC|FUNC|BLOCK], -1/0/1, boolean -> --
     #Increase the depth of our tracker and add in function or block contexts if they have been discovered.
     #LineDiff designates for functions and keywords if the scope change was on the same line (0) as the keyword match
     #-1 Means not relevant to behavior
-    def increaseScope(self, line, lineType, changeType, lineDiff = -1):
+    #isSimul tells us we need to do an increase/decrease on a OTHER type line
+    def increaseScope(self, line, lineType, changeType, lineDiff = -1, isSimul = False):
         raise NotImplementedError("Base ScopeTracker is Abstract.")
 
-    #string, [ADD|REMOVE|OTHER] -> --
+    #string, [ADD|REMOVE|OTHER], [-1,0,1] boolean -> --
     #Decrease our current scope and close out any function or block contexts if necessary.
-    def decreaseScope(self, line, lineType):
+    #lineDiff is used with isSimul to apply increase behavior
+    #isSimul tells us we need to do an increase/decrease on a OTHER type line
+    def decreaseScope(self, line, lineType, lineDiff = -1, isSimul = False):
         raise NotImplementedError("Base ScopeTracker is Abstract.")
 
     #Return the surrounding functional context or "" if not on the stack
