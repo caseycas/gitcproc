@@ -88,18 +88,19 @@ def main():
   	print "!!! Usage: python ghProc.py project"
   	sys.exit()
 
-  top_project = sys.argv[1]
+  top_dir = sys.argv[1]
 
-  if not os.path.isdir(top_project):
+  if not os.path.isdir(top_dir):
     print("!! Please provide a valid directory")
     return
 
-  projects = os.listdir(top_project)
+  projects = os.listdir(top_dir)
+  print(projects)
   for p in projects:
-    if p.startswith('top_'):
-      project = top_project + os.sep + p
-      getGitLog(project)
-      #processLog(project)
+    project = top_dir + os.sep + p
+    print(project)
+    dumpLog(project)
+    #processLog(project)
   
   print "Done!!"
 

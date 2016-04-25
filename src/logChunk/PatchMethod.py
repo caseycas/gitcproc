@@ -32,8 +32,6 @@ class PatchMethod:
         retStr += "\t\ttotal_add   = %d\n" % (self.total_add)
         retStr += "\t\ttotal_del   = %d\n" % (self.total_del)
         retStr += "\t\tkeywordDictonary   = %s\n" % (self.keywordDictionary)
-        retStr += "\t\texception_add   = %s\n" % (self.etotal_add)
-        retStr += "\t\texception_del   = %s\n" % (self.etotal_del)
         retStr += "\t\tcatchLineNumber   = %s\n" % (self.catchLineNumber)
 
         return retStr
