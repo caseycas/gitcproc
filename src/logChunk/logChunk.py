@@ -664,7 +664,6 @@ class logChunk:
             raise UnsupportedScopeException("This ordering of scope changes is not yet supported.")
 
         elif(len(scopeChanges) > 0):
-            print("THERE!!!")
             for nextScopeChange in scopeChanges:
                 if(nextScopeChange == INCREASE):
                     if(sT.isScopeIncrease(line, lineType) == scopeTracker.S_YES):
@@ -724,8 +723,9 @@ class logChunk:
                             #Check if function has ended...
                             if(self.sT.getFuncContext(lineType) == "" and phase == LOOKFOREND):
                                 #Then we ignore further block single line keywords....
-                                print("Back tracking!!!")
-                                print("BT Function Name:" + shortFunctionName)
+                                if(Util.DEBUG):
+                                    print("Back tracking!!!")
+                                    print("BT Function Name:" + shortFunctionName)
 
                                 return (foundBlock, blockKeywordLine, blockKeywordType, shortFunctionName, keywordDictionary, sT, True)
 
@@ -741,7 +741,8 @@ class logChunk:
 
                         if(not sT.changeScopeFirst()):
                             sT.decreaseScope(line, lineType)
-                        print("Removed!!!!" + str(sT.getBlockContext(lineType)))
+                        if(Util.DEBUG):
+                            print("Removed!!!!" + str(sT.getBlockContext(lineType)))
                 else: #A SIMUL change!!!
                     if(sT.changeScopeFirst()): #Shouldn't be possible in bracket based languages.
                         assert(sT.isScopeIncrease(line, lineType) == scopeTracker.S_SIMUL)
@@ -777,7 +778,8 @@ class logChunk:
                         #Check if function has ended...
                         if(self.sT.getFuncContext(lineType) == "" and phase == LOOKFOREND):
                             #Then we ignore further block single line keywords....
-                            print("Back tracking!!!")
+                            if(Util.DEBUG):
+                                print("Back tracking!!!")
                             return (foundBlock, blockKeywordLine, blockKeywordType, shortFunctionName, keywordDictionary, sT, True)
 
 
@@ -796,11 +798,7 @@ class logChunk:
             #LIMITATION: Let's force the scope increase associated with a block to be
             #either on the same line or on the line immediately following.  We'll ignore
             #other cases
-            print("HERE!!!!!!")
-            print(line)
-            print(blockKeyWordList)
             foundBlock = self.getBlockPattern(line, blockKeyWordList)
-            print(foundBlock)
             if(foundBlock != None):
                 if(Util.DEBUG):
                     print("Keyword match without scope change.")
@@ -925,7 +923,8 @@ class logChunk:
             #Handle Continuation Lines if necessary
             try:
                 priorStatus = self.sT.getContinuationFlag()
-                print("Prior Status: " + str(priorStatus))
+                if(Util.DEBUG):
+                    print("Prior Status: " + str(priorStatus))
                 newStatus = self.langSwitch.isContinuationLine(line, priorStatus)
                 if(Util.DEBUG):
                     if(newStatus == languageSwitcher.CONTINUATION):
