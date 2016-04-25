@@ -1,0 +1,65 @@
+/*
+  * Assembles a buffer covering the specified range. The code is optimised for
+  * cache hits, as metadata intensive workloads will see 3 orders of magnitude
+  * more hits than misses.
+  */
+ struct xfs_buf *
+ xfs_buf_get(
+        xfs_buftarg_t           *target,
+        xfs_daddr_t             blkno,
+        size_t                  numblks,
+        xfs_buf_flags_t         flags)
+ {
+        struct xfs_buf          *bp;
+        struct xfs_buf          *new_bp;
+        int                     error = 0;
+ 
+        bp = _xfs_buf_find(target, blkno, numblks, flags, NULL);
+        if (likely(bp))
+                goto found;
+ 
+        new_bp = xfs_buf_alloc(target, blkno, numblks, flags);
+        if (unlikely(!new_bp))
+                return NULL;
+ 
+        error = xfs_buf_allocate_memory(new_bp, flags);
+        if (error) {
+                kmem_zone_free(xfs_buf_zone, new_bp);
+                return NULL;
+        }
+ 
+        bp = _xfs_buf_find(target, blkno, numblks, flags, new_bp);
+        if (!bp) {
+                xfs_buf_free(new_bp);
+                return NULL;
+        }
+ 
+        if (bp != new_bp)
+                xfs_buf_free(new_bp);
+ 
+        /*
+         * Now we have a workable buffer, fill in the block number so
+         * that we can do IO on it.
+         */
+        bp->b_bn = blkno;
+        bp->b_io_length = bp->b_length;
+ 
+ found:
+        if (!(bp->b_flags & XBF_MAPPED)) {
+                error = _xfs_buf_map_pages(bp, flags);
+                if (unlikely(error)) {
+                        xfs_warn(target->bt_mount,
+                                "%s: failed to map pages\n", __func__);
+-                       goto no_buffer;
++                       xfs_buf_relse(bp);
++                       return NULL;
+                }
+        }
+ 
+-
+-no_buffer:
+-       if (flags & (XBF_LOCK | XBF_TRYLOCK))
+-               xfs_buf_unlock(bp);
+-       xfs_buf_rele(bp);
+-       return NULL;
+ }

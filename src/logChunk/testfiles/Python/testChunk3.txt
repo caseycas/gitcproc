@@ -1,11 +1,10 @@
 -def testFunc(oldExample):
 -    if(oldExample != 0):
 -        print(str(10.0/oldExample))
--    else:
--        print(oldExample)
-
 +def testFunc(exampleInput):
 +    if(exampleInput != 0):
 +        print(str(10.0/exampleInput))
-+    else:
+     else:
+-        print(oldExample)
+\ No newline at end of file
 +        print(exampleInput)

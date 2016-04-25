@@ -1,0 +1,10 @@
+ class example:
+
+     def exampleFunc(y):
+-        x = 0
+-        while(x < 10):
+-            print("Ding")
+         if(y > 5):
+             print("Big y")
++            print("More prints!")     
+        return x * y
