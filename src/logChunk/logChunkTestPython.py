@@ -53,27 +53,19 @@ class logChunktest(unittest.TestCase):
         self.chunk11 = logChunk.logChunk(self.readHelper("testfiles/Python/testChunk11.txt"), "Python", "../util/sample_confPy.ini")
 
 
-    #def test_FunctionNameParse(self):
+    def test_isFunction(self):
+        self.assertTrue(self.testChunk.isFunction(self.method1))
+        self.assertTrue(self.testChunk.isFunction(self.method2))        
+        self.assertTrue(self.testChunk.isFunction(self.method3))
+        self.assertTrue(self.testChunk.isFunction(self.method4))
+        self.assertFalse(self.testChunk.isFunction(self.method5))
+        self.assertTrue(self.testChunk.isFunction(self.method6))
+        self.assertFalse(self.testChunk.isFunction(self.method7))
+        self.assertFalse(self.testChunk.isFunction(self.method8))
+        self.assertTrue(self.testChunk.isFunction(self.method9))
 
-    #def test_isClassDef(self):
-
-
-    #def test_isConstructorOrDestructor(self):
-
-
-    # def test_isFunction(self):
-    #     self.assertTrue(self.testChunk.isFunction(self.method1))
-    #     self.assertTrue(self.testChunk.isFunction(self.method2))        
-    #     self.assertTrue(self.testChunk.isFunction(self.method3))
-    #     self.assertTrue(self.testChunk.isFunction(self.method4))
-    #     self.assertFalse(self.testChunk.isFunction(self.method5))
-    #     self.assertTrue(self.testChunk.isFunction(self.method6))
-    #     self.assertFalse(self.testChunk.isFunction(self.method7))
-    #     self.assertFalse(self.testChunk.isFunction(self.method8))
-    #     self.assertTrue(self.testChunk.isFunction(self.method9))
-
-    # def test_cleanFunctionLine(self):
-    #     self.assertTrue(self.testChunk.langSwitch.cleanFunctionLine("      def path(self, name):") == "      def path(self, name):", )
+    def test_cleanFunctionLine(self):
+        self.assertTrue(self.testChunk.langSwitch.cleanFunctionLine("      def path(self, name):") == "      def path(self, name):", )
 
     def test_continuationLines(self):
         self.assertTrue(self.testChunk.langSwitch.isContinuationLine("y = a + b + c + \\", NOT_CONTINUATION) == CONTINUATION_EXPLICIT)
@@ -114,17 +106,13 @@ class logChunktest(unittest.TestCase):
     def test_parseText3(self):
         self.chunk3.parseText()
         funcList = self.chunk3.functions
-        #self.debugFunctions(funcList)
-        self.assertTrue(len(funcList) == 2) 
+        self.debugFunctions(funcList)
+        self.assertTrue(len(funcList) == 1) 
         self.assertTrue(funcList[0].method=="testFunc")
         
-        testDict = {'print Adds': 0, 'print Dels': 2, 'if Dels': 2, 'if Adds': 0}
+        testDict = {'print Adds': 2, 'print Dels': 2, 'if Dels': 2, 'if Adds': 0}
 
         self.assertEqual(testDict,funcList[0].keywordDictionary)
-
-        self.assertTrue(funcList[1].method=="testFunc")
-        testDict = {'print Adds': 2, 'print Dels': 0, 'if Dels': 0, 'if Adds': 2}
-        self.assertEqual(testDict,funcList[1].keywordDictionary)
 
     def test_parseText4(self):
         self.chunk4.parseText()
@@ -209,7 +197,7 @@ class logChunktest(unittest.TestCase):
     def test_parseText9(self):
         self.chunk9.parseText()
         funcList = self.chunk9.functions
-        self.debugFunctions(funcList)
+        #self.debugFunctions(funcList)
         self.assertTrue(len(funcList) == 2) 
         self.assertTrue(funcList[0].method=="__init__")
         self.assertTrue(funcList[0].total_add == 2)
@@ -224,6 +212,27 @@ class logChunktest(unittest.TestCase):
 
         testDict = {'print Adds': 0, 'print Dels': 0, 'if Dels': 0, 'if Adds': 0}
         self.assertEqual(testDict,funcList[1].keywordDictionary)
+
+    def test_parseText10(self):
+        self.chunk10.parseText()
+        funcList = self.chunk10.functions
+        self.debugFunctions(funcList)
+        self.assertTrue(len(funcList) == 2) 
+        self.assertTrue(funcList[0].method=="__init__")
+        self.assertTrue(funcList[0].total_add == 1)
+        self.assertTrue(funcList[0].total_del == 0)
+
+        self.assertTrue(funcList[0].method=="from_crawler")
+        self.assertTrue(funcList[0].total_add == 3)
+        self.assertTrue(funcList[0].total_del == 1)
+
+
+
+    def test_parseText11(self):
+       self.chunk11.parseText()
+       funcList = self.chunk11.functions
+       #self.debugFunctions(funcList)
+
 
 
 

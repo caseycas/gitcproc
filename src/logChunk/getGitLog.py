@@ -32,7 +32,9 @@ def dumpLog(projPath):
             all_extn += " \\*"  + e.upper()
 
         #logCmd = "git log --date=short --no-merges -U1 -- " + all_extn + " > all_log.txt"
-        logCmd = "git log --date=short -U1 -- " + all_extn + " > " + LOG_FILE
+        #logCmd = "git log --date=short -U1000 --function-context -- " + all_extn + " > " + LOG_FILE
+        #Assert Replication Command
+        logCmd = "git log --date=short --no-merges -U1000 --function-context -- " + all_extn + " > " + LOG_FILE
 
         #os.system("git stash save --keep-index; git pull")
         print(logCmd)

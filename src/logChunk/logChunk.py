@@ -593,7 +593,7 @@ class logChunk:
         return (phase, line, lineType, lineNum, functionName, classContext, funcStart, startFlag, ftotal_add, ftotal_del)
 
     def checkForFunctionEnd(self, lineType, lineNum, phase, funcStart, funcEnd, functionName, shortFunctionName, ftotal_add, ftotal_del, foundBlock, singleKeyWordList, blockKeyWordList, keywordDictionary, backTrack):
-        if(self.sT.getFuncContext(lineType) == "" and phase == LOOKFOREND):
+        if(self.sT.getFuncContext(lineType) == "" and phase == LOOKFOREND and shortFunctionName != ""): #Error, this will trigger on a rename in python...
             funcEnd = lineNum
             if(backTrack):
                 funcEnd -= 1
@@ -716,13 +716,17 @@ class logChunk:
                         if(sT.getFuncContext(lineType) != ""):
                             shortFunctionName = sT.getFuncContext(lineType) #Get the functional context
 
+
                         #Check if we should decrease scope before updating the dictionaries
                         if(sT.changeScopeFirst()):
+                            print(sT.printScope())
                             sT.decreaseScope(line, lineType)
                             #Check if function has ended...
                             if(self.sT.getFuncContext(lineType) == "" and phase == LOOKFOREND):
                                 #Then we ignore further block single line keywords....
                                 print("Back tracking!!!")
+                                print("BT Function Name:" + shortFunctionName)
+
                                 return (foundBlock, blockKeywordLine, blockKeywordType, shortFunctionName, keywordDictionary, sT, True)
 
 

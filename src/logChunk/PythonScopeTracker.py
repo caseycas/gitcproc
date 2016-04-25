@@ -529,6 +529,31 @@ class PythonScopeTracker(scopeTracker):
         else:
             assert("Not a valid line type")
 
+    def getFuncFromStack(self, stack):
+        for item in stack:
+            if(item[LABELINDEX] == FUNC):
+                return item[LINEINDEX]
+
+        return ""
+
+    def getFuncContext(self, lineType):
+        if(lineType == ADD or lineType == OTHER):
+            if(self.lastNewFuncContext != ""):
+                return self.lastNewFuncContext
+            elif(self.lastOldFuncContext != ""):
+                return self.lastOldFuncContext
+            else:
+                return self.getFuncFromStack(self.newVerStack)
+        elif(lineType == REMOVE):
+            if(self.lastOldFuncContext != ""):
+                return self.lastOldFuncContext
+            elif(self.lastNewFuncContext != ""):
+                return self.lastNewFuncContext
+            else:
+                return self.getFuncFromStack(self.oldVerStack)
+        else:
+            assert("Not a valid line type")
+
 
     def afterDecrease(self, line): #A decrease always happens at the start of a line, so return nothing.
         return line
@@ -541,3 +566,17 @@ class PythonScopeTracker(scopeTracker):
 
     def afterIncrease(self, line): #No need to do anything here. We can't have code before the indentation.
         return line
+
+    def printScope(self):
+        print("------------------<Scope Obj>------------------")
+        print("Language:")
+        print(self.language)
+        print("Old Stack:")
+        print(self.oldVerStack)
+        print("Old Func Cache:")
+        print(self.lastOldFuncContext)
+        print("New Stack:")
+        print(self.newVerStack)
+        print("New Func Cache:")
+        print(self.lastNewFuncContext)
+        print("------------------<Scope Obj>------------------")

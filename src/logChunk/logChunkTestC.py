@@ -120,6 +120,9 @@ class logChunktest(unittest.TestCase):
         self.chunk46 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk46.txt"), "C++") # C++
         self.chunk47 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk47.txt"), "C++") # C++
         self.chunk48 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk48.txt"), "C++") # C++
+        self.chunk49 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk49.txt"), "C++") # C++
+        self.chunk50 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk50.txt"), "C") # C
+
 
 
 
@@ -813,6 +816,36 @@ class logChunktest(unittest.TestCase):
         self.assertEqual(testDict, funcList[0].keywordDictionary)
 
 
+    def test_parseText_Single49(self): #Not Sure how I want to handle this
+        self.chunk49.parseText()
+        funcList = self.chunk49.functions 
+        #self.debugFunctions(funcList)
+        self.assertTrue(len(funcList) == 2)
+        self.assertTrue(funcList[0].method == "ClientInfo::newRequest")
+        self.assertTrue(funcList[0].total_add == 1)
+        self.assertTrue(funcList[0].total_del == 1)
+
+        testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 0, 'ut_a Dels': 0}
+        self.assertEqual(testDict, funcList[0].keywordDictionary)
+
+        self.assertTrue(funcList[1].method == "ClientInfo::create")
+        self.assertTrue(funcList[1].total_add == 1)
+        self.assertTrue(funcList[1].total_del == 1)
+        testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 0, 'ut_a Dels': 0}
+        self.assertEqual(testDict, funcList[1].keywordDictionary)
+
+
+    def test_parseText_Single50(self): #Not Sure how I want to handle this
+        self.chunk50.parseText()
+        funcList = self.chunk50.functions 
+        #self.debugFunctions(funcList)
+        self.assertTrue(len(funcList) == 1)
+        self.assertTrue(funcList[0].method == "xfs_buf_get")
+        self.assertTrue(funcList[0].total_add == 2)
+        self.assertTrue(funcList[0].total_del == 7)
+
+        testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 0, 'ut_a Dels': 0}
+        self.assertEqual(testDict, funcList[0].keywordDictionary)
 
 
 
