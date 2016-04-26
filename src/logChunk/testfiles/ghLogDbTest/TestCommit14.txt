@@ -1,0 +1,214 @@
+commit 0340cadfb46a11f5aea498f68de2d0c57f2fb1ee
+Author: Jonathan Tang <jonathan.d.tang@gmail.com>
+Date:   2014-11-09
+
+    Add a token type for CDATA.
+
+diff --git a/src/parser.c b/src/parser.c
+index 004639d..0888794 100644
+--- a/src/parser.c
++++ b/src/parser.c
+@@ -248,201 +248,201 @@ static const ReplacementEntry kSvgAttributeReplacements[] = {
+   REPLACEMENT_ENTRY("tablevalues", "tableValues"),
+   REPLACEMENT_ENTRY("targetx", "targetX"),
+   REPLACEMENT_ENTRY("targety", "targetY"),
+   REPLACEMENT_ENTRY("textlength", "textLength"),
+   REPLACEMENT_ENTRY("viewbox", "viewBox"),
+   REPLACEMENT_ENTRY("viewtarget", "viewTarget"),
+   REPLACEMENT_ENTRY("xchannelselector", "xChannelSelector"),
+   REPLACEMENT_ENTRY("ychannelselector", "yChannelSelector"),
+   REPLACEMENT_ENTRY("zoomandpan", "zoomAndPan"),
+ };
+ 
+ static const ReplacementEntry kSvgTagReplacements[] = {
+   REPLACEMENT_ENTRY("altglyph", "altGlyph"),
+   REPLACEMENT_ENTRY("altglyphdef", "altGlyphDef"),
+   REPLACEMENT_ENTRY("altglyphitem", "altGlyphItem"),
+   REPLACEMENT_ENTRY("animatecolor", "animateColor"),
+   REPLACEMENT_ENTRY("animatemotion", "animateMotion"),
+   REPLACEMENT_ENTRY("animatetransform", "animateTransform"),
+   REPLACEMENT_ENTRY("clippath", "clipPath"),
+   REPLACEMENT_ENTRY("feblend", "feBlend"),
+   REPLACEMENT_ENTRY("fecolormatrix", "feColorMatrix"),
+   REPLACEMENT_ENTRY("fecomponenttransfer", "feComponentTransfer"),
+   REPLACEMENT_ENTRY("fecomposite", "feComposite"),
+   REPLACEMENT_ENTRY("feconvolvematrix", "feConvolveMatrix"),
+   REPLACEMENT_ENTRY("fediffuselighting", "feDiffuseLighting"),
+   REPLACEMENT_ENTRY("fedisplacementmap", "feDisplacementMap"),
+   REPLACEMENT_ENTRY("fedistantlight", "feDistantLight"),
+   REPLACEMENT_ENTRY("feflood", "feFlood"),
+   REPLACEMENT_ENTRY("fefunca", "feFuncA"),
+   REPLACEMENT_ENTRY("fefuncb", "feFuncB"),
+   REPLACEMENT_ENTRY("fefuncg", "feFuncG"),
+   REPLACEMENT_ENTRY("fefuncr", "feFuncR"),
+   REPLACEMENT_ENTRY("fegaussianblur", "feGaussianBlur"),
+   REPLACEMENT_ENTRY("feimage", "feImage"),
+   REPLACEMENT_ENTRY("femerge", "feMerge"),
+   REPLACEMENT_ENTRY("femergenode", "feMergeNode"),
+   REPLACEMENT_ENTRY("femorphology", "feMorphology"),
+   REPLACEMENT_ENTRY("feoffset", "feOffset"),
+   REPLACEMENT_ENTRY("fepointlight", "fePointLight"),
+   REPLACEMENT_ENTRY("fespecularlighting", "feSpecularLighting"),
+   REPLACEMENT_ENTRY("fespotlight", "feSpotLight"),
+   REPLACEMENT_ENTRY("fetile", "feTile"),
+   REPLACEMENT_ENTRY("feturbulence", "feTurbulence"),
+   REPLACEMENT_ENTRY("foreignobject", "foreignObject"),
+   REPLACEMENT_ENTRY("glyphref", "glyphRef"),
+   REPLACEMENT_ENTRY("lineargradient", "linearGradient"),
+   REPLACEMENT_ENTRY("radialgradient", "radialGradient"),
+   REPLACEMENT_ENTRY("textpath", "textPath"),
+ };
+ 
+ typedef struct _NamespacedAttributeReplacement {
+   const char* from;
+   const char* local_name;
+   const GumboAttributeNamespaceEnum attr_namespace;
+ } NamespacedAttributeReplacement;
+ 
+ static const NamespacedAttributeReplacement kForeignAttributeReplacements[] = {
+   { "xlink:actuate", "actuate", GUMBO_ATTR_NAMESPACE_XLINK },
+   { "xlink:actuate", "actuate", GUMBO_ATTR_NAMESPACE_XLINK },
+   { "xlink:href", "href", GUMBO_ATTR_NAMESPACE_XLINK },
+   { "xlink:role", "role", GUMBO_ATTR_NAMESPACE_XLINK },
+   { "xlink:show", "show", GUMBO_ATTR_NAMESPACE_XLINK },
+   { "xlink:title", "title", GUMBO_ATTR_NAMESPACE_XLINK },
+   { "xlink:type", "type", GUMBO_ATTR_NAMESPACE_XLINK },
+   { "xml:base", "base", GUMBO_ATTR_NAMESPACE_XML },
+   { "xml:lang", "lang", GUMBO_ATTR_NAMESPACE_XML },
+   { "xml:space", "space", GUMBO_ATTR_NAMESPACE_XML },
+   { "xmlns", "xmlns", GUMBO_ATTR_NAMESPACE_XMLNS },
+   { "xmlns:xlink", "xlink", GUMBO_ATTR_NAMESPACE_XMLNS },
+ };
+ 
+ // The "scope marker" for the list of active formatting elements.  We use a
+ // pointer to this as a generic marker element, since the particular element
+ // scope doesn't matter.
+ static const GumboNode kActiveFormattingScopeMarker;
+ 
+ // The tag_is and tag_in function use true & false to denote start & end tags,
+ // but for readability, we define constants for them here.
+ static const bool kStartTag = true;
+ static const bool kEndTag = false;
+ 
+ // Because GumboStringPieces are immutable, we can't insert a character directly
+ // into a text node.  Instead, we accumulate all pending characters here and
+ // flush them out to a text node whenever a new element is inserted.
+ //
+ // http://www.whatwg.org/specs/web-apps/current-work/complete/tokenization.html#insert-a-character
+ typedef struct _TextNodeBufferState {
+   // The accumulated text to be inserted into the current text node.
+   GumboStringBuffer _buffer;
+ 
+   // A pointer to the original text represented by this text node.  Note that
+   // because of foster parenting and other strange DOM manipulations, this may
+   // include other non-text HTML tags in it; it is defined as the span of
+   // original text from the first character in this text node to the last
+   // character in this text node.
+   const char* _start_original_text;
+ 
+   // The source position of the start of this text node.
+   GumboSourcePosition _start_position;
+ 
+-  // The type of node that will be inserted (TEXT or WHITESPACE).
++  // The type of node that will be inserted (TEXT, CDATA, or WHITESPACE).
+   GumboNodeType _type;
+ } TextNodeBufferState;
+ 
+ typedef struct GumboInternalParserState {
+   // http://www.whatwg.org/specs/web-apps/current-work/complete/parsing.html#insertion-mode
+   GumboInsertionMode _insertion_mode;
+ 
+   // Used for run_generic_parsing_algorithm, which needs to switch back to the
+   // original insertion mode at its conclusion.
+   GumboInsertionMode _original_insertion_mode;
+ 
+   // http://www.whatwg.org/specs/web-apps/current-work/complete/parsing.html#the-stack-of-open-elements
+   GumboVector /*GumboNode*/ _open_elements;
+ 
+   // http://www.whatwg.org/specs/web-apps/current-work/complete/parsing.html#the-list-of-active-formatting-elements
+   GumboVector /*GumboNode*/ _active_formatting_elements;
+ 
+   // The stack of template insertion modes.
+   // http://www.whatwg.org/specs/web-apps/current-work/multipage/parsing.html#the-insertion-mode
+   GumboVector /*InsertionMode*/ _template_insertion_modes;
+ 
+   // http://www.whatwg.org/specs/web-apps/current-work/complete/parsing.html#the-element-pointers
+   GumboNode* _head_element;
+   GumboNode* _form_element;
+ 
+   // The flag for when the spec says "Reprocess the current token in..."
+   bool _reprocess_current_token;
+ 
+   // The flag for "acknowledge the token's self-closing flag".
+   bool _self_closing_flag_acknowledged;
+ 
+   // The "frameset-ok" flag from the spec.
+   bool _frameset_ok;
+ 
+   // The flag for "If the next token is a LINE FEED, ignore that token...".
+   bool _ignore_next_linefeed;
+ 
+   // The flag for "whenever a node would be inserted into the current node, it
+   // must instead be foster parented".  This is used for misnested table
+   // content, which needs to be handled according to "in body" rules yet foster
+   // parented outside of the table.
+   // It would perhaps be more explicit to have this as a parameter to
+   // handle_in_body and insert_element, but given how special-purpose this is
+   // and the number of call-sites that would need to take the extra parameter,
+   // it's easier just to have a state flag.
+   bool _foster_parent_insertions;
+ 
+   // The accumulated text node buffer state.
+   TextNodeBufferState _text_node;
+ 
+   // The current token.
+   GumboToken* _current_token;
+ 
+   // The way that the spec is written, the </body> and </html> tags are *always*
+   // implicit, because encountering one of those tokens merely switches the
+   // insertion mode out of "in body".  So we have individual state flags for
+   // those end tags that are then inspected by pop_current_node when the <body>
+   // and <html> nodes are popped to set the GUMBO_INSERTION_IMPLICIT_END_TAG
+   // flag appropriately.
+   bool _closed_body_tag;
+   bool _closed_html_tag;
+ } GumboParserState;
+ 
+ static bool token_has_attribute(const GumboToken* token, const char* name) {
+   assert(token->type == GUMBO_TOKEN_START_TAG);
+   return gumbo_get_attribute(&token->v.start_tag.attributes, name) != NULL;
+ }
+ 
+ // Checks if the value of the specified attribute is a case-insensitive match
+ // for the specified string.
+ static bool attribute_matches(
+     const GumboVector* attributes, const char* name, const char* value) {
+   const GumboAttribute* attr = gumbo_get_attribute(attributes, name);
+   return attr ? strcasecmp(value, attr->value) == 0 : false;
+ }
+ 
+ // Checks if the value of the specified attribute is a case-sensitive match
+ // for the specified string.
+ static bool attribute_matches_case_sensitive(
+     const GumboVector* attributes, const char* name, const char* value) {
+   const GumboAttribute* attr = gumbo_get_attribute(attributes, name);
+   return attr ?  strcmp(value, attr->value) == 0 : false;
+ }
+ 
+ // Checks if the specified attribute vectors are identical.
+ static bool all_attributes_match(
+     const GumboVector* attr1, const GumboVector* attr2) {
+   int num_unmatched_attr2_elements = attr2->length;
+   for (int i = 0; i < attr1->length; ++i) {
+     const GumboAttribute* attr = attr1->data[i];
+     if (attribute_matches_case_sensitive(attr2, attr->name, attr->value)) {
+       --num_unmatched_attr2_elements;
+     } else {
+       return false;
+     }
+   }
+   return num_unmatched_attr2_elements == 0;
+ }
+ 
+ static void set_frameset_not_ok(GumboParser* parser) {
+

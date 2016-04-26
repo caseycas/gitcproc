@@ -10,7 +10,7 @@ class ghLogDbTest(unittest.TestCase):
 
     def setUp(self):
  
-        #Util.DATABASE = 0
+        Util.DATABASE = 0
         self.testCommit1 = ghLogDb.ghLogDb("testfiles/ghLogDbTest/TestCommit1.txt")
         self.testCommit2 = ghLogDb.ghLogDb("testfiles/ghLogDbTest/TestCommit2.txt")
         self.testCommit3 = ghLogDb.ghLogDb("testfiles/ghLogDbTest/TestCommit3.txt")
@@ -24,6 +24,7 @@ class ghLogDbTest(unittest.TestCase):
         self.testCommit11 = ghLogDb.ghLogDb("testfiles/ghLogDbTest/TestCommit11.txt")
         self.testCommit12 = ghLogDb.ghLogDb("testfiles/ghLogDbTest/TestCommit12.txt")
         self.testCommit13 = ghLogDb.ghLogDb("testfiles/ghLogDbTest/TestCommit13.txt")
+        self.testCommit14 = ghLogDb.ghLogDb("testfiles/ghLogDbTest/TestCommit14.txt")
 
         #self.testCommit13.processLog() #Make sure there is no crash -> Hangs a long time
 
@@ -43,18 +44,19 @@ class ghLogDbTest(unittest.TestCase):
 
         self.assertTrue(patches[0].file_name == "bin/cuda/cwc-verify.c")
         methods = patches[0].methods
-        self.assertTrue(len(methods) == 1) #Can't label stuff outside functions anymore unless we're looking for it.
-        #self.assertTrue(methods[0].method == "NA")
-        #self.assertTrue(methods[0].total_add == 1)
-        #self.assertTrue(methods[0].total_del == 1)
-        #testDict = {'assert Adds':0, 'assert Dels': 0, 'ut_ad Adds':0, 'ut_ad Dels': 0, 'ut_a Adds':0, 'ut_a Dels': 0}
-        #self.assertEqual(testDict,methods[0].keywordDictionary)
+        self.assertTrue(len(methods) == 2)
 
         self.assertTrue(methods[0].method == "main")
         self.assertTrue(methods[0].total_add == 1)
         self.assertTrue(methods[0].total_del == 1)
         testDict = {'assert Adds':0, 'assert Dels': 0, 'ut_ad Adds':0, 'ut_ad Dels': 0, 'ut_a Adds':0, 'ut_a Dels': 0}
         self.assertEqual(testDict,methods[0].keywordDictionary)
+
+        self.assertTrue(methods[1].method == "GITCPROC_NON_FUNCTION")
+        self.assertTrue(methods[1].total_add == 1)
+        self.assertTrue(methods[1].total_del == 1)
+        testDict = {'assert Adds':0, 'assert Dels': 0, 'ut_ad Adds':0, 'ut_ad Dels': 0, 'ut_a Adds':0, 'ut_a Dels': 0}
+        self.assertEqual(testDict,methods[1].keywordDictionary)
 
         self.assertTrue(patches[1].file_name == "bin/image-net.c")
         methods = patches[1].methods
@@ -68,7 +70,7 @@ class ghLogDbTest(unittest.TestCase):
 
         self.assertTrue(patches[2].file_name == "lib/ccv_convnet.c")
         methods = patches[2].methods
-        self.assertTrue(len(methods)==6)
+        self.assertTrue(len(methods)==7)
         self.assertTrue(methods[1].method == "ccv_convnet_verify")
         self.assertTrue(methods[1].total_add == 6)
         self.assertTrue(methods[1].total_del == 0)
@@ -104,13 +106,18 @@ class ghLogDbTest(unittest.TestCase):
         self.assertTrue(patches[1].file_name == "bin/cuda/cwc-verify.c")
         methods = patches[1].methods
 
-        self.assertTrue(len(methods) == 1)
+        self.assertTrue(len(methods) == 2)
         self.assertTrue(methods[0].method == "main")
         self.assertTrue(methods[0].total_add == 314)
         self.assertTrue(methods[0].total_del == 0)
         testDict = {'assert Adds':1, 'assert Dels': 0, 'ut_ad Adds':0, 'ut_ad Dels': 0, 'ut_a Adds':0, 'ut_a Dels': 0}
         self.assertEqual(testDict,methods[0].keywordDictionary)
 
+        self.assertTrue(methods[1].method == "GITCPROC_NON_FUNCTION")
+        self.assertTrue(methods[1].total_add == 6)
+        self.assertTrue(methods[1].total_del == 0)
+        testDict = {'assert Adds':0, 'assert Dels': 0, 'ut_ad Adds':0, 'ut_ad Dels': 0, 'ut_a Adds':0, 'ut_a Dels': 0}
+        self.assertEqual(testDict,methods[1].keywordDictionary)
 
     def test_Commit3(self):
         self.testCommit3.processLog()
@@ -164,18 +171,30 @@ class ghLogDbTest(unittest.TestCase):
         self.assertEqual(testDict,methods[0].keywordDictionary)
 
         methods = patches[1].methods
-        self.assertTrue(len(methods) == 2)
+        self.assertTrue(len(methods) == 4)
         self.assertTrue(methods[0].method == "_ccv_convnet_compute_softmax")
         self.assertTrue(methods[0].total_add == 0)
         self.assertTrue(methods[0].total_del == 18)
         testDict = {'assert Adds':0, 'assert Dels': 1, 'ut_ad Adds':0, 'ut_ad Dels': 0, 'ut_a Adds':0, 'ut_a Dels': 0}
         self.assertEqual(testDict,methods[0].keywordDictionary)
 
-        self.assertTrue(methods[1].method == "_ccv_convnet_compute_softmax")
-        self.assertTrue(methods[1].total_add == 18)
-        self.assertTrue(methods[1].total_del == 0)
-        testDict = {'assert Adds':1, 'assert Dels': 0, 'ut_ad Adds':0, 'ut_ad Dels': 0, 'ut_a Adds':0, 'ut_a Dels': 0}
+        self.assertTrue(methods[1].method == "GITCPROC_NON_FUNCTION")
+        self.assertTrue(methods[1].total_add == 0)
+        self.assertTrue(methods[1].total_del == 2)
+        testDict = {'assert Adds':0, 'assert Dels': 0, 'ut_ad Adds':0, 'ut_ad Dels': 0, 'ut_a Adds':0, 'ut_a Dels': 0}
         self.assertEqual(testDict,methods[1].keywordDictionary)
+
+        self.assertTrue(methods[2].method == "_ccv_convnet_compute_softmax")
+        self.assertTrue(methods[2].total_add == 18)
+        self.assertTrue(methods[2].total_del == 0)
+        testDict = {'assert Adds':1, 'assert Dels': 0, 'ut_ad Adds':0, 'ut_ad Dels': 0, 'ut_a Adds':0, 'ut_a Dels': 0}
+        self.assertEqual(testDict,methods[2].keywordDictionary)
+
+        self.assertTrue(methods[3].method == "GITCPROC_NON_FUNCTION")
+        self.assertTrue(methods[3].total_add == 2)
+        self.assertTrue(methods[3].total_del == 0)
+        testDict = {'assert Adds':0, 'assert Dels': 0, 'ut_ad Adds':0, 'ut_ad Dels': 0, 'ut_a Adds':0, 'ut_a Dels': 0}
+        self.assertEqual(testDict,methods[3].keywordDictionary)
 
     def test_Commit5(self):
         self.testCommit5.processLog()
@@ -191,7 +210,7 @@ class ghLogDbTest(unittest.TestCase):
             print(patch.file_name)
 
         methods = patches[0].methods
-        self.assertTrue(len(methods) == 7)
+        self.assertTrue(len(methods) == 8)
         self.assertTrue(methods[3].method == "*dlopen")
         self.assertTrue(methods[3].total_add == 66)
         self.assertTrue(methods[3].total_del == 0)
@@ -199,7 +218,7 @@ class ghLogDbTest(unittest.TestCase):
         self.assertEqual(testDict,methods[3].keywordDictionary)
 
         methods = patches[1].methods
-        self.assertTrue(len(methods) == 8)
+        self.assertTrue(len(methods) == 9)
 
     def test_Commit7(self):
         self.testCommit7.processLog()
@@ -214,7 +233,8 @@ class ghLogDbTest(unittest.TestCase):
         methods = patches[0].methods
         #print(len(methods))
         #print(methods)
-        self.assertTrue(len(methods) == 9)
+        #2 non-functions b/c we get 1 for each @@ where there are changes outside a function
+        self.assertTrue(len(methods) == 11) 
 
 #    def test_commit8(self):
 #        self.testCommit8.processLog()
@@ -254,11 +274,12 @@ class ghLogDbTest(unittest.TestCase):
         self.assertTrue(len(patches) == 1)
 
         methods = patches[0].methods
-        self.assertTrue(len(methods) == 10)
+        #Three non functions
+        self.assertTrue(len(methods) == 13)
 
-        self.assertTrue(methods[6].method == "mysql_stmt_close")
+        self.assertTrue(methods[8].method == "mysql_stmt_close")
         testDict = {'assert Adds':1, 'assert Dels': 1, 'ut_ad Adds':0, 'ut_ad Dels': 0, 'ut_a Adds':0, 'ut_a Dels': 0}
-        self.assertEqual(testDict,methods[6].keywordDictionary)
+        self.assertEqual(testDict,methods[8].keywordDictionary)
 
     def test_commit10(self):
         self.testCommit10.processLog()
@@ -270,20 +291,37 @@ class ghLogDbTest(unittest.TestCase):
         self.assertTrue(len(patches) == 5)
 
         methods = patches[3].methods
-        self.assertTrue(len(methods) == 7)
+        self.assertTrue(len(methods) == 8) #One non function
 
         self.assertTrue(methods[0].method == "_ccv_read_rgb_raw")
         testDict = {'assert Adds':2, 'assert Dels': 0, 'ut_ad Adds':0, 'ut_ad Dels': 0, 'ut_a Adds':0, 'ut_a Dels': 0}
         self.assertEqual(testDict,methods[0].keywordDictionary)
 
         methods = patches[4].methods
-        self.assertTrue(len(methods) == 0) #Can't match the test case examples.
+        self.assertTrue(len(methods) == 1) #Can't match the test case macros, so only the nonfunction
+        self.assertTrue(methods[0].method == "GITCPROC_NON_FUNCTION")
 
     def test_commmit11(self):
         self.testCommit11.processLog() #Make sure there is no crash
 
     def test_commmit12(self):
         self.testCommit12.processLog() #Make sure there is no crash -> Currently crashing
+
+    def test_commmit14(self):
+        self.testCommit14.processLog() #This was not being written out. Why?
+        shas = self.testCommit14.shas
+        self.assertTrue(len(shas) == 1)
+        self.assertTrue(shas[0].author == "Jonathan Tang")
+        patches = shas[0].patches
+
+        self.assertTrue(len(patches) == 1)
+        methods = patches[0].methods
+        self.assertTrue(len(methods) == 1)
+
+        self.assertTrue(methods[0].method == "GITCPROC_NON_FUNCTION")
+        testDict = {'assert Adds':0, 'assert Dels': 0, 'ut_ad Adds':0, 'ut_ad Dels': 0, 'ut_a Adds':0, 'ut_a Dels': 0}
+        self.assertEqual(testDict,methods[0].keywordDictionary)
+
 
     def test_Commitb1(self):
         self.testCommitb1.processLog("../util/sample_conf2.ini")

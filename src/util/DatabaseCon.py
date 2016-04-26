@@ -1,4 +1,4 @@
-# import psycopg2
+import psycopg2
 import logging
 import sys
 
@@ -8,7 +8,7 @@ class DatabaseCon:
     def __init__(self, db, dbUser, dbHost, dbPort, passwrd):
         print "Going to connect to database %s in server %s, for user %s" % (db, dbHost, dbUser)
         #passwrd = raw_input("Please enter password..\n")
-        # self.conn = psycopg2.connect(database=db, user=dbUser, host=dbHost, port=dbPort,password=passwrd)
+        self.conn = psycopg2.connect(database=db, user=dbUser, host=dbHost, port=dbPort,password=passwrd)
 
     def commit(self):
         self.conn.commit()

@@ -34,11 +34,16 @@ def dumpLog(projPath):
         #logCmd = "git log --date=short --no-merges -U1 -- " + all_extn + " > all_log.txt"
         #logCmd = "git log --date=short -U1000 --function-context -- " + all_extn + " > " + LOG_FILE
         #Assert Replication Command
-        logCmd = "git log --date=short --no-merges -U1000 --function-context -- " + all_extn + " > " + LOG_FILE
+        logCmd = "git log --date=short --no-merges -U100 --function-context -- " + all_extn + " > " + LOG_FILE
 
         #os.system("git stash save --keep-index; git pull")
-        print(logCmd)
-#    os.system(logCmd)
+        #print(logCmd)
+        try:
+            os.system("rm all_log.txt")
+        except:
+            print("Rm failed.")
+            pass
+        os.system(logCmd)
 
 
 

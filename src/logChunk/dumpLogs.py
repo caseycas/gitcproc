@@ -76,8 +76,8 @@ class dumpLogs:
 
         sql_command = "INSERT INTO " + table + titleString + " VALUES (" + methodChange + ")"
 
-        if(Util.DEBUG):
-                print(sql_command)
+        if(Util.DEBUGLITE):
+            print(sql_command)
 
         self.dbCon.insert(sql_command)
         self.dbCon.commit()

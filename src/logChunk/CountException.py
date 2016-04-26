@@ -1,0 +1,2 @@
+class CountException(Exception):
+    pass

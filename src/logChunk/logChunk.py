@@ -13,6 +13,7 @@ import languageSwitcher
 import ScopeTrackerFactory
 from UnsupportedScopeException import *
 from InvalidCodeException import *
+from CountException import *
 from dictUtil import incrementDict, nonZeroCount
 from Config import Config
 from chunkingConstants import *
@@ -35,7 +36,7 @@ class logChunk:
         self.header = "" #What is the name given after '@@' in log
         self.langSwitch = LanguageSwitcherFactory.LanguageSwitcherFactory.createLS(language)
         self.sT = ScopeTrackerFactory.ScopeTrackerFactory.createST(self.langSwitch)
-        
+        self.keyWordList = self.readKeywords([])
 
     #list of strings --> boolean
     #Returns true if the string conforms to the pattern <keyword>,[included/excluded],[single,block]
@@ -75,6 +76,27 @@ class logChunk:
                     print("Skipping...")
 
         return lst
+
+    def getEmptyKeywordDict(self):
+        '''
+        Create a empty Keyword Dictionary.
+        '''
+        emptyDict = OrderedDict()
+        if(self.keyWordList == []):
+            self.keyWordList = self.readKeywords([])
+
+        singleKeyWordList = filter(lambda w : w[2] == SINGLE, self.keyWordList)
+        blockKeyWordList = filter(lambda w: w[2] == BLOCK, self.keyWordList)
+        for keyword in singleKeyWordList:
+            if(keyword[1] != EXCLUDED):
+                emptyDict[self.outputKeyword(keyword) + " Adds"]=0
+                emptyDict[self.outputKeyword(keyword) + " Dels"]=0
+        for keyword in blockKeyWordList:
+            if(keyword[1] != EXCLUDED):
+                emptyDict[self.outputKeyword(keyword) + " Adds"]=0
+                emptyDict[self.outputKeyword(keyword) + " Dels"]=0
+
+        return emptyDict
 
     def printLogChunk(self):
         print("===========================================")
@@ -120,16 +142,34 @@ class logChunk:
     def sumLinesForRealFunc(self):
         output = [0,0]
         for func in self.functions:
-            if(func.name != MOCK):
+            if(func.method != MOCK):
                 output[0] += func.total_add
                 output[1] += func.total_del
 
         #This sum of the real function contents shouldn't be greater than
         #the total lines added and deleted in the diff.
-        assert(output[0] <= self.total_add)
-        assert(output[1] <= self.total_del)
+        if(output[0] > self.total_add or output[1] > self.total_del):
+            raise CountException("Miscount between counts outside the function and the total within the functions.")
 
         return output
+
+    def getLineCountOutsideFunc(self):
+        try:
+            (func_add, func_del) = self.sumLinesForRealFunc() #Assert inside takes care of miscounts
+            return(self.total_add - func_add, self.total_del - func_del)
+        except CountException:
+            if(Util.DEBUG):
+                print("Count error")
+            return(0,0)
+
+    #Create an additional MOCK function to summarize all changes outside of functions.
+    #If no such changes, return None
+    def createOutsideFuncSummary(self): 
+        (added, deleted) = self.getLineCountOutsideFunc()
+        if(added > 0 or deleted > 0):
+            return PatchMethod("GITCPROC_NON_FUNCTION", 0, 0, added, deleted, self.getEmptyKeywordDict())
+        else:
+            return None
 
     def functionCount(self):
         if(self.initialized == False):
@@ -844,10 +884,10 @@ class logChunk:
         #----------------------------------Initialization----------------------------------#
 
         #New keyword list for both single and block keywords.  This is a list of triples.
-        keyWordList = []
-        keyWordList = self.readKeywords(keyWordList)
-        singleKeyWordList = filter(lambda w : w[2] == SINGLE, keyWordList)
-        blockKeyWordList = filter(lambda w: w[2] == BLOCK, keyWordList)
+        if(self.keyWordList == []):
+            self.keyWordList = self.readKeywords(keyWordList)
+        singleKeyWordList = filter(lambda w : w[2] == SINGLE, self.keyWordList)
+        blockKeyWordList = filter(lambda w: w[2] == BLOCK, self.keyWordList)
 
         foundBlock = None #This marks a line that matches a block keyword
         blockKeywordLine = -1 #If the keyword line doesn't have a scope increase, we need to record its line.

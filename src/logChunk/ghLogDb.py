@@ -10,6 +10,7 @@ sys.path.append("../util")
 from dumpLogs import dumpLogs
 from logChunk import logChunk
 from PatchMethod import PatchMethod
+from chunkingConstants import *
 import Util
 
 from nltk.stem.wordnet import WordNetLemmatizer
@@ -55,6 +56,12 @@ class Patch:
     #Add the Log chunk's recorded methods to the Patch
     def addFunctions(self, nextLogChunk):
         self.methods += nextLogChunk.functions
+
+    #Add another mock function for changes seen outside of a function.
+    def addOutsideFunc(self, nextLogChunk):
+        tmp = nextLogChunk.createOutsideFuncSummary()
+        if(tmp != None):
+            self.methods.append(tmp)
 
     def printPatch(self):
 
@@ -381,9 +388,12 @@ class ghLogDb:
     #discovers against what git reports about the section of parsed text.  There are
     #several possible cases and all are handled below.  Modification of the error_cases
     #global marker should be limited to this method.
+    #TODO: I think we should add an option to ignore extremely large commits.
+    #E.g. there is a commit to ccv that adds all of sql lite 3.
     def processLastChunk(self, patchObj, curLogChunk):
         curLogChunk.parseText()
         patchObj.addFunctions(curLogChunk)
+        patchObj.addOutsideFunc(curLogChunk)
 
 
     def processLog(self, config = Util.CONFIG):
@@ -399,24 +409,24 @@ class ghLogDb:
         if(Util.CSV==1):
             if not os.path.isdir("../Results"):
                 os.mkdir("../Results")
-            inf1=open("../Results/"+str(self.project_name)+"ChangeSummary.csv",'w')
+            inf1=open("../Results/"+str(self.project_name)+"ChangeSummary.csv",'a')
             fPtrChangeSummary=open("../Results/"+"ChangeSummary.csv",'a')
 
             inf1.write("project,sha,author,commit_date,is_bug\n")
 
-            inf2=open("../Results/"+str(self.project_name)+"PatchSummary.csv",'w')
+            inf2=open("../Results/"+str(self.project_name)+"PatchSummary.csv",'a')
             fPtrPatchSummary=open("../Results/"+"PatchSummary.csv",'a')
 
             lst=[]
             listToDict={}
-            mockChunk=logChunk("", "C")
-            mockChunk.readKeywords(lst)
-            keywords= [sub_list[0] for sub_list in lst]
+            mockChunk=logChunk("", "C") #TODO: This is C specific,  Why is this C specific?
+            lst = mockChunk.readKeywords(lst)
+            keywords= [k[0] for k in lst if k[1] == INCLUDED]
             for keyword in keywords:
                 listToDict[str(keyword)+" Adds"]=0
                 listToDict[str(keyword)+" Dels"]=0
 
-            inf2.write("project, sha, language, file_name, is_test,isExceptionPatch, method_name,total_add,total_del,%s\n"%",".join(listToDict.keys()))
+            inf2.write("project, sha, language, file_name, is_test, method_name,total_add,total_del,%s\n"%",".join(listToDict.keys()))
 
         inf = codecs.open(self.log_file, "r", "iso-8859-1")
 
@@ -434,17 +444,22 @@ class ghLogDb:
             line = l
 
             if sha:
-                if(shaObj != None):
-                    if(Util.DATABASE):            
-                        shaObj.dumpSha(dl)
-                    else:
-                        shaObj.printSha()
-                        if(Util.CSV):
-                            shaObj.shaToCsv(inf1,inf2,fPtrChangeSummary,fPtrPatchSummary)
+                #Reverting back to version that outputs at the end...
+                #if(shaObj != None):
+                #    if(Util.DEBUGLITE):
+                #        print("Writing Sha:" + sha)
 
+                #    if(Util.DATABASE):            
+                #        shaObj.dumpSha(dl)
+                #    elif(Util.CSV):
+                #        shaObj.shaToCsv(inf1,inf2,fPtrChangeSummary,fPtrPatchSummary)
+                #    else:
+                #        shaObj.printSha()
+      
                 shaObj = Sha(self.project_name, sha)
-                if(Util.DEBUGLITE): #Save for testing.
-                    self.shas.append(shaObj) #This will become very memory intensive in large git logs.
+                #if(Util.DEBUGLITE): #Save for testing.
+                self.shas.append(shaObj) #This will become very memory intensive in large git logs.
+                
                 is_diff = False
                 log_mssg = ""
                 
@@ -521,9 +536,6 @@ class ghLogDb:
                     self.processPatch(fullLine, patchObj, curLogChunk)
 
 
-        #if shaObj != None:
-        #    shaObj.patches.append(patchObj)
-
 
         #Make sure to get the last patch in the file!
         if(curLogChunk.header != ""): #If there is an existing chunk to parse
@@ -532,23 +544,39 @@ class ghLogDb:
                 print("HEADER: " + curLogChunk.header)
             self.processLastChunk(patchObj, curLogChunk)
 
+        #if shaObj != None:
+        #    shaObj.patches.append(patchObj)
+
+        for s in self.shas:
+            #s.printSha()
+            if s != None:
+               if(Util.DATABASE):            
+                   s.dumpSha(dl)
+               elif(Util.CSV):
+                   s.shaToCsv(inf1,inf2,fPtrChangeSummary,fPtrPatchSummary)
+               else:
+                   s.printSha()
+
+
         #Write out last sha.
-        if(shaObj != None and Util.DATABASE):
-            if(Util.DEBUGLITE):
-                print("Writing to db.")
-            shaObj.dumpSha(dl)
+        #if(shaObj != None and Util.DATABASE):
+        #    if(Util.DEBUGLITE):
+        #        print("Writing to db.")
+        #    shaObj.dumpSha(dl)
 
         if(Util.DATABASE == 1):
             print("Closing Time.")
             dl.close()
         
         if(Util.CSV == 1):
-            shaObj.printSha();
             shaObj.shaToCsv(inf1,inf2,fPtrChangeSummary,fPtrPatchSummary)
             inf1.close()
             inf2.close()
             fPtrChangeSummary.close()
             fPtrPatchSummary.close()
+
+        print("Sha's processed:")
+        print(len(self.shas))
 
 
 #---------test-----------#
