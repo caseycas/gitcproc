@@ -656,8 +656,10 @@ class logChunk:
             #Add this function to our list and reset the trackers.
             #We use shortFunctionName, which is the string that matched our expected
             #function pattern regex
-            funcToAdd = PatchMethod(self.langSwitch.parseFunctionName(shortFunctionName), funcStart, funcEnd, ftotal_add, ftotal_del,keywordDictionary)
-            
+            try:
+                funcToAdd = PatchMethod(self.langSwitch.parseFunctionName(shortFunctionName), funcStart, funcEnd, ftotal_add, ftotal_del,keywordDictionary)
+            except ValueError: #Catch error and pass up to parseText.
+                raise ValueError("Function Name Parse Error")
             #Add assertions from current function
             self.functions.append(funcToAdd)
       
@@ -1034,7 +1036,18 @@ class logChunk:
                     continue
 
                 #Wrap up the function if necessary
-                (lineType, lineNum, phase, funcStart, funcEnd, functionName, shortFunctionName, ftotal_add, ftotal_del, foundBlock, singleKeyWordList, blockKeyWordList, keywordDictionary, backTrack) = self.checkForFunctionEnd(lineType, lineNum, phase, funcStart, funcEnd, functionName, shortFunctionName, ftotal_add, ftotal_del, foundBlock, singleKeyWordList, blockKeyWordList, keywordDictionary, backTrack)
+                try:
+                    (lineType, lineNum, phase, funcStart, funcEnd, functionName, shortFunctionName, ftotal_add, ftotal_del, foundBlock, singleKeyWordList, blockKeyWordList, keywordDictionary, backTrack) = self.checkForFunctionEnd(lineType, lineNum, phase, funcStart, funcEnd, functionName, shortFunctionName, ftotal_add, ftotal_del, foundBlock, singleKeyWordList, blockKeyWordList, keywordDictionary, backTrack)
+                except ValueError:
+                    if(Util.DEBUG or Util.DEBUGLITE):
+                        print("Parse Error in this chunk.")
+                    
+                    #We don't trust the results of parsing this chunk, so return a general error statement.
+                    self.total_add = 0
+                    self.total_del = 0
+                    self.functions = [PatchMethod(CHUNK_ERROR, 0, 0, 0, 0, self.getEmptyKeywordDict())]
+                    return self
+
 
                 if(Util.DEBUG == 1):
                     print(classContext)
@@ -1048,8 +1061,18 @@ class logChunk:
                     continue
 
                 #Wrap up the function if necessary
-                (lineType, lineNum, phase, funcStart, funcEnd, functionName, shortFunctionName, ftotal_add, ftotal_del, foundBlock, singleKeyWordList, blockKeyWordList, keywordDictionary, backTrack) = self.checkForFunctionEnd(lineType, lineNum, phase, funcStart, funcEnd, functionName, shortFunctionName, ftotal_add, ftotal_del, foundBlock, singleKeyWordList, blockKeyWordList, keywordDictionary, backTrack)
-                
+                try:
+                    (lineType, lineNum, phase, funcStart, funcEnd, functionName, shortFunctionName, ftotal_add, ftotal_del, foundBlock, singleKeyWordList, blockKeyWordList, keywordDictionary, backTrack) = self.checkForFunctionEnd(lineType, lineNum, phase, funcStart, funcEnd, functionName, shortFunctionName, ftotal_add, ftotal_del, foundBlock, singleKeyWordList, blockKeyWordList, keywordDictionary, backTrack)
+                except ValueError:
+                    if(Util.DEBUG or Util.DEBUGLITE):
+                        print("Parse Error in this chunk.")
+                    
+                    #We don't trust the results of parsing this chunk, so return a general error statement.
+                    self.total_add = 0
+                    self.total_del = 0
+                    self.functions = [PatchMethod(CHUNK_ERROR, 0, 0, 0, 0, self.getEmptyKeywordDict())]
+                    return self
+
                 #What if we have a scope decrease AND a new function?
                 #Update the function name with the line and handle it when we see the scope increase later...
                 if(phase == LOOKFORNAME):
@@ -1067,20 +1090,36 @@ class logChunk:
         if(self.sT.getFuncContext(ADD) != ""):
             shortFunctionName = self.sT.getFuncContext(ADD)
             funcEnd = lineNum
-            funcToAdd = PatchMethod(self.langSwitch.parseFunctionName(shortFunctionName), funcStart, funcEnd, ftotal_add, ftotal_del,keywordDictionary)
+            try:
+                funcToAdd = PatchMethod(self.langSwitch.parseFunctionName(shortFunctionName), funcStart, funcEnd, ftotal_add, ftotal_del,keywordDictionary)
+            except ValueError:
+                if(Util.DEBUG or Util.DEBUGLITE):
+                    print("Parse Error in this chunk.")
+
+                #We don't trust the results of parsing this chunk, so return a general error statement.
+                self.total_add = 0
+                self.total_del = 0
+                self.functions = [PatchMethod(CHUNK_ERROR, 0, 0, 0, 0, self.getEmptyKeywordDict())]
+                return self
+
             self.functions.append(funcToAdd)
         elif(self.sT.getFuncContext(REMOVE) != ""):
         #if(self.sT.getFuncContext(REMOVE) != "" and shortFunctionName != self.sT.getFuncContext(REMOVE)):
             shortFunctionName = self.sT.getFuncContext(REMOVE)
             funcEnd = lineNum
-            funcToAdd = PatchMethod(self.langSwitch.parseFunctionName(shortFunctionName), funcStart, funcEnd, ftotal_add, ftotal_del,keywordDictionary)
-            self.functions.append(funcToAdd)
+            try:
+                funcToAdd = PatchMethod(self.langSwitch.parseFunctionName(shortFunctionName), funcStart, funcEnd, ftotal_add, ftotal_del,keywordDictionary)
+            except ValueError:
+                if(Util.DEBUG or Util.DEBUGLITE):
+                    print("Parse Error in this chunk.")
+                 
+                #We don't trust the results of parsing this chunk, so return a general error statement.    
+                self.total_add = 0
+                self.total_del = 0
+                self.functions = [PatchMethod(CHUNK_ERROR, 0, 0, 0, 0, self.getEmptyKeywordDict())]
+                return self
 
-        #if(shortFunctionName != ""):
-        #    #The end of the function will be said to be the cutoff of the change.
-        #    funcEnd = lineNum
-        #    funcToAdd = PatchMethod(self.langSwitch.parseFunctionName(shortFunctionName), funcStart, funcEnd, ftotal_add, ftotal_del,keywordDictionary)
-        #    self.functions.append(funcToAdd)
+            self.functions.append(funcToAdd)
 
         #Remove any unmodified functions
         self.functions = filter(lambda(x) : x.total_add != 0 or x.total_del != 0 , self.functions)
