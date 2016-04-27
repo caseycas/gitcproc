@@ -1,0 +1,36 @@
+ // Copyright 2010-2013 RethinkDB, all rights reserved.
+ #include "rdb_protocol/terms/terms.hpp"
+
+ #include <string>
+ #include <utility>
+ #include <vector>
+
+ #include "rdb_protocol/error.hpp"
+ #include "rdb_protocol/func.hpp"
+ #include "rdb_protocol/op.hpp"
+
+ namespace ql {
+
++class grouped_seq_op_term_t : public op_term_t {
++public:
++    template<class... Args>
++    grouped_seq_op_term_t(Args... args) : op_term_t(std::forward<Args>(args)...) { }
++private:
++    virtual bool is_grouped_seq_op() { return true; }
++};
++
+ template<class T>
+-class map_acc_term_t : public op_term_t {
++class map_acc_term_t : public grouped_seq_op_term_t {
+ protected:
+     map_acc_term_t(compile_env_t *env, const protob_t<const Term> &term)
+-        : op_term_t(env, term, argspec_t(1, 2)) { }
++        : grouped_seq_op_term_t(env, term, argspec_t(1, 2)) { }
+ private:
+     virtual counted_t<val_t> eval_impl(scope_env_t *env, eval_flags_t) {
+         return num_args() == 1
+             ? arg(env, 0)->as_seq(env->env)->run_terminal(env->env, T(backtrace()))
+             : arg(env, 0)->as_seq(env->env)->run_terminal(
+                 env->env, T(backtrace(), arg(env, 1)->as_func(GET_FIELD_SHORTCUT)));
+     }
+ };

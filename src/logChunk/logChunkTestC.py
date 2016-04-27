@@ -59,6 +59,7 @@ class logChunktest(unittest.TestCase):
         self.method20 = "static av_always_inline void hl_motion_420(H264Context *h, uint8_t *dest_y, uint8_t *dest_cb, uint8_t *dest_cr,            qpel_mc_func (*qpix_put)[16], h264_chroma_mc_func (*chroma_put),       qpel_mc_func (*qpix_avg)[16], h264_chroma_mc_func (*chroma_avg),            h264_weight_func *weight_op, h264_biweight_func *weight_avg,             int pixel_shift) {"
         self.method21 = "        for (j = 0; j < i; j++)             if (!memcmp(h->pps.scaling_matrix8[j], h->pps.scaling_matrix8[i],                         64 * sizeof(uint8_t))) {"
         self.method22 = " c_type jl_unbox_##j_type(jl_value_t *v)  {"
+        self.method23 = "auto f = via(&x).then([]{"
 
         self.testChunk = logChunk.logChunk("", "C++")
         self.testChunk_C = logChunk.logChunk("", "C")
@@ -122,6 +123,8 @@ class logChunktest(unittest.TestCase):
         self.chunk48 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk48.txt"), "C++") # C++
         self.chunk49 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk49.txt"), "C++") # C++
         self.chunk50 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk50.txt"), "C") # C
+        self.chunk51 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk51.txt"), "C++")
+        self.chunk52 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk52.txt"), "C++")
 
 
 
@@ -219,6 +222,7 @@ class logChunktest(unittest.TestCase):
         #print("---------------------------------------------------")
         self.assertFalse(self.testChunk.isFunction(self.method21))
         self.assertTrue(self.testChunk.isFunction(self.method22))
+        self.assertFalse(self.testChunk.isFunction(self.method23))
         self.assertFalse(self.testChunk.isFunction(" set_max_autoinc: if (auto_inc <= col_max_value) {"))
 
     def test_isFuncC(self):
@@ -846,6 +850,16 @@ class logChunktest(unittest.TestCase):
 
         testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 0, 'ut_a Dels': 0}
         self.assertEqual(testDict, funcList[0].keywordDictionary)
+
+    def test_parseText_Single51(self): #Not Sure how I want to handle this
+        self.chunk51.parseText()
+        funcList = self.chunk51.functions 
+        self.debugFunctions(funcList)
+
+    def test_parseText_Single52(self): #Not Sure how I want to handle this
+        self.chunk52.parseText()
+        funcList = self.chunk52.functions 
+        self.debugFunctions(funcList)
 
 
 

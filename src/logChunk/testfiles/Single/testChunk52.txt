@@ -1,0 +1,29 @@
+ class DummyDrivableExecutor : public DrivableExecutor {
+  public:
+   void add(Func f) override {}
+   void drive() override { ran = true; }
+   bool ran{false};
+ };
+
+ TEST(Future, getVia) {
+   {
+     // non-void
+     ManualExecutor x;
+     auto f = via(&x).then([]{ return true; });
+     EXPECT_TRUE(f.getVia(&x));
+   }
+
+   {
+     // void
+     ManualExecutor x;
+     auto f = via(&x).then();
+     f.getVia(&x);
+   }
+
+   {
+     DummyDrivableExecutor x;
+     auto f = makeFuture(true);
+     EXPECT_TRUE(f.getVia(&x));
+     EXPECT_FALSE(x.ran);
+   }
+ }
