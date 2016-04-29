@@ -98,44 +98,44 @@ class BracketScopeTracker(scopeTracker):
         return functionName
 
     #Add "{" from the new stack and update the functional and block caches accordingly
-    def increaseNewBrackets(self, line, changeType):
+    def increaseNewBrackets(self, stackValue, line, changeType):
         if(changeType == GENERIC):
             for i in range(0, line.count("{")):
                 self.newVerStack.append(("{", GENERIC))
         elif(changeType == FUNC):
-            self.newVerStack.append((line, FUNC))
-            self.lastNewFuncContext = line
+            self.newVerStack.append((stackValue, FUNC))
+            self.lastNewFuncContext = stackValue
         elif(changeType == SBLOCK): #Consider this carefully for when we get the opening {...
-            self.newVerStack.append((line, SBLOCK))
-            self.lastNewBlockContext.append(line)
+            self.newVerStack.append((stackValue, SBLOCK))
+            self.lastNewBlockContext.append(stackValue)
         else:
             assert("Not a valid change type.")
 
     #Add "{" from the old stack and update the functional and block caches accordingly
-    def increaseOldBrackets(self, line, changeType):
+    def increaseOldBrackets(self, stackValue, line, changeType):
         if(changeType == GENERIC):
             for i in range(0, line.count("{")):
                 self.oldVerStack.append(("{", GENERIC))
         elif(changeType == FUNC):
-            self.oldVerStack.append((line, FUNC))
-            self.lastOldFuncContext = line
+            self.oldVerStack.append((stackValue, FUNC))
+            self.lastOldFuncContext = stackValue
         elif(changeType == SBLOCK): #Consider this carefully for when we get the opening {...
-            self.oldVerStack.append((line, SBLOCK))
-            self.lastOldBlockContext.append(line)
+            self.oldVerStack.append((stackValue, SBLOCK))
+            self.lastOldBlockContext.append(stackValue)
         else:
             assert("Not a valid change type.")
 
     #string, [ADD|REMOVE|OTHER], [GENERIC|FUNC|BLOCK] -> --
     #Increase the depth of our tracker and add in function or block contexts if they have been discovered.
     #Note: LineNum is not used in this implementation.
-    def increaseScope(self, line, lineType, changeType, lineDiff = -1, isSimul = False):
+    def increaseScope(self, stackValue, line, lineType, changeType, lineDiff = -1, isSimul = False):
         if(lineType == ADD):
-            self.increaseNewBrackets(line, changeType)
+            self.increaseNewBrackets(stackValue, line, changeType)
         elif(lineType == REMOVE):
-            self.increaseOldBrackets(line, changeType)
+            self.increaseOldBrackets(stackValue, line, changeType)
         elif(lineType == OTHER):
-            self.increaseOldBrackets(line, changeType)
-            self.increaseNewBrackets(line, changeType)
+            self.increaseOldBrackets(stackValue, line, changeType)
+            self.increaseNewBrackets(stackValue, line, changeType)
         else:
             assert("Not a valid line type")
 

@@ -126,12 +126,12 @@ class scopeTracker:
 
         return "" 
 
-    #string, [ADD|REMOVE|OTHER], [GENERIC|FUNC|BLOCK], -1/0/1, boolean -> --
+    #string, string, [ADD|REMOVE|OTHER], [GENERIC|FUNC|BLOCK], -1/0/1, boolean -> --
     #Increase the depth of our tracker and add in function or block contexts if they have been discovered.
     #LineDiff designates for functions and keywords if the scope change was on the same line (0) as the keyword match
     #-1 Means not relevant to behavior
     #isSimul tells us we need to do an increase/decrease on a OTHER type line
-    def increaseScope(self, line, lineType, changeType, lineDiff = -1, isSimul = False):
+    def increaseScope(self, stackValue, line, lineType, changeType, lineDiff = -1, isSimul = False):
         raise NotImplementedError("Base ScopeTracker is Abstract.")
 
     #string, [ADD|REMOVE|OTHER], [-1,0,1] boolean -> --

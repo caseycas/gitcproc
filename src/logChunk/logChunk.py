@@ -540,6 +540,8 @@ class logChunk:
         else:
             if(len(line) > 0 and line[0] == " "):
                 return [OTHER, line[1:]] #Remove whitespace from +/- row, important for languages like python
+            elif(len(line) > 0 and (line[0] == "/" or line[0] == "\\")):
+                return [META, line]
             else:
                 return [OTHER, line]
   
@@ -601,7 +603,7 @@ class logChunk:
                      print("Function: " + unicode(shortFunctionName, 'utf-8', errors='ignore'))
 
             #Must update to deal with potential changes.
-            self.sT.increaseScope(self.sT.grabScopeLine(shortFunctionName, line, lineType), lineType, scopeTracker.FUNC)
+            self.sT.increaseScope(self.sT.grabScopeLine(shortFunctionName, line, lineType), line, lineType, scopeTracker.FUNC)
 
             funcStart = lineNum
             phase = LOOKFOREND
@@ -622,7 +624,7 @@ class logChunk:
                 print("Non function scope increase while searching for function name.")
             
             #Must update to deal with potential changes.
-            self.sT.increaseScope(line, lineType, scopeTracker.GENERIC)
+            self.sT.increaseScope(line, line, lineType, scopeTracker.GENERIC)
 
             #Check for class context last here.
             if(not self.sT.changeScopeFirst()):
@@ -725,9 +727,9 @@ class logChunk:
                             if(blockKeywordLine == lineNum - 1):
                                 if(Util.DEBUG):
                                     print("Block start found (0): " + foundBlock)
-                                sT.increaseScope(foundBlock, blockKeywordType, scopeTracker.SBLOCK, 1)
+                                sT.increaseScope(foundBlock, line, blockKeywordType, scopeTracker.SBLOCK, 1)
                             else: #Ignore scope increases too far away from the block keyword
-                                sT.increaseScope(line, blockKeywordType, scopeTracker.GENERIC)
+                                sT.increaseScope(line, line, blockKeywordType, scopeTracker.GENERIC)
 
                             blockKeywordLine = -1
                             blockKeywordType = ""
@@ -737,11 +739,11 @@ class logChunk:
                             if(foundBlock!=None):
                                 if(Util.DEBUG):
                                     print("Block start found (1): " + foundBlock)
-                                sT.increaseScope(foundBlock, lineType, scopeTracker.SBLOCK, 0) #This shouldn't set the block yet.
+                                sT.increaseScope(foundBlock, line, lineType, scopeTracker.SBLOCK, 0) #This shouldn't set the block yet.
                                 #Reset block after this line.
                                 reset = True
                             else:
-                                sT.increaseScope(line, lineType, scopeTracker.GENERIC)
+                                sT.increaseScope(line, line, lineType, scopeTracker.GENERIC)
 
                         if(not sT.changeScopeFirst() and reset):
                             blockKeywordLine = -1
@@ -796,9 +798,9 @@ class logChunk:
                             if(blockKeywordLine == lineNum - 1):
                                 if(Util.DEBUG):
                                     print("Block start found (0): " + foundBlock)
-                                sT.increaseScope(foundBlock, blockKeywordType, scopeTracker.SBLOCK, 1, True)
+                                sT.increaseScope(foundBlock, line, blockKeywordType, scopeTracker.SBLOCK, 1, True)
                             else: #Ignore scope increases too far away from the block keyword
-                                sT.increaseScope(line, blockKeywordType, scopeTracker.GENERIC, True)
+                                sT.increaseScope(line, line, blockKeywordType, scopeTracker.GENERIC, True)
 
                             blockKeywordLine = -1
                             blockKeywordType = ""
@@ -808,15 +810,13 @@ class logChunk:
                             if(foundBlock!=None):
                                 if(Util.DEBUG):
                                     print("Block start found (1): " + foundBlock)
-                                sT.increaseScope(foundBlock, lineType, scopeTracker.SBLOCK, 0, True) #This shouldn't set the block yet.
+                                sT.increaseScope(foundBlock, line, lineType, scopeTracker.SBLOCK, 0, True) #This shouldn't set the block yet.
                                 #Reset block after this line.
                                 reset = True
                             else:
-                                sT.increaseScope(line, lineType, scopeTracker.GENERIC, -1, True)
+                                sT.increaseScope(line, line, lineType, scopeTracker.GENERIC, -1, True)
 
 
-                        #sT.decreaseScope(line, lineType) I don't think this change is need b/c the "INCREASE"
-                        #does the decrease as well.
                         #Check if function has ended...
                         if(self.sT.getFuncContext(lineType) == "" and phase == LOOKFOREND):
                             #Then we ignore further block single line keywords....
@@ -876,6 +876,7 @@ class logChunk:
             foundBlock = None
 
         return (foundBlock, blockKeywordLine, blockKeywordType, shortFunctionName, keywordDictionary, sT, False)      
+
 
     #Main function to parse out the contents loaded into logChunk
     def parseText(self):
@@ -942,14 +943,19 @@ class logChunk:
                     print("The real line: " + line)
                 except:
                     print("The real line: " + unicode(line, 'utf-8', errors='ignore'))
+
             
             (lineType, line)= self.markLine(line)
+            if(lineType == META):
+                continue
             
             #Remove all strings from the line. (Get rid of weird cases of brackets
             #or comment values being excluded from the line.
             line = self.removeStrings(line)
             line = line.replace("\\", "") #Remove backslashes.
             line = line.replace("^M", "")
+
+
             
             #Remove all comments from the line
             fChange = UNMARKED

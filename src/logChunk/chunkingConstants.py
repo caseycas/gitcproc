@@ -16,6 +16,7 @@ LOOKFOREXCPEND = 4
 ADD = 1
 REMOVE = 2
 OTHER = 3
+META = 4 #This is a meta information line.  We just want to ignore them.
 
 #Scope Change directions
 INCREASE = 1

@@ -1,4 +1,4 @@
-void mysql_stmt_fetch(THD *thd, char *packet, uint packet_length)
+ void mysql_stmt_fetch(THD *thd, char *packet, uint packet_length)
  {
    /* assume there is always place for 8-16 bytes */
    ulong stmt_id= uint4korr(packet);

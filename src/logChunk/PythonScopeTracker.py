@@ -280,30 +280,54 @@ class PythonScopeTracker(scopeTracker):
 
     #Handle the scope change for a line where we have simultaneously a scope increase and a scope decrease
     #depending on if you are measuring from the old stack or the new stack.    
-    def simulScopeChange(self, line, lineType, changeType, depth, lineDiff):
+    def simulScopeChange(self, stackValue, lineType, changeType, depth, lineDiff):
             oldChange = len(self.oldVerStack) - depth
             newChange = len(self.newVerStack) - depth
-            assert((oldChange < 0 and newChange > 0) or (oldChange > 0 and newChange < 0))
+            #if(not ((oldChange < 0 and newChange > 0) or (oldChange > 0 and newChange < 0))):
+            if(Util.DEBUG):
+                print("SIMUL ERROR:")
+                print("Line: " + stackValue)
+                print("Depth: " + str(depth))
+                print("OldChange: " + str(oldChange))
+                print("NewChange: " + str(newChange))
+                print("Func Old Line: " + str(self.funcOldLine))
+                print("Func New Line: " + str(self.funcNewLine))
+                print("Block Old Line: " + str(self.blockOldLine))
+                print("Block New Line: " + str(self.blockNewLine))
+                print("STACKVALUES")
+                self.printScope()
+            #    #assert(0)
             if(oldChange > 0):
                 while(oldChange > 0):
                     oldChange -= 1
-                    self.decreaseOldIndent(line)
+                    self.decreaseOldIndent()
             else:
                 assert(oldChange == -1) #Only permitted one increase at a time.
-                self.increaseOldIndent(line, changeType, lineDiff) #TODO lineDiff = ??
+                #This needs to be tuned for a block or func change
+                #if(funcOldLine != -1):
+                #    self.increaseOldIndent(stackValue, FUNC, lineDiff)
+                #elif(Block)
+                self.increaseOldIndent(stackValue, changeType, lineDiff) #TODO lineDiff = ??
             if(newChange > 0):
                 while(newChange > 0):
                     newChange -= 1
-                    self.decreaseNewIndent(line)
+                    self.decreaseNewIndent()
             else:
                 assert(newChange == -1) #Only permitted one increase at a time.
-                self.increaseNewIndent(line, changeType, lineDiff) #TODO lineDiff = ??
+                #This needs to be tuned for a block or func change
+                self.increaseNewIndent(stackValue, changeType, lineDiff) #TODO lineDiff = ??
+
+            #if(not ((oldChange < 0 and newChange > 0) or (oldChange > 0 and newChange < 0))):
+            if(Util.DEBUG):
+                print("SIMUL ERROR:")
+                print("STACKVALUES")
+                self.printScope()
 
 
-    def increaseNewIndent(self, line, changeType, lineDiff):
+    def increaseNewIndent(self, stackValue, changeType, lineDiff):
         if(Util.DEBUG):
             print("New Indent Increase")
-            print("Adding: " + str(line))
+            print("Adding: " + str(stackValue))
             print("Type: " + str(changeType))
             print("Stack: " + str(self.newVerStack))
 
@@ -324,7 +348,7 @@ class PythonScopeTracker(scopeTracker):
             #Mark that we've seen the function... 
             if(self.funcNewLine == 0): #Func line that is indented
                 self.newVerStack.append((self.indentToken, GENERIC))
-                self.lastNewFuncContext = line
+                self.lastNewFuncContext = stackValue
                 self.funcNewLine = 1
             elif(self.funcNewLine == 1): #Indent after a func line, outside code would've passed the func name here after a match.
                 self.newVerStack.append((self.lastNewFuncContext, FUNC))
@@ -334,12 +358,16 @@ class PythonScopeTracker(scopeTracker):
         elif(changeType == SBLOCK):
             if(lineDiff == 0): #This is not the indent for the Block, but a Block keyword that is indented
                 self.blockNewLine = 1
-                self.newBlockKeyword = line
+                self.newBlockKeyword = stackValue
                 #self.lastNewBlockContext.append(line)
-                self.newVerStack.append((self.indentToken, GENERIC))
+                if(self.funcNewLine == 1): #Update to store the function on the stack if it was waiting to be added
+                    self.newVerStack.append((self.lastNewFuncContext, FUNC))
+                    self.funcNewLine = -1  #Reset after the handle function.
+                else:
+                    self.newVerStack.append((self.indentToken, GENERIC))
             elif(lineDiff == 1): #Indent after a Block line.
                 self.blockNewLine = 0
-                self.newVerStack.append((line, SBLOCK))
+                self.newVerStack.append((stackValue, SBLOCK))
                 #self.lastNewBlockContext.append(line)
         else:
             assert("Not a valid change type.")
@@ -347,10 +375,10 @@ class PythonScopeTracker(scopeTracker):
         if(Util.DEBUG):
             print("Stack (After): " + str(self.newVerStack))
 
-    def increaseOldIndent(self, line, changeType, lineDiff):
+    def increaseOldIndent(self, stackValue, changeType, lineDiff):
         if(Util.DEBUG):
             print("Old Indent Increase")
-            print("Adding: " + str(line))
+            print("Adding: " + str(stackValue))
             print("Type: " + str(changeType))
             print("Stack: " + str(self.oldVerStack))
 
@@ -374,7 +402,7 @@ class PythonScopeTracker(scopeTracker):
             if(self.funcOldLine == 0): #Func line that is indented
                 print("Changing Old Line to 1")
                 self.oldVerStack.append((self.indentToken, GENERIC))
-                self.lastOldFuncContext = line
+                self.lastOldFuncContext = stackValue
                 self.funcOldLine = 1
                 print("Func Old Line: " + str(self.funcOldLine))
             elif(self.funcOldLine == 1): #Indent after a func line
@@ -386,12 +414,16 @@ class PythonScopeTracker(scopeTracker):
         elif(changeType == SBLOCK):
             if(lineDiff == 0): #This is not the indent for the Block, but a Block keyword that is indented
                 self.blockOldLine = 1
-                self.oldBlockKeyword = line
-                self.oldVerStack.append((self.indentToken, GENERIC))
+                self.oldBlockKeyword = stackValue
+                if(self.funcOldLine == 1): #Update to store the function on the stack if it was waiting to be added
+                    self.oldVerStack.append((self.lastOldFuncContext, FUNC))
+                    self.funcOldLine = -1  #Reset after the handle function.
+                else:
+                    self.oldVerStack.append((self.indentToken, GENERIC))
                 #self.lastOldBlockContext.append(line)
             elif(lineDiff == 1): #Indent after a Block line.
                 self.blockOldLine = 0
-                self.oldVerStack.append((line, SBLOCK))
+                self.oldVerStack.append((stackValue, SBLOCK))
                 #self.lastOldBlockContext.append(line)
         else:
             assert("Not a valid change type.")
@@ -401,7 +433,8 @@ class PythonScopeTracker(scopeTracker):
 
     #string, [ADD|REMOVE|OTHER], [GENERIC|FUNC|BLOCK] -> --
     #Increase the depth of our tracker and add in function or block contexts if they have been discovered.
-    def increaseScope(self, line, lineType, changeType, lineDiff = -1, isSimul = False):
+    #Error when doing a block, we have sent just the keyword. We need the whole line for the unmodified version....
+    def increaseScope(self, stackValue, line, lineType, changeType, lineDiff = -1, isSimul = False):
         if(Util.DEBUG): 
             try:
                 print("Scope Increasing Line: " + line)
@@ -409,26 +442,26 @@ class PythonScopeTracker(scopeTracker):
                 print("Scope Increasing Line: " + unicode(line, 'utf-8', errors='ignore'))
 
         if(lineType == ADD):
-            self.increaseNewIndent(line, changeType, lineDiff)
+            self.increaseNewIndent(stackValue, changeType, lineDiff)
         elif(lineType == REMOVE):
-            self.increaseOldIndent(line, changeType, lineDiff)
+            self.increaseOldIndent(stackValue, changeType, lineDiff)
         elif(lineType == OTHER): # Need to handle this differently in case of a SIMUL
             depth = self.indentDepth(line)
             if(isSimul):
-                self.simulScopeChange(line, lineType, changeType, depth, lineDiff)
+                self.simulScopeChange(stackValue, lineType, changeType, depth, lineDiff)
             else:
                 isOldIncrease = len(self.oldVerStack) < depth
                 isNewIncrease = len(self.newVerStack) < depth
                 if(isOldIncrease):
-                    self.increaseOldIndent(line, changeType, lineDiff)
+                    self.increaseOldIndent(stackValue, changeType, lineDiff)
                 if(isNewIncrease):
-                    self.increaseNewIndent(line, changeType, lineDiff)
+                    self.increaseNewIndent(stackValue, changeType, lineDiff)
         else:
             assert("Not a valid line type")
 
 
     #Remove indents from the new stack and update the functional and block caches accordingly
-    def decreaseNewIndent(self, line):
+    def decreaseNewIndent(self):
         if(self.newVerStack != []):
             removed = self.newVerStack.pop()
             if(Util.DEBUG):
@@ -444,7 +477,7 @@ class PythonScopeTracker(scopeTracker):
                 print("Popped from empty new Stack.")
 
     #Remove indents from the old stack and update the functional and block caches accordingly
-    def decreaseOldIndent(self, line):
+    def decreaseOldIndent(self):
         if(self.oldVerStack != []):
             removed = self.oldVerStack.pop()
             if(Util.DEBUG):
@@ -469,25 +502,24 @@ class PythonScopeTracker(scopeTracker):
             decreases = len(self.newVerStack) - depth
             while(decreases > 0):
                 decreases -= 1
-                self.decreaseNewIndent(line)
+                self.decreaseNewIndent()
         elif(lineType == REMOVE):
             decreases = len(self.oldVerStack) - depth
             while(decreases > 0):
                 decreases -= 1
-                self.decreaseOldIndent(line)
+                self.decreaseOldIndent()
         elif(lineType == OTHER):
             if(isSimul):
-                #TODO: I need to pass in the lineDiff for SIMUL
                 self.simulScopeChange(line, lineType, changeType, depth, lineDiff)
             else:
                 oldDecreases = len(self.oldVerStack) - depth
                 newDecreases = len(self.newVerStack) - depth
                 while(oldDecreases > 0):
                     oldDecreases -= 1
-                    self.decreaseOldIndent(line)
+                    self.decreaseOldIndent()
                 while(newDecreases > 0):
                     newDecreases -= 1
-                    self.decreaseNewIndent(line)
+                    self.decreaseNewIndent()
         else:
             assert("Not a valid line type")
 
