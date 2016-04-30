@@ -7,7 +7,7 @@ import shutil
 #Options flags
 SEP = '__'
 DEBUG = 0
-DEBUGLITE = 0
+DEBUGLITE = 1
 DATABASE = 1
 CSV=0
 LOGTIME = 1
