@@ -25,6 +25,7 @@ class ghLogDbTest(unittest.TestCase):
         self.testCommit12 = ghLogDb.ghLogDb("testfiles/ghLogDbTest/TestCommit12.txt")
         self.testCommit13 = ghLogDb.ghLogDb("testfiles/ghLogDbTest/TestCommit13.txt")
         self.testCommit14 = ghLogDb.ghLogDb("testfiles/ghLogDbTest/TestCommit14.txt")
+        self.testCommit15 = ghLogDb.ghLogDb("testfiles/ghLogDbTest/TestCommit15.txt")
 
         #self.testCommit13.processLog() #Make sure there is no crash -> Hangs a long time
 
@@ -305,7 +306,7 @@ class ghLogDbTest(unittest.TestCase):
         self.testCommit11.processLog() #Make sure there is no crash
 
     def test_commmit12(self):
-        self.testCommit12.processLog() #Make sure there is no crash -> Currently crashing
+        self.testCommit12.processLog() #Make sure there is no crash
 
     def test_commmit14(self):
         self.testCommit14.processLog() #This was not being written out. Why?
@@ -321,6 +322,9 @@ class ghLogDbTest(unittest.TestCase):
         self.assertTrue(methods[0].method == "GITCPROC_NON_FUNCTION")
         testDict = {'assert Adds':0, 'assert Dels': 0, 'ut_ad Adds':0, 'ut_ad Dels': 0, 'ut_a Adds':0, 'ut_a Dels': 0}
         self.assertEqual(testDict,methods[0].keywordDictionary)
+
+    def test_commmit15(self):
+        self.testCommit15.processLog() #Make sure there is no crash -> Currently crashing
 
 
     def test_Commitb1(self):

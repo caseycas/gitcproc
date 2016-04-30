@@ -294,7 +294,7 @@ class ghLogDb:
             if extension == "":
                 self.cur_lang = ""
             else:
-                self.cur_lang = extension.split(".")[1]
+                self.cur_lang = extension.split(".")[1] #This is failing in 4e215131d2543a28a065c5161438c315316f9961 in git
 
             patchObj = Patch(file_name, self.cur_lang)
 
@@ -472,7 +472,7 @@ class ghLogDb:
                 continue
 
             fullLine=line
-            line=line.strip()
+            #line=line.strip()
 
             if line.startswith('diff --git '):
                 shaObj.setLog(log_mssg)

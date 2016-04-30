@@ -27,6 +27,7 @@ class LanguageSwitcherFactory:
     #to use
     @staticmethod
     def determineLanguage(language): #Replace these with tokens?
+        language = language.strip()
         #Check for names
         if(language.lower() == "c++" or language.lower() in LanguageSwitcherFactory.extMap["C++"]["extensions"]):
             return CPlusPlusLanguageSwitcher.CPlusPlusLanguageSwitcher()
@@ -37,4 +38,5 @@ class LanguageSwitcherFactory:
         elif(language.lower() == "python" or language.lower() in LanguageSwitcherFactory.extMap["Python"]["extensions"]):
             return PythonLanguageSwitcher.PythonLanguageSwitcher()
         else:
+            print(LanguageSwitcherFactory.extMap["C"]["extensions"])
             raise UnsupportedLanguageException(language + " not yet supported.")

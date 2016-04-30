@@ -62,7 +62,7 @@ class dumpLogs:
 
         #print sql_command
         self.dbCon.insert(sql_command)
-        self.dbCon.commit()
+        #self.dbCon.commit()
 
     def dumpMethodChanges(self, methodChange, titleString):
 
@@ -76,10 +76,10 @@ class dumpLogs:
 
         sql_command = "INSERT INTO " + table + titleString + " VALUES (" + methodChange + ")"
 
-        if(Util.DEBUGLITE):
+        if(Util.DEBUG):
             print(sql_command)
 
         self.dbCon.insert(sql_command)
-        self.dbCon.commit()
+        #self.dbCon.commit()
 
 
