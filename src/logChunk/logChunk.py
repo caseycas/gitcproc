@@ -38,6 +38,8 @@ class logChunk:
         self.sT = ScopeTrackerFactory.ScopeTrackerFactory.createST(self.langSwitch)
         self.keyWordList = self.readKeywords([])
 
+        self.lineCount = 0
+
     #list of strings --> boolean
     #Returns true if the string conforms to the pattern <keyword>,[included/excluded],[single,block]
     #and false otherwise

@@ -443,6 +443,12 @@ class ghLogDb:
             sha  = self.isSha(l)
             line = l
 
+            if(Util.DEBUGLITE):
+                try:
+                    print(line)
+                except:
+                    pass
+
             if sha:
                 #Reverting back to version that outputs at the end...
                 #if(shaObj != None):
