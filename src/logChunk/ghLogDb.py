@@ -3,6 +3,7 @@ import os
 import codecs
 import re
 import csv
+import signal
 from logChunk import logChunk
 from datetime import datetime, timedelta
 sys.path.append("../util")
@@ -10,6 +11,7 @@ sys.path.append("../util")
 from dumpLogs import dumpLogs
 from logChunk import logChunk
 from PatchMethod import PatchMethod
+from TimeExceededError import *
 from chunkingConstants import *
 import Util
 
@@ -24,6 +26,10 @@ stoplist = stopwords.words('english')
 
 ERR_STR  = '\\berror\\b|\\bbug\\b|\\bfix\\b|\\bfixing\\b|\\bfixups\\b|\\bfixed\\b|\\bissue\\b|\\bmistake\\b|\\bblunder\\b|' \
             + '\\bincorrect\\b|\\bfault\\b|\\bdefect\\b|\\bflaw\\b|\\bglitch\\b|\\bgremlin\\b|\\btypo\\b|\\berroneous\\b'
+
+
+def timeout(signum, frame):
+    raise TimeExceededError, "Timed Out"
 
 def toStr(text):
     try:
@@ -391,12 +397,22 @@ class ghLogDb:
     #TODO: I think we should add an option to ignore extremely large commits.
     #E.g. there is a commit to ccv that adds all of sql lite 3.
     def processLastChunk(self, patchObj, curLogChunk):
-        curLogChunk.parseText()
-        patchObj.addFunctions(curLogChunk)
-        patchObj.addOutsideFunc(curLogChunk)
+        print(patchObj.file_name) #Does just this hang the program for php-src.
+        #Timeout idea thanks to Bogdan.
+        try:
+            signal.alarm(30)
+            curLogChunk.parseText()
+            patchObj.addFunctions(curLogChunk)
+            patchObj.addOutsideFunc(curLogChunk)
+            #Cancel the alarm signal.
+            signal.alarm(0)
+        except TimeExceededError.TimeExceededError:
+            print "Processing timed out. Skipping Chunk"
 
 
     def processLog(self, config = Util.CONFIG):
+
+        signal.signal(signal.SIGALRM, timeout)
 
         project1 = os.path.split(self.log_file)[0]
         project1 = project1.rstrip(os.sep)
@@ -443,11 +459,11 @@ class ghLogDb:
             sha  = self.isSha(l)
             line = l
 
-            if(Util.DEBUGLITE):
-                try:
-                    print(line)
-                except:
-                    pass
+            #if(Util.DEBUGLITE):
+            #    try:
+            #        print(line)
+            #    except:
+            #        pass
 
             if sha:
                 #Reverting back to version that outputs at the end...
