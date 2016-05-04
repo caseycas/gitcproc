@@ -39,8 +39,10 @@ PythonConstDestrRegex = "__init__|__del__+ "
 
 class PythonLanguageSwitcher(languageSwitcher.languageSwitcher):
     #Do not call this constructor outside of the Factory
-    def __init__(self):
+    def __init__(self, ext):
+        super(PythonLanguageSwitcher, self).__init__(ext)
         self.lang = "Python"
+
 
     def isObjectOrientedLanguage(self):
         return True

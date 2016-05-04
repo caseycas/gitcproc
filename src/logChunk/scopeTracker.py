@@ -22,7 +22,7 @@ S_SIMUL = "SIMUL"
 
 
 #Redo with a polymorphic solution for the languages
-class scopeTracker:
+class scopeTracker(object):
     #string --> -- 
     #The language tells how the scope changes so we can tell when a block or function ends.
     #For example in C/C++ and Java, a { signifies a increase in code block depth.

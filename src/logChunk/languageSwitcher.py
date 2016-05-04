@@ -6,14 +6,20 @@ CONTINUATION_EXPLICIT = 3
 
 #A function that returns the correct set of language regex expressions for functions
 #and function like objects.
-class languageSwitcher:
-    extMap = {}
+class languageSwitcher(object):
 
-    def __init__(self):
+    def __init__(self, ext):
         self.lang = ""
+        self.extensions = ext
 
     def getLanguage(self):
         return self.lang
+
+    def getExtensions(self):
+        '''
+        Return the set of file extensions associated with this language.
+        '''
+        return self.extensions
 
     #--- -> boolean 
     #Returns true if this is a recognized language that has classes, 

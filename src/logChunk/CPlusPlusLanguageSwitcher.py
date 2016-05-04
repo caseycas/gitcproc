@@ -36,8 +36,10 @@ CPlusPlusThrowPattern = "throw *\([\w\d_#:~*&]+\)"
 
 class CPlusPlusLanguageSwitcher(BracketLanguageSwitcher.BracketLanguageSwitcher):
     #Do not call this constructor outside of the Factory
-    def __init__(self):
+    def __init__(self, ext):
+        super(CPlusPlusLanguageSwitcher, self).__init__(ext)
         self.lang = "C++"
+
 
     def isObjectOrientedLanguage(self):
         return True

@@ -30,13 +30,19 @@ class LanguageSwitcherFactory:
         language = language.strip()
         #Check for names
         if(language.lower() == "c++" or language.lower() in LanguageSwitcherFactory.extMap["C++"]["extensions"]):
-            return CPlusPlusLanguageSwitcher.CPlusPlusLanguageSwitcher()
+            return CPlusPlusLanguageSwitcher.CPlusPlusLanguageSwitcher(LanguageSwitcherFactory.extMap["C++"]["extensions"])
         elif(language.lower() == "c" or language.lower() in LanguageSwitcherFactory.extMap["C"]["extensions"]):
-            return CLanguageSwitcher.CLanguageSwitcher()
+            return CLanguageSwitcher.CLanguageSwitcher(LanguageSwitcherFactory.extMap["C"]["extensions"])
         elif(language.lower() == "java" or language.lower() in LanguageSwitcherFactory.extMap["Java"]["extensions"]):
-            return JavaLanguageSwitcher.JavaLanguageSwitcher()
+            return JavaLanguageSwitcher.JavaLanguageSwitcher(LanguageSwitcherFactory.extMap["Java"]["extensions"])
         elif(language.lower() == "python" or language.lower() in LanguageSwitcherFactory.extMap["Python"]["extensions"]):
-            return PythonLanguageSwitcher.PythonLanguageSwitcher()
+            return PythonLanguageSwitcher.PythonLanguageSwitcher(LanguageSwitcherFactory.extMap["Python"]["extensions"])
         else:
             print(LanguageSwitcherFactory.extMap["C"]["extensions"])
             raise UnsupportedLanguageException(language + " not yet supported.")
+
+    @staticmethod
+    def getExtensions(language):
+        return determineLanguage(language).getExtensions()
+
+
