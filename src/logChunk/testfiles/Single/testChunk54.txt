@@ -1,0 +1,76 @@
+ public:
+     netherspite_infernal() : CreatureScript("netherspite_infernal") { }
+ 
+     CreatureAI* GetAI(Creature* creature) const OVERRIDE
+     {
+         return new netherspite_infernalAI(creature);
+     }
+ 
+     struct netherspite_infernalAI : public ScriptedAI
+     {
+         netherspite_infernalAI(Creature* creature) : ScriptedAI(creature),
+             HellfireTimer(0), CleanupTimer(0), malchezaar(0), point(NULL) { }
+ 
+         uint32 HellfireTimer;
+         uint32 CleanupTimer;
+         uint64 malchezaar;
+         InfernalPoint *point;
+ 
+-        void Reset() OVERRIDE {}
+-        void EnterCombat(Unit* /*who*/) OVERRIDE {}
+-        void MoveInLineOfSight(Unit* /*who*/) OVERRIDE {}
++        void Reset() OVERRIDE { }
++        void EnterCombat(Unit* /*who*/) OVERRIDE { }
++        void MoveInLineOfSight(Unit* /*who*/) OVERRIDE { }
+ 
+ 
+         void UpdateAI(uint32 diff) OVERRIDE
+         {
+             if (HellfireTimer)
+             {
+                 if (HellfireTimer <= diff)
+                 {
+                     DoCast(me, SPELL_HELLFIRE);
+                     HellfireTimer = 0;
+                 }
+                 else HellfireTimer -= diff;
+             }
+ 
+             if (CleanupTimer)
+             {
+                 if (CleanupTimer <= diff)
+                 {
+                     Cleanup();
+                     CleanupTimer = 0;
+                 } else CleanupTimer -= diff;
+             }
+         }
+ 
+         void KilledUnit(Unit* who) OVERRIDE
+         {
+             if (Unit* unit = Unit::GetUnit(*me, malchezaar))
+                 if (Creature* creature = unit->ToCreature())
+                     creature->AI()->KilledUnit(who);
+         }
+ 
+         void SpellHit(Unit* /*who*/, const SpellInfo* spell) OVERRIDE
+         {
+             if (spell->Id == SPELL_INFERNAL_RELAY)
+             {
+                 me->SetDisplayId(me->GetUInt32Value(UNIT_FIELD_NATIVEDISPLAYID));
+                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                 HellfireTimer = 4000;
+                 CleanupTimer = 170000;
+             }
+         }
+ 
+         void DamageTaken(Unit* done_by, uint32 &damage) OVERRIDE
+         {
+             if (done_by->GetGUID() != malchezaar)
+                 damage = 0;
+         }
+ 
+         void Cleanup();
+     };
+ };
+ 
