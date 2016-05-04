@@ -27,6 +27,9 @@ def dumpLog(projPath):
     '''
     with Util.cd(projPath):
         all_extn = ""
+        #TODO: Language Switching Behavior:
+        #1. Did the user specify a language set -> select all languages of that type currently supported.
+        #2. Select extensions for all languages currently supported.
         for e in Util.cpp_extension:
             all_extn += " \\*"  + e
             all_extn += " \\*"  + e.upper()
@@ -84,10 +87,14 @@ def main():
     print "==== Utility to process Github logs ==="
 
     if len(sys.argv) < 2:
-        print "!!! Usage: python ghProc.py project"
+        print "!!! Usage: python ghProc.py project [config_file]"
         sys.exit()
 
     project = sys.argv[1]
+    config_file = Util.CONFIG
+    if(len(sys.argv) == 3):
+        config_file = sys.argv[2]
+
 
     if not os.path.isdir(project):
         print("!! Please provide a valid directory")
