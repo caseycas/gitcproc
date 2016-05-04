@@ -125,6 +125,9 @@ class logChunktest(unittest.TestCase):
         self.chunk50 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk50.txt"), "C") # C
         self.chunk51 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk51.txt"), "C++")
         self.chunk52 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk52.txt"), "C++")
+        self.chunk53 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk53.txt"), "C++")
+        self.chunk54 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk54.txt"), "C++")
+        self.chunk55 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk55.txt"), "C++")
 
 
 
@@ -859,15 +862,49 @@ class logChunktest(unittest.TestCase):
         #but instead returns a error parse statement
         self.chunk51.parseText()
         funcList = self.chunk51.functions 
-        self.debugFunctions(funcList)
+        #self.debugFunctions(funcList)
 
         self.assertTrue(len(funcList) == 1)
         self.assertTrue(funcList[0].method == CHUNK_ERROR)
 
-    def test_parseText_Single52(self): #Not Sure how I want to handle this
+    def test_parseText_Single52(self): #Not Sure how I want to handle this, this case is part of a larger failing chunk.
         self.chunk52.parseText()
         funcList = self.chunk52.functions 
-        self.debugFunctions(funcList)
+        #self.debugFunctions(funcList)
+
+    def test_parseText_Single53(self): 
+        #This is an old style K&R C function declaration.
+        #http://stackoverflow.com/questions/3092006/function-declaration-kr-vs-ansi
+        #The syntax is deprecated but still legal.
+        #I think trying to capture these may accidently lead to capturing other types of non-functions, 
+        #due to the presence of ';'.  I'll throw an issue up for it.
+        self.chunk53.parseText()
+        funcList = self.chunk53.functions 
+        #self.debugFunctions(funcList)
+        self.assertTrue(len(funcList) == 1)
+        self.assertTrue(funcList[0].method == "set_offsets_for_label")
+
+
+    def test_parseText_Single54(self): 
+        self.chunk54.parseText()
+        funcList = self.chunk54.functions 
+        #self.debugFunctions(funcList)
+        self.assertTrue(len(funcList) == 6)
+        self.assertTrue(funcList[0].method == "Reset")
+        self.assertTrue(funcList[1].method == "EnterCombat")
+        self.assertTrue(funcList[2].method == "MoveInLineOfSight")
+        self.assertTrue(funcList[3].method == "Reset")
+        self.assertTrue(funcList[4].method == "EnterCombat")
+        self.assertTrue(funcList[5].method == "MoveInLineOfSight")
+
+    def test_parseText_Single55(self): # Testing our ability to find struct constructors.
+        self.chunk55.parseText()
+        funcList = self.chunk55.functions 
+        #self.debugFunctions(funcList)
+        self.assertTrue(len(funcList) == 1)
+        self.assertTrue(funcList[0].method == "boss_jaraxxusAI")
+        self.assertTrue(funcList[0].total_add == 1)
+        self.assertTrue(funcList[0].total_del == 1)
 
 
 

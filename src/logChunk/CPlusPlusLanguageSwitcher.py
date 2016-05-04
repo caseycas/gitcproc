@@ -23,6 +23,7 @@ CPlusPlusCommentPattern2 = "//.*"
 
 #C++
 CPlusPlusClassPatterns = [" class [\w\d_: ]+ {$","^class [\w\d_: ]+ {$"]
+CPlusPlusStructPatterns = [" struct [\w\d_: ]+ {$","^struct [\w\d_: ]+ {$"]
 CPlusPlusParamPattern = " *\([\w\d_=,\[\]\*\(\)&:<> ]*\)[^;]*{" #What parameters to a call look like.
 
 CPlusPlusStringPattern = "\".*?\""
@@ -63,6 +64,7 @@ class CPlusPlusLanguageSwitcher(BracketLanguageSwitcher.BracketLanguageSwitcher)
         temp = temp.replace("private:", "")
         temp = temp.replace("protected:", "")
         temp = temp.replace("explicit", "")
+        temp = temp.replace("OVERRIDE", "")
         #Sometimes an # ifdef, etc might appear in the middle of function args.  Purge them!
         if("ifdef" in temp and "#" in temp):
             temp = temp.replace("#", "")
@@ -91,7 +93,7 @@ class CPlusPlusLanguageSwitcher(BracketLanguageSwitcher.BracketLanguageSwitcher)
         return re.search(CPlusPlusValidClassNamePattern, classContext)
 
     def getClassRegexes(self):
-        return CPlusPlusClassPatterns
+        return CPlusPlusClassPatterns + CPlusPlusStructPatterns #Structs can have constructors in C++ too.
 
     def cleanConstructorOrDestructorLine(self, line):
         temp = line.lower().strip().replace("~", "") #Just remove the "~" for destructors

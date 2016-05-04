@@ -1,0 +1,13 @@
+     struct boss_jaraxxusAI : public ScriptedAI
+     {
+         boss_jaraxxusAI(Creature* creature) : ScriptedAI(creature), Summons(me)
+         {
+-            m_pInstance = creature->GetInstanceScript();
++            m_instance = creature->GetInstanceScript();
+             Reset();
+         }
+ 
+-        InstanceScript* m_pInstance;
++        InstanceScript* m_instance;
+
+     }

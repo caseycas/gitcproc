@@ -1,8 +1,8 @@
  class DummyDrivableExecutor : public DrivableExecutor {
   public:
    void add(Func f) override {}
-   void drive() override { ran = true; }
-   bool ran{false};
++   void drive() override { ran = true; }
++   bool ran{false};
  };
 
  TEST(Future, getVia) {

@@ -299,7 +299,7 @@ class logChunk:
         return (self.getClassPattern(line) != "")
 
     #Given a string of text that is a class name, extract the name of the class
-    #I.e string is "class <name> ..."
+    #I.e string is "class <name> ..." (Note: in C++ this can apply to struct's as well.)
     def extractClassName(self, line):
         components = line.split()
         #Remove endings of ":"
