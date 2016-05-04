@@ -11,7 +11,7 @@ sys.path.append("../util")
 from dumpLogs import dumpLogs
 from logChunk import logChunk
 from PatchMethod import PatchMethod
-from TimeExceededError import *
+import TimeExceededError
 from chunkingConstants import *
 import Util
 
@@ -625,4 +625,5 @@ def test():
 
 if __name__ == '__main__':
     test()
+
 
