@@ -39,8 +39,10 @@ JavaValidClassNamePattern = "[\w\d_:]+"
 
 class JavaLanguageSwitcher(BracketLanguageSwitcher.BracketLanguageSwitcher):
     #Do not call this constructor outside of the Factory
-    def __init__(self):
+    def __init__(self, ext):
+        super(JavaLanguageSwitcher, self).__init__(ext)
         self.lang = "Java"
+
 
     def isObjectOrientedLanguage(self):
         return True

@@ -20,8 +20,10 @@ CStringPattern2 = "\'.*?\'"
 
 class CLanguageSwitcher(BracketLanguageSwitcher.BracketLanguageSwitcher):
     #Do not call this constructor outside of the Factory
-    def __init__(self):
+    def __init__(self, ext):
+        super(CLanguageSwitcher, self).__init__(ext)
         self.lang = "C"
+
 
     def isObjectOrientedLanguage(self):
         return False

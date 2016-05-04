@@ -19,5 +19,5 @@ class ScopeTrackerFactory:
         elif(lang in IndentLanguages):
             return PythonScopeTracker.PythonScopeTracker(lang)
         else:
-            raise UnsupportedLanguageException(language + " is not yet supported.")
+            raise UnsupportedLanguageException(lang + " is not yet supported.")
         
