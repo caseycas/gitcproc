@@ -403,7 +403,8 @@ class ghLogDb:
         #    signal.alarm(30)
         curLogChunk.parseText()
         patchObj.addFunctions(curLogChunk)
-        patchObj.addOutsideFunc(curLogChunk)
+        #I moved this to the end of parseTexts, wrap up.
+        #patchObj.addOutsideFunc(curLogChunk)
             #Cancel the alarm signal.
         #    signal.alarm(0)
         #except TimeExceededError.TimeExceededError:
@@ -499,7 +500,7 @@ class ghLogDb:
                     continue
 
                 fullLine=line
-                #line=line.strip()
+                line=line.rstrip()
 
                 if line.startswith('diff --git '):
                     shaObj.setLog(log_mssg)

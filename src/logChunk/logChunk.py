@@ -107,7 +107,7 @@ class logChunk:
         print("Header: " + str(self.header))
         print("Functions:")
         for func in self.functions:
-            func.printFunc()
+            func.printPatch()
         print("===========================================")
 
     
@@ -150,26 +150,40 @@ class logChunk:
 
         #This sum of the real function contents shouldn't be greater than
         #the total lines added and deleted in the diff.
-        if(output[0] > self.total_add or output[1] > self.total_del):
-            raise CountException("Miscount between counts outside the function and the total within the functions.")
+        if(Util.DEBUG):
+            print("SUM of func adds: " + str(output[0]))
+            print("SUM of func dels: " + str(output[1]))
+            print("Total adds: " + str(self.total_add))
+            print("Total dels: " + str(self.total_del))
+
+        #if(output[0] > self.total_add or output[1] > self.total_del):
+            #raise CountException("Miscount between counts outside the function and the total within the functions.")
+        
+        #Just set the total count to sum of function count.
+        if(output[0] > self.total_add):
+            self.total_add = output[0]
+        if(output[1] > self.total_del):
+            self.total_del = output[1]
 
         return output
 
     def getLineCountOutsideFunc(self):
-        try:
-            (func_add, func_del) = self.sumLinesForRealFunc() #Assert inside takes care of miscounts
-            return(self.total_add - func_add, self.total_del - func_del)
-        except CountException:
-            if(Util.DEBUG):
-                print("Count error")
-            return(0,0)
+        #try:
+        (func_add, func_del) = self.sumLinesForRealFunc() #Assert inside takes care of miscounts
+        return(self.total_add - func_add, self.total_del - func_del)
+        #except CountException:
+        #    if(Util.DEBUG):
+        #        print("Count error")
+        #    return(0,0)
 
     #Create an additional MOCK function to summarize all changes outside of functions.
     #If no such changes, return None
-    def createOutsideFuncSummary(self): 
+    def createOutsideFuncSummary(self, keywordDictionary = {}): 
+        if(keywordDictionary == {}):
+            keywordDictionary = self.getEmptyKeywordDict()
         (added, deleted) = self.getLineCountOutsideFunc()
         if(added > 0 or deleted > 0):
-            return PatchMethod("GITCPROC_NON_FUNCTION", 0, 0, added, deleted, self.getEmptyKeywordDict())
+            return PatchMethod(NON_FUNC, 0, 0, added, deleted, keywordDictionary)
         else:
             return None
 
@@ -591,7 +605,6 @@ class logChunk:
             isFunction = True
         elif((classContext != [] and self.isConstructorOrDestructorWithList(functionName, classContext))): #classContext becomes nonempty only for OO languages
             isFunction = True
-            #Replace with general function.
             shortFunctionName = self.langSwitch.shortenConstructorOrDestructor(functionName)
         else:
             isFunction = False
@@ -625,13 +638,13 @@ class logChunk:
             if(Util.DEBUG):
                 print("Non function scope increase while searching for function name.")
             
-            #Must update to deal with potential changes.
-            self.sT.increaseScope(line, line, lineType, scopeTracker.GENERIC)
+            #I think this will be handled by update scope and keywords, so we don't need to handle it here.
+            #self.sT.increaseScope(line, line, lineType, scopeTracker.GENERIC)
 
             #Check for class context last here.
             if(not self.sT.changeScopeFirst()):
                 classContext = self.checkForClassName(functionName, classContext) 
-            #In python the scope change would come before, so this needs to be handled language specific
+
             functionName = self.langSwitch.resetFunctionName(line) #Reset name and find next
 
         return (phase, line, lineType, lineNum, functionName, classContext, funcStart, startFlag, ftotal_add, ftotal_del)
@@ -752,7 +765,7 @@ class logChunk:
                             blockKeywordType = ""
                             foundBlock = None
 
-                elif(nextScopeChange == DECREASE):
+                elif(nextScopeChange == DECREASE): #This doesn't work when seeing a keyword on a decreasing line outside of function. What?
                     if(sT.isScopeDecrease(line, lineType) == scopeTracker.S_YES):
                         if(Util.DEBUG):
                             print("Scope Decrease")
@@ -764,7 +777,6 @@ class logChunk:
 
                         #Check if we should decrease scope before updating the dictionaries
                         if(sT.changeScopeFirst()):
-                            print(sT.printScope())
                             sT.decreaseScope(line, lineType)
                             #Check if function has ended...
                             if(self.sT.getFuncContext(lineType) == "" and phase == LOOKFOREND):
@@ -775,6 +787,15 @@ class logChunk:
 
                                 return (foundBlock, blockKeywordLine, blockKeywordType, shortFunctionName, keywordDictionary, sT, True)
 
+                            #Check for new block in section after the decrease.
+                            #Note: I've been using changeScopeFirst to distinguish between bracket and indent based
+                            #scopes, but the name isn't all that great....
+                            foundBlock = self.getBlockPattern(line, blockKeyWordList)
+                            if(foundBlock != None):
+                                if(Util.DEBUG):
+                                    print("Keyword match found in line after scope decrease.")
+                                blockKeywordType = lineType
+                                blockKeywordLine = lineNum
 
                         if(lineType != OTHER):
                             #Search for single line keywords BEFORE the scope decrease if in non decrease first language.
@@ -784,6 +805,8 @@ class logChunk:
                             if(Util.DEBUG):
                                 print("Current block context: " + str(sT.getBlockContext(lineType)))
                             keywordDictionary = self.parseLineForKeywords(line, lineType, blockKeyWordList, keywordDictionary, sT.getBlockContext(lineType))
+
+
 
                         if(not sT.changeScopeFirst()):
                             sT.decreaseScope(line, lineType)
@@ -807,7 +830,7 @@ class logChunk:
                             blockKeywordLine = -1
                             blockKeywordType = ""
                             foundBlock = None
-                        else:
+                        else: #This doesn't seem to be behaving correctly for test case 14.
                             foundBlock=self.getBlockPattern(line,blockKeyWordList)
                             if(foundBlock!=None):
                                 if(Util.DEBUG):
@@ -921,7 +944,6 @@ class logChunk:
             if(keyword[1] != EXCLUDED):
                 keywordDictionary[self.outputKeyword(keyword)+ " Adds"]=0
                 keywordDictionary[self.outputKeyword(keyword)+ " Dels"]=0
-                #Currently only support single line keyword tracking outside of functions
                 outsideFuncKeywordDictionary[self.outputKeyword(keyword) + " Adds"]=0
                 outsideFuncKeywordDictionary[self.outputKeyword(keyword) + " Dels"]=0
 
@@ -932,6 +954,8 @@ class logChunk:
             elif(keyword[1] != EXCLUDED):
                 keywordDictionary[self.outputKeyword(keyword) + " Adds"]=0
                 keywordDictionary[self.outputKeyword(keyword) + " Dels"]=0
+                outsideFuncKeywordDictionary[self.outputKeyword(keyword) + " Adds"]=0
+                outsideFuncKeywordDictionary[self.outputKeyword(keyword) + " Dels"]=0
 
         #----------------------------------Initialization----------------------------------#
 
@@ -1022,8 +1046,8 @@ class logChunk:
                     if(Util.DEBUG):
                         print("Extending the function name")
                     functionName += line.replace("\n", "") + " " #add the line with no new lines
-                else:
-                    #TODO: What do we do on a S_SIMUL???
+                elif(sResult == scopeTracker.S_SIMUL):
+                    #TODO: This line does not behave correctly....
                     #Decrease scope of one to decrease first, then do function update???
                     self.sT.decreaseScope(line, lineType, -1, True)
                     try:
@@ -1031,10 +1055,10 @@ class logChunk:
                     except UnsupportedScopeException:
                         continue
                     pass
+                else:
+                    assert("Not a valid type of scope change.")
 
-                #TODO: Python Scope can increase immediately on the following line.  I think we need a full check here
-                #Maybe abstract the keyword update into a separate reusuable function.
-                #self.updateScopeAndKeywords() I want to use this this same function to handle single + block keywords here somehow....
+                #Check for block keywords and single keywords
                 try:
                     if(phase == LOOKFOREND):
                         (foundBlock, blockKeywordLine, blockKeywordType, shortFunctionName, keywordDictionary, self.sT, backTrack) = self.updateScopeAndKeywords(phase, line, lineType, lineNum, self.sT, foundBlock, blockKeywordLine, blockKeywordType, shortFunctionName, singleKeyWordList, blockKeyWordList, keywordDictionary)
@@ -1135,10 +1159,16 @@ class logChunk:
         #Clear out the scope.
         self.sT.clearScope()
         
-        #Create a mock function for any single line keywords that do not fall into another function's list
+        #Create a mock function for any changes lines and keyword (single or block)
+        #that occured outside the functions in the block.
+        outsideFunction = None
         if nonZeroCount(outsideFuncKeywordDictionary):
-            mockFunction = PatchMethod(MOCK, 0, 0, 0, 0, outsideFuncKeywordDictionary)
-            self.functions.append(mockFunction)
+            outsideFunction = self.createOutsideFuncSummary(outsideFuncKeywordDictionary)
+        else:
+            outsideFunction = self.createOutsideFuncSummary()
+            
+        if(outsideFunction != None):
+            self.functions.append(outsideFunction)
 
         if(Util.DEBUG):
             print("Chunk End.")

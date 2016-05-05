@@ -301,415 +301,453 @@ class logChunktest(unittest.TestCase):
         self.assertTrue(fChange == UNMARKED)
         self.assertTrue(phase == LOOKFOREND)
 
-    def test_parseText_Single1(self):
-        self.chunk1.parseText()
-        funcList = self.chunk1.functions
-        #self.debugFunctions(funcList)
-        self.assertTrue(len(funcList) == 3) 
-        self.assertTrue(funcList[0].method=="NdbBlob::getBlobEventName")
-        self.assertTrue(funcList[0].total_add == 10)
-        self.assertTrue(funcList[0].total_del == 0)
-
-        testDict = {'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 0, 'ut_a Dels': 0}
-
-        self.assertEqual(testDict,funcList[0].keywordDictionary)
-
-        self.assertTrue(funcList[1].method=="NdbBlob::getBlobEventName")
-        self.assertTrue(funcList[1].start==19)
-        self.assertTrue(funcList[1].end==22)
-        self.assertTrue(funcList[1].total_add == 4)
-        self.assertTrue(funcList[1].total_del == 0)
-        testDict = {'assert Adds':0, 'assert Dels': 0, 'ut_ad Adds':0, 'ut_ad Dels': 0, 'ut_a Adds':0, 'ut_a Dels': 0}
-        self.assertEqual(testDict,funcList[1].keywordDictionary)
-
-
-        self.assertTrue(funcList[2].method=="NdbBlob::getBlobEvent")
-        self.assertTrue(funcList[2].start==26)
-        self.assertTrue(funcList[2].end==60)
-        self.assertTrue(funcList[2].total_add == 35)
-        self.assertTrue(funcList[2].total_del == 0)
-        testDict = {'assert Adds':2, 'assert Dels': 0, 'ut_ad Adds':0, 'ut_ad Dels': 0, 'ut_a Adds':0, 'ut_a Dels': 0}
-        self.assertEqual(testDict,funcList[2].keywordDictionary)
-
-    def test_parseText_Single2(self):
-        self.chunk2.parseText()
-        funcList = self.chunk2.functions
-        #self.debugFunctions(funcList)
-        self.assertTrue(len(funcList) == 1)
-
-        self.assertTrue(funcList[0].method=="btr_pcur_release_leaf")
-        self.assertTrue(funcList[0].start==13)
-        self.assertTrue(funcList[0].end==27)
-        self.assertTrue(funcList[0].total_add == 0)
-        self.assertTrue(funcList[0].total_del == 15)
-
-        testDict = {'assert Adds':0, 'assert Dels': 0, 'ut_ad Adds':0, 'ut_ad Dels': 1, 'ut_a Adds':0, 'ut_a Dels': 1}
-        self.assertEqual(testDict,funcList[0].keywordDictionary)
-
-    def test_parseText_Single3(self):
-        self.chunk3.parseText()
-        funcList = self.chunk3.functions
-        self.debugFunctions(funcList)
-        self.assertTrue(len(funcList) == 3)
-        self.assertTrue(funcList[0].method=="Repair_mrg_table_error_handler")
-        self.assertTrue(funcList[0].start==13)
-        self.assertTrue(funcList[0].end==13)
-        self.assertTrue(funcList[0].total_add == 1)
-        self.assertTrue(funcList[0].total_del == 0)
-
-        testDict = {'assert Adds':1, 'assert Dels': 0, 'ut_ad Adds':0, 'ut_ad Dels': 0, 'ut_a Adds':0, 'ut_a Dels': 0}
-        self.assertEqual(testDict,funcList[0].keywordDictionary)
-
-        self.assertTrue(funcList[1].method=="safely_trapped_errors")
-        self.assertTrue(funcList[1].start==27)
-        self.assertTrue(funcList[1].end==42)
-
-        self.assertTrue(funcList[1].total_add == 16)
-        self.assertTrue(funcList[1].total_del == 0)
-
-        testDict = {'assert Adds':1, 'assert Dels': 0, 'ut_ad Adds':0, 'ut_ad Dels': 0, 'ut_a Adds':0, 'ut_a Dels': 0}
-        self.assertEqual(testDict,funcList[1].keywordDictionary)
-
-
-        self.assertTrue(funcList[2].method=="Repair_mrg_table_error_handler::handle_condition")
-        self.assertTrue(funcList[2].start==57)
-        self.assertTrue(funcList[2].end==67)
-        self.assertTrue(funcList[2].total_add == 11)
-        self.assertTrue(funcList[2].total_del == 0)
-
-        testDict = {'assert Adds':0, 'assert Dels': 0, 'ut_ad Adds':0, 'ut_ad Dels': 0, 'ut_a Adds':0, 'ut_a Dels': 0}
-        self.assertEqual(testDict,funcList[2].keywordDictionary)
-
-
-
-    def test_parseText_Single6(self):
-        self.chunk6.parseText()
-        funcList = self.chunk6.functions
-        #self.debugFunctions(funcList)
-        self.assertTrue(len(funcList) == 3)
-        self.assertTrue(funcList[0].method ==  "calc<A_Type>::multiply")
-        self.assertTrue(funcList[0].start == 8)
-        self.assertTrue(funcList[0].end == 10)
-        self.assertTrue(funcList[0].total_add == 3)
-        self.assertTrue(funcList[0].total_del == 0)
-        testDict = {'assert Adds':0, 'assert Dels': 0, 'ut_ad Adds':0, 'ut_ad Dels': 0, 'ut_a Adds':0, 'ut_a Dels': 0}
-        self.assertEqual(testDict,funcList[0].keywordDictionary)
-
-
-        self.assertTrue(funcList[1].method ==  "calc<A_Type>::add")
-        self.assertTrue(funcList[1].start == 12)
-        self.assertTrue(funcList[1].end == 14)
-        self.assertTrue(funcList[1].total_add == 3)
-        self.assertTrue(funcList[1].total_del == 0)
-        testDict = {'assert Adds':0, 'assert Dels': 0, 'ut_ad Adds':0, 'ut_ad Dels': 0, 'ut_a Adds':0, 'ut_a Dels': 0}
-        self.assertEqual(testDict,funcList[1].keywordDictionary)
-
-
-        self.assertTrue(funcList[2].method ==  "calc<A_Type>::divide")
-        self.assertTrue(funcList[2].start == 16)
-        self.assertTrue(funcList[2].end == 19)
-        self.assertTrue(funcList[2].total_add == 4)
-        self.assertTrue(funcList[2].total_del == 0)
-        testDict = {'assert Adds':1, 'assert Dels': 0, 'ut_ad Adds':0, 'ut_ad Dels': 0, 'ut_a Adds':0, 'ut_a Dels': 0}
-        self.assertEqual(testDict,funcList[2].keywordDictionary)
-
-    def test_parseText_Single7(self):
-        self.chunk7.parseText()
-        funcList = self.chunk7.functions
-        #self.debugFunctions(funcList)
-        self.assertTrue(len(funcList) == 15) #Should be 17, but can't find constructor/destructor outside of class
-        self.assertTrue(funcList[6].method ==  "CDVDDemuxPVRClient::Abort", "Actual: " + funcList[7].method)
-
-    def test_parseText_Single8(self):
-        self.chunk8.parseText()
-        funcList = self.chunk8.functions
-        #self.debugFunctions(funcList)
-        self.assertTrue(len(funcList) == 4)
-
-        self.assertTrue(funcList[0].method ==  "GetHelperBinary")
-        self.assertTrue(funcList[0].start == 62)
-        self.assertTrue(funcList[0].end == 77)
-        self.assertTrue(funcList[0].total_add == 16)
-        self.assertTrue(funcList[0].total_del == 0)
-        testDict = {'assert Adds':0, 'assert Dels': 0, 'ut_ad Adds':0, 'ut_ad Dels': 0, 'ut_a Adds':0, 'ut_a Dels': 0}
-        self.assertEqual(testDict,funcList[0].keywordDictionary)
-
-        self.assertTrue(funcList[1].method ==  "StackHelper")
-        self.assertTrue(funcList[1].start == 113)
-        self.assertTrue(funcList[1].end == 113)
-        self.assertTrue(funcList[1].total_add == 1)
-        self.assertTrue(funcList[1].total_del == 0)
-        testDict = {'assert Adds':0, 'assert Dels': 0, 'ut_ad Adds':0, 'ut_ad Dels': 0, 'ut_a Adds':0, 'ut_a Dels': 0}
-        self.assertEqual(testDict,funcList[1].keywordDictionary)
-
-        self.assertTrue(funcList[2].method ==  "~StackHelper")
-        self.assertTrue(funcList[2].start == 114)
-        self.assertTrue(funcList[2].end == 117)
-        self.assertTrue(funcList[2].total_add == 4)
-        self.assertTrue(funcList[2].total_del == 0)
-        testDict = {'assert Adds':0, 'assert Dels': 0, 'ut_ad Adds':0, 'ut_ad Dels': 0, 'ut_a Adds':0, 'ut_a Dels': 0}
-        self.assertEqual(testDict,funcList[2].keywordDictionary)
-
-        self.assertTrue(funcList[3].method ==  "NO_FUNC_CONTEXT")
-        self.assertTrue(funcList[3].start == 0)
-        self.assertTrue(funcList[3].end == 0)
-        self.assertTrue(funcList[3].total_add == 0)
-        self.assertTrue(funcList[3].total_del == 0)
-        testDict = {'assert Adds':32, 'assert Dels': 0, 'ut_ad Adds':0, 'ut_ad Dels': 0, 'ut_a Adds':0, 'ut_a Dels': 0}
-        self.assertEqual(testDict,funcList[3].keywordDictionary)
-
-    def test_parseText_Single9(self):
-        self.chunk9.parseText()
-
-        funcList = self.chunk9.functions
-        # self.debugFunctions(funcList)
-        #Can't find constructors or destructors outside of classes
-        self.assertTrue(len(funcList) == 19)
-
-        self.assertTrue(funcList[6].method ==  "CRuntimeMethod")
-        self.assertTrue(funcList[6].start == 119)
-        self.assertTrue(funcList[6].end == 121)
-        self.assertTrue(funcList[6].total_add == 3)
-        self.assertTrue(funcList[6].total_del == 0)
-        testDict = { 'ut_ad Adds': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Dels': 0, 'assert Adds': 1, 'ut_a Dels': 0}
-        self.assertEqual(testDict,funcList[6].keywordDictionary)
-
-    def test_parseText_Single10(self):
-        self.chunk10.parseText()
-        funcList = self.chunk10.functions
-        #self.debugFunctions(funcList)
-        self.assertTrue(len(funcList) == 6)
-
-        self.assertTrue(funcList[3].method ==  "FreeArenaList")
-        self.assertTrue(funcList[3].start == 203)
-        self.assertTrue(funcList[3].end == 246)
-        self.assertTrue(funcList[3].total_add == 44)
-        self.assertTrue(funcList[3].total_del == 0)
-        testDict = { 'ut_ad Adds': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Dels': 0, 'assert Adds': 1, 'ut_a Dels': 0}
-        self.assertEqual(testDict,funcList[3].keywordDictionary)
-
-    def test_parseText_Single11(self):
-        self.chunk11.parseText()
-        funcList = self.chunk11.functions
-        #self.debugFunctions(funcList)
-        self.assertTrue(len(funcList) == 5)
-
-        self.assertTrue(funcList[4].method ==  "parseArgs")
-        self.assertTrue(funcList[4].start == 81)
-        self.assertTrue(funcList[4].end == 199)
-        self.assertTrue(funcList[4].total_add == 118)
-        self.assertTrue(funcList[4].total_del == 0)
-        testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 1, 'ut_a Dels': 0}
-        self.assertEqual(testDict,funcList[4].keywordDictionary)
-
-
-    def test_parseText_Single12(self):
-        self.chunk12.parseText()
-        funcList = self.chunk12.functions
-        #self.debugFunctions(funcList)
-        self.assertTrue(len(funcList) == 3)
-
-        self.assertTrue(funcList[1].method ==  "mbfl_buffer_converter_delete")
-        self.assertTrue(funcList[1].start == 173)
-        self.assertTrue(funcList[1].end == 184)
-        self.assertTrue(funcList[1].total_add == 12)
-        self.assertTrue(funcList[1].total_del == 0)
-        testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 0, 'ut_a Dels': 0}
-        self.assertEqual(testDict,funcList[1].keywordDictionary)
-
-    def test_parseText_Single13(self):
-        self.chunk13.parseText() #Broken like 2 is
-        funcList = self.chunk13.functions
-        #self.debugFunctions(funcList)
-        self.assertTrue(len(funcList) == 2)
-
-        self.assertTrue(funcList[0].method ==  "ClassCache::hashKey")
-        self.assertTrue(funcList[0].start == 6)
-        self.assertTrue(funcList[0].end == 8)
-        self.assertTrue(funcList[0].total_add == 0)
-        self.assertTrue(funcList[0].total_del == 3)
-        #self.assertTrue(len(funcList[0].assertionList) == 0)
-
-        self.assertTrue(funcList[1].method ==  "ClassCache::lookup")
-        self.assertTrue(funcList[1].start == 13)
-        self.assertTrue(funcList[1].end == 41)
-        self.assertTrue(funcList[1].total_add == 0)
-        self.assertTrue(funcList[1].total_del == 29)
-        #self.assertTrue(len(funcList[1].assertionList) == 0)
-
-    def test_parseText_Single14(self):
-        self.chunk14.parseText()
-        funcList = self.chunk14.functions
-        # self.debugFunctions(funcList)
-        self.assertTrue(len(funcList) == 1)
-
-        self.assertTrue(funcList[0].method ==  "getDynLocType")
-        self.assertTrue(funcList[0].start == 8)
-        self.assertTrue(funcList[0].end == 241)
-
-        testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 15, 'ut_a Dels': 0}
-        self.assertEqual(testDict,funcList[0].keywordDictionary)
-
-    def test_parseText_Single15(self):
-        self.chunk15.parseText()
-        # funcList = self.chunk15.functions
-        # #self.debugFunctions(funcList)
-
-    def test_parseText_Single21(self):
-        self.chunk21.parseText()
-        funcList = self.chunk21.functions
-        #self.debugFunctions(funcList)
-
-        self.assertTrue(len(funcList) == 1)
-        self.assertTrue(funcList[0].method ==  "MDL_object_lock")
-
-    def test_parseText_Single22(self):
-        self.chunk22.parseText()
-        funcList = self.chunk22.functions
-        #self.debugFunctions(funcList)
-
-        self.assertTrue(len(funcList) == 6) #Can't get the last one b/c constructor out of context
-        self.assertTrue(funcList[0].method ==  "MDL_map::init")
-        self.assertTrue(funcList[1].method ==  "MDL_map::destroy")
-        testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 1, 'ut_a Dels': 0}
-        self.assertEqual(testDict,funcList[1].keywordDictionary)
-
-        self.assertTrue(funcList[2].method ==  "MDL_map::find_or_insert")
-        self.assertTrue(funcList[3].method ==  "MDL_map::find")
-        self.assertTrue(funcList[4].method ==  "MDL_map::move_from_hash_to_lock_mutex")
-
-        testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 2, 'ut_a Dels': 0}
-        self.assertTrue(testDict,funcList[4].keywordDictionary)
-        self.assertTrue(funcList[5].method ==  "MDL_map::remove")
-
-        testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 1, 'ut_a Dels': 0}
-        self.assertEqual(testDict,funcList[5].keywordDictionary)
-
-    def test_parseText_Single23(self):
-        self.chunk23.parseText()
-        funcList = self.chunk23.functions
-        # self.debugFunctions(funcList)
-        self.assertTrue(len(funcList) == 2)
-
-        #Broken like 2...
-        self.assertTrue(funcList[0].method ==  "MDL_ticket::has_pending_conflicting_lock_impl")
-        #self.assertTrue(len(funcList[0].assertionList) == 2)
-        self.assertTrue(funcList[1].method ==  "MDL_ticket::has_pending_conflicting_lock") #Name not in + or -
-        #self.assertTrue(len(funcList[1].assertionList) == 1)
-
-    def test_parseText_Single24(self):
-        self.chunk24.parseText()
-        funcList = self.chunk24.functions
-        #self.debugFunctions(funcList)
-        self.assertTrue(len(funcList) == 24)
-
-        self.assertTrue(funcList[16].method ==  "*get_date_time_format_str")
-        testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 1, 'ut_a Dels': 0}
-        self.assertEqual(testDict,funcList[16].keywordDictionary)
-
-    def test_parseText_Single25(self):
-        self.chunk25.parseText()
-        funcList = self.chunk25.functions
-        #self.debugFunctions(funcList)
-        self.assertTrue(len(funcList) == 4)
-
-        self.assertTrue(funcList[2].method ==  "row_upd_index_replace_new_col_vals_index_pos")
-        testDict = { 'ut_ad Adds': 1, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 0, 'ut_a Dels': 0}
-        self.assertEqual(testDict,funcList[2].keywordDictionary)
-
-
-    def test_parseText_Single27(self):
-        self.chunk27.parseText()
-        funcList = self.chunk27.functions
-        #self.debugFunctions(funcList)
-        self.assertTrue(len(funcList) == 30)
-
-    def test_parseText_Single29(self):
-        self.chunk29.parseText()
-        funcList = self.chunk29.functions
-        #self.debugFunctions(funcList)
-        self.assertTrue(len(funcList) == 15)
-
-        self.assertTrue(funcList[0].method == "idxof")
-        testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 0, 'ut_a Dels': 0}
-        self.assertEqual(testDict,funcList[0].keywordDictionary)
-
-        self.assertTrue(funcList[1].method == "idxof")
-        testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 0, 'ut_a Dels': 0}
-        self.assertEqual(testDict,funcList[1].keywordDictionary)
-
-        self.assertTrue(funcList[7].method == "*sfmt_get_idstring")
-        testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 0, 'ut_a Dels': 0}
-        self.assertEqual(testDict,funcList[7].keywordDictionary)
-
-        self.assertTrue(funcList[11].method ==  "sfmt_fill_array32")
-        testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 3, 'ut_a Dels': 0}
-        self.assertEqual(testDict,funcList[11].keywordDictionary)
-
-        self.assertTrue(funcList[12].method ==  "sfmt_fill_array64")
-        testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 3, 'ut_a Dels': 0}
-        self.assertEqual(testDict,funcList[12].keywordDictionary)
-
-
-    def test_parseText_Single31(self):
-        self.chunk31.parseText() 
-        funcList = self.chunk31.functions
-        #self.debugFunctions(funcList)
-        self.assertTrue(len(funcList) == 2)
-
-        self.assertTrue(funcList[0].method ==  "smp_callin")
-        testDict = { 'ut_ad Adds': 0, 'assert Dels': 1, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 0, 'ut_a Dels': 0}
-        self.assertEqual(testDict,funcList[0].keywordDictionary)
-
-        self.assertTrue(funcList[1].method ==  "NO_FUNC_CONTEXT")
-        testDict = { 'ut_ad Adds': 0, 'assert Dels': 1, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 0, 'ut_a Dels': 0}
-        self.assertEqual(testDict,funcList[1].keywordDictionary)
-
-    def test_parseText_Single32(self):
-        self.chunk32.parseText()
-        funcList = self.chunk32.functions
-        # #self.debugFunctions(funcList)
-        self.assertTrue(len(funcList) == 10)
-
-        self.assertTrue(funcList[1].method ==  "h264_er_decode_mb")
-        testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 1, 'ut_a Dels': 0}
-        self.assertEqual(testDict,funcList[1].keywordDictionary)
-
-
-        self.assertTrue(funcList[7].method ==  "alloc_picture")
-        testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 2, 'ut_a Dels': 0}
-        self.assertEqual(testDict,funcList[7].keywordDictionary)
-
-    def test_parseText_Single33(self):
-        self.chunk33.parseText()
-        #Problems:
-        #Also, get a false assert? when we have a function name named assert.
-        funcList = self.chunk33.functions
-        #self.debugFunctions(funcList)
-        # print("Length: " + str(len(funcList)))
-        self.assertTrue(len(funcList) == 24)
-
-    def test_parseText_Single35(self):
-        self.chunk35.parseText()
-        funcList = self.chunk35.functions
-        #self.debugFunctions(funcList)
-
-        for func in funcList:
-            self.assertFalse(func.method ==  "NO_FUNC_CONTEXT")
+    # def test_parseText_Single1(self):
+    #     self.chunk1.parseText()
+    #     funcList = self.chunk1.functions
+    #     #self.debugFunctions(funcList)
+    #     self.assertTrue(len(funcList) == 4) 
+    #     self.assertTrue(funcList[0].method=="NdbBlob::getBlobEventName")
+    #     self.assertTrue(funcList[0].total_add == 10)
+    #     self.assertTrue(funcList[0].total_del == 0)
+
+    #     testDict = {'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 0, 'ut_a Dels': 0}
+
+    #     self.assertEqual(testDict,funcList[0].keywordDictionary)
+
+    #     self.assertTrue(funcList[1].method=="NdbBlob::getBlobEventName")
+    #     self.assertTrue(funcList[1].start==19)
+    #     self.assertTrue(funcList[1].end==22)
+    #     self.assertTrue(funcList[1].total_add == 4)
+    #     self.assertTrue(funcList[1].total_del == 0)
+    #     testDict = {'assert Adds':0, 'assert Dels': 0, 'ut_ad Adds':0, 'ut_ad Dels': 0, 'ut_a Adds':0, 'ut_a Dels': 0}
+    #     self.assertEqual(testDict,funcList[1].keywordDictionary)
+
+
+    #     self.assertTrue(funcList[2].method=="NdbBlob::getBlobEvent")
+    #     self.assertTrue(funcList[2].start==26)
+    #     self.assertTrue(funcList[2].end==60)
+    #     self.assertTrue(funcList[2].total_add == 35)
+    #     self.assertTrue(funcList[2].total_del == 0)
+    #     testDict = {'assert Adds':2, 'assert Dels': 0, 'ut_ad Adds':0, 'ut_ad Dels': 0, 'ut_a Adds':0, 'ut_a Dels': 0}
+    #     self.assertEqual(testDict,funcList[2].keywordDictionary)
+
+    #     self.assertTrue(funcList[3].method==NON_FUNC)
+
+    # def test_parseText_Single2(self):
+    #     self.chunk2.parseText()
+    #     funcList = self.chunk2.functions
+    #     #self.debugFunctions(funcList)
+    #     self.assertTrue(len(funcList) == 2)
+
+    #     self.assertTrue(funcList[0].method=="btr_pcur_release_leaf")
+    #     self.assertTrue(funcList[0].start==13)
+    #     self.assertTrue(funcList[0].end==27)
+    #     self.assertTrue(funcList[0].total_add == 0)
+    #     self.assertTrue(funcList[0].total_del == 15)
+
+    #     testDict = {'assert Adds':0, 'assert Dels': 0, 'ut_ad Adds':0, 'ut_ad Dels': 1, 'ut_a Adds':0, 'ut_a Dels': 1}
+    #     self.assertEqual(testDict,funcList[0].keywordDictionary)
+
+    #     self.assertTrue(funcList[1].method==NON_FUNC)
+    #     self.assertTrue(funcList[1].total_add == 0)
+    #     self.assertTrue(funcList[1].total_del == 13)
+
+
+    # def test_parseText_Single3(self):
+    #     self.chunk3.parseText()
+    #     funcList = self.chunk3.functions
+    #     #self.debugFunctions(funcList)
+    #     self.assertTrue(len(funcList) == 4)
+    #     self.assertTrue(funcList[0].method=="Repair_mrg_table_error_handler")
+    #     self.assertTrue(funcList[0].start==13)
+    #     self.assertTrue(funcList[0].end==13)
+    #     self.assertTrue(funcList[0].total_add == 1)
+    #     self.assertTrue(funcList[0].total_del == 0)
+
+    #     testDict = {'assert Adds':1, 'assert Dels': 0, 'ut_ad Adds':0, 'ut_ad Dels': 0, 'ut_a Adds':0, 'ut_a Dels': 0}
+    #     self.assertEqual(testDict,funcList[0].keywordDictionary)
+
+    #     self.assertTrue(funcList[1].method=="safely_trapped_errors")
+    #     self.assertTrue(funcList[1].start==27)
+    #     self.assertTrue(funcList[1].end==42)
+
+    #     self.assertTrue(funcList[1].total_add == 16)
+    #     self.assertTrue(funcList[1].total_del == 0)
+
+    #     testDict = {'assert Adds':1, 'assert Dels': 0, 'ut_ad Adds':0, 'ut_ad Dels': 0, 'ut_a Adds':0, 'ut_a Dels': 0}
+    #     self.assertEqual(testDict,funcList[1].keywordDictionary)
+
+
+    #     self.assertTrue(funcList[2].method=="Repair_mrg_table_error_handler::handle_condition")
+    #     self.assertTrue(funcList[2].start==57)
+    #     self.assertTrue(funcList[2].end==67)
+    #     self.assertTrue(funcList[2].total_add == 11)
+    #     self.assertTrue(funcList[2].total_del == 0)
+
+    #     testDict = {'assert Adds':0, 'assert Dels': 0, 'ut_ad Adds':0, 'ut_ad Dels': 0, 'ut_a Adds':0, 'ut_a Dels': 0}
+    #     self.assertEqual(testDict,funcList[2].keywordDictionary)
+
+
+    #     self.assertTrue(funcList[3].method==NON_FUNC)
+
+
+    # def test_parseText_Single6(self):
+    #     self.chunk6.parseText()
+    #     funcList = self.chunk6.functions
+    #     #self.debugFunctions(funcList)
+    #     self.assertTrue(len(funcList) == 4)
+    #     self.assertTrue(funcList[0].method ==  "calc<A_Type>::multiply")
+    #     self.assertTrue(funcList[0].start == 8)
+    #     self.assertTrue(funcList[0].end == 10)
+    #     self.assertTrue(funcList[0].total_add == 3)
+    #     self.assertTrue(funcList[0].total_del == 0)
+    #     testDict = {'assert Adds':0, 'assert Dels': 0, 'ut_ad Adds':0, 'ut_ad Dels': 0, 'ut_a Adds':0, 'ut_a Dels': 0}
+    #     self.assertEqual(testDict,funcList[0].keywordDictionary)
+
+
+    #     self.assertTrue(funcList[1].method ==  "calc<A_Type>::add")
+    #     self.assertTrue(funcList[1].start == 12)
+    #     self.assertTrue(funcList[1].end == 14)
+    #     self.assertTrue(funcList[1].total_add == 3)
+    #     self.assertTrue(funcList[1].total_del == 0)
+    #     testDict = {'assert Adds':0, 'assert Dels': 0, 'ut_ad Adds':0, 'ut_ad Dels': 0, 'ut_a Adds':0, 'ut_a Dels': 0}
+    #     self.assertEqual(testDict,funcList[1].keywordDictionary)
+
+
+    #     self.assertTrue(funcList[2].method ==  "calc<A_Type>::divide")
+    #     self.assertTrue(funcList[2].start == 16)
+    #     self.assertTrue(funcList[2].end == 19)
+    #     self.assertTrue(funcList[2].total_add == 4)
+    #     self.assertTrue(funcList[2].total_del == 0)
+    #     testDict = {'assert Adds':1, 'assert Dels': 0, 'ut_ad Adds':0, 'ut_ad Dels': 0, 'ut_a Adds':0, 'ut_a Dels': 0}
+    #     self.assertEqual(testDict,funcList[2].keywordDictionary)
+
+    #     self.assertTrue(funcList[3].method ==  NON_FUNC)
+
+    # def test_parseText_Single7(self):
+    #     self.chunk7.parseText()
+    #     funcList = self.chunk7.functions
+    #     #self.debugFunctions(funcList)
+    #     self.assertTrue(len(funcList) == 16) #Should be 18, but can't find constructor/destructor outside of class
+    #     self.assertTrue(funcList[6].method ==  "CDVDDemuxPVRClient::Abort", "Actual: " + funcList[7].method)
+
+    # def test_parseText_Single8(self):
+    #     self.chunk8.parseText()
+    #     funcList = self.chunk8.functions
+    #     self.debugFunctions(funcList)
+    #     self.assertTrue(len(funcList) == 4)
+
+    #     self.assertTrue(funcList[0].method ==  "GetHelperBinary")
+    #     self.assertTrue(funcList[0].start == 62)
+    #     self.assertTrue(funcList[0].end == 77)
+    #     self.assertTrue(funcList[0].total_add == 16)
+    #     self.assertTrue(funcList[0].total_del == 0)
+    #     testDict = {'assert Adds':0, 'assert Dels': 0, 'ut_ad Adds':0, 'ut_ad Dels': 0, 'ut_a Adds':0, 'ut_a Dels': 0}
+    #     self.assertEqual(testDict,funcList[0].keywordDictionary)
+
+    #     self.assertTrue(funcList[1].method ==  "StackHelper")
+    #     self.assertTrue(funcList[1].start == 113)
+    #     self.assertTrue(funcList[1].end == 113)
+    #     self.assertTrue(funcList[1].total_add == 1)
+    #     self.assertTrue(funcList[1].total_del == 0)
+    #     testDict = {'assert Adds':0, 'assert Dels': 0, 'ut_ad Adds':0, 'ut_ad Dels': 0, 'ut_a Adds':0, 'ut_a Dels': 0}
+    #     self.assertEqual(testDict,funcList[1].keywordDictionary)
+
+    #     self.assertTrue(funcList[2].method ==  "~StackHelper")
+    #     self.assertTrue(funcList[2].start == 114)
+    #     self.assertTrue(funcList[2].end == 117)
+    #     self.assertTrue(funcList[2].total_add == 4)
+    #     self.assertTrue(funcList[2].total_del == 0)
+    #     testDict = {'assert Adds':0, 'assert Dels': 0, 'ut_ad Adds':0, 'ut_ad Dels': 0, 'ut_a Adds':0, 'ut_a Dels': 0}
+    #     self.assertEqual(testDict,funcList[2].keywordDictionary)
+
+    #     self.assertTrue(funcList[3].method ==  NON_FUNC)
+    #     self.assertTrue(funcList[3].start == 0)
+    #     self.assertTrue(funcList[3].end == 0)
+    #     testDict = {'assert Adds':32, 'assert Dels': 0, 'ut_ad Adds':0, 'ut_ad Dels': 0, 'ut_a Adds':0, 'ut_a Dels': 0}
+    #     self.assertEqual(testDict,funcList[3].keywordDictionary)
+
+    # def test_parseText_Single9(self):
+    #     self.chunk9.parseText()
+
+    #     funcList = self.chunk9.functions
+    #     # self.debugFunctions(funcList)
+    #     #Can't find constructors or destructors outside of classes
+    #     self.assertTrue(len(funcList) == 20)
+
+    #     self.assertTrue(funcList[6].method ==  "CRuntimeMethod")
+    #     self.assertTrue(funcList[6].start == 119)
+    #     self.assertTrue(funcList[6].end == 121)
+    #     self.assertTrue(funcList[6].total_add == 3)
+    #     self.assertTrue(funcList[6].total_del == 0)
+    #     testDict = { 'ut_ad Adds': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Dels': 0, 'assert Adds': 1, 'ut_a Dels': 0}
+    #     self.assertEqual(testDict,funcList[6].keywordDictionary)
+
+    # def test_parseText_Single10(self):
+    #     self.chunk10.parseText()
+    #     funcList = self.chunk10.functions
+    #     #self.debugFunctions(funcList)
+    #     self.assertTrue(len(funcList) == 7)
+
+    #     self.assertTrue(funcList[3].method ==  "FreeArenaList")
+    #     self.assertTrue(funcList[3].start == 203)
+    #     self.assertTrue(funcList[3].end == 246)
+    #     self.assertTrue(funcList[3].total_add == 44)
+    #     self.assertTrue(funcList[3].total_del == 0)
+    #     testDict = { 'ut_ad Adds': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Dels': 0, 'assert Adds': 1, 'ut_a Dels': 0}
+    #     self.assertEqual(testDict,funcList[3].keywordDictionary)
+
+    #     self.assertTrue(funcList[6].method ==  NON_FUNC)
+
+    # def test_parseText_Single11(self):
+    #     self.chunk11.parseText()
+    #     funcList = self.chunk11.functions
+    #     #self.debugFunctions(funcList)
+    #     self.assertTrue(len(funcList) == 6)
+
+    #     self.assertTrue(funcList[4].method ==  "parseArgs")
+    #     self.assertTrue(funcList[4].start == 81)
+    #     self.assertTrue(funcList[4].end == 199)
+    #     self.assertTrue(funcList[4].total_add == 118)
+    #     self.assertTrue(funcList[4].total_del == 0)
+    #     testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 1, 'ut_a Dels': 0}
+    #     self.assertEqual(testDict,funcList[4].keywordDictionary)
+
+    #     self.assertTrue(funcList[5].method ==  NON_FUNC)
+
+
+    # def test_parseText_Single12(self):
+    #     self.chunk12.parseText()
+    #     funcList = self.chunk12.functions
+    #     #self.debugFunctions(funcList)
+    #     self.assertTrue(len(funcList) == 4)
+
+    #     self.assertTrue(funcList[1].method ==  "mbfl_buffer_converter_delete")
+    #     self.assertTrue(funcList[1].start == 173)
+    #     self.assertTrue(funcList[1].end == 184)
+    #     self.assertTrue(funcList[1].total_add == 12)
+    #     self.assertTrue(funcList[1].total_del == 0)
+    #     testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 0, 'ut_a Dels': 0}
+    #     self.assertEqual(testDict,funcList[1].keywordDictionary)
+
+    #     self.assertTrue(funcList[3].method ==  NON_FUNC)
+
+    # def test_parseText_Single13(self):
+    #     self.chunk13.parseText() #Broken like 2 is
+    #     funcList = self.chunk13.functions
+    #     #self.debugFunctions(funcList)
+    #     self.assertTrue(len(funcList) == 3)
+
+    #     self.assertTrue(funcList[0].method ==  "ClassCache::hashKey")
+    #     self.assertTrue(funcList[0].start == 6)
+    #     self.assertTrue(funcList[0].end == 8)
+    #     self.assertTrue(funcList[0].total_add == 0)
+    #     self.assertTrue(funcList[0].total_del == 3)
+    #     #self.assertTrue(len(funcList[0].assertionList) == 0)
+
+    #     self.assertTrue(funcList[1].method ==  "ClassCache::lookup")
+    #     self.assertTrue(funcList[1].start == 13)
+    #     self.assertTrue(funcList[1].end == 41)
+    #     self.assertTrue(funcList[1].total_add == 0)
+    #     self.assertTrue(funcList[1].total_del == 29)
+    #     #self.assertTrue(len(funcList[1].assertionList) == 0)
+
+    #     self.assertTrue(funcList[2].method ==  NON_FUNC)
+
+    # def test_parseText_Single14(self):
+    #     self.chunk14.parseText()
+    #     funcList = self.chunk14.functions
+    #     # self.debugFunctions(funcList)
+    #     self.assertTrue(len(funcList) == 2)
+
+    #     self.assertTrue(funcList[0].method ==  "getDynLocType")
+    #     self.assertTrue(funcList[0].start == 8)
+    #     self.assertTrue(funcList[0].end == 241)
+
+    #     testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 15, 'ut_a Dels': 0}
+    #     self.assertEqual(testDict,funcList[0].keywordDictionary)
+
+    #     self.assertTrue(funcList[1].method ==  NON_FUNC)
+
+    # def test_parseText_Single15(self):
+    #     self.chunk15.parseText()
+    #     # funcList = self.chunk15.functions
+    #     # #self.debugFunctions(funcList)
+
+    # def test_parseText_Single21(self):
+    #     self.chunk21.parseText()
+    #     funcList = self.chunk21.functions
+    #     #self.debugFunctions(funcList)
+
+    #     self.assertTrue(len(funcList) == 2)
+    #     self.assertTrue(funcList[0].method ==  "MDL_object_lock")
+
+    #     self.assertTrue(funcList[1].method ==  NON_FUNC)
+    #     self.assertTrue(funcList[1].total_add == 16)
+    #     self.assertTrue(funcList[1].total_del == 1)
+
+    # def test_parseText_Single22(self):
+    #     self.chunk22.parseText()
+    #     funcList = self.chunk22.functions
+    #     self.debugFunctions(funcList)
+
+    #     self.assertTrue(len(funcList) == 7) #Can't get the last one b/c constructor out of context
+    #     self.assertTrue(funcList[0].method ==  "MDL_map::init")
+    #     self.assertTrue(funcList[1].method ==  "MDL_map::destroy")
+    #     testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 1, 'ut_a Dels': 0}
+    #     self.assertEqual(testDict,funcList[1].keywordDictionary)
+
+    #     self.assertTrue(funcList[2].method ==  "MDL_map::find_or_insert")
+    #     self.assertTrue(funcList[3].method ==  "MDL_map::find")
+    #     self.assertTrue(funcList[4].method ==  "MDL_map::move_from_hash_to_lock_mutex")
+
+    #     testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 2, 'ut_a Dels': 0}
+    #     self.assertTrue(testDict,funcList[4].keywordDictionary)
+    #     self.assertTrue(funcList[5].method ==  "MDL_map::remove")
+
+    #     testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 1, 'ut_a Dels': 0}
+    #     self.assertEqual(testDict,funcList[5].keywordDictionary)
+
+    #     self.assertTrue(funcList[6].method ==  NON_FUNC)
+
+   
+    # def test_parseText_Single23(self):
+    #     self.chunk23.parseText()
+    #     funcList = self.chunk23.functions
+    #     self.debugFunctions(funcList)
+    #     self.assertTrue(len(funcList) == 3)
+
+    #     self.assertTrue(funcList[0].method ==  "MDL_ticket::has_pending_conflicting_lock_impl")
+    #     testDict = { 'ut_ad Adds': 0, 'assert Dels': 2, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 0, 'ut_a Dels': 0}
+    #     self.assertEqual(testDict,funcList[0].keywordDictionary)
+    #     self.assertTrue(funcList[1].method ==  "MDL_ticket::has_pending_conflicting_lock") #Name not in + or -
+    #     testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 1, 'ut_a Dels': 0}
+    #     self.assertEqual(testDict,funcList[1].keywordDictionary)
+    #     self.assertTrue(funcList[2].method ==  NON_FUNC)
+
+    # def test_parseText_Single24(self):
+    #     self.chunk24.parseText()
+    #     funcList = self.chunk24.functions
+    #     #self.debugFunctions(funcList)
+    #     self.assertTrue(len(funcList) == 25)
+
+    #     self.assertTrue(funcList[16].method ==  "*get_date_time_format_str")
+    #     testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 1, 'ut_a Dels': 0}
+    #     self.assertEqual(testDict,funcList[16].keywordDictionary)
+
+    # def test_parseText_Single25(self):
+    #     self.chunk25.parseText()
+    #     funcList = self.chunk25.functions
+    #     #self.debugFunctions(funcList)
+    #     self.assertTrue(len(funcList) == 5)
+
+    #     self.assertTrue(funcList[2].method ==  "row_upd_index_replace_new_col_vals_index_pos")
+    #     testDict = { 'ut_ad Adds': 1, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 0, 'ut_a Dels': 0}
+    #     self.assertEqual(testDict,funcList[2].keywordDictionary)
+
+
+    # def test_parseText_Single27(self):
+    #     self.chunk27.parseText()
+    #     funcList = self.chunk27.functions
+    #     #self.debugFunctions(funcList)
+    #     self.assertTrue(len(funcList) == 31)
+
+    # def test_parseText_Single29(self):
+    #     self.chunk29.parseText()
+    #     funcList = self.chunk29.functions
+    #     #self.debugFunctions(funcList)
+    #     self.assertTrue(len(funcList) == 16)
+
+    #     self.assertTrue(funcList[0].method == "idxof")
+    #     testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 0, 'ut_a Dels': 0}
+    #     self.assertEqual(testDict,funcList[0].keywordDictionary)
+
+    #     self.assertTrue(funcList[1].method == "idxof")
+    #     testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 0, 'ut_a Dels': 0}
+    #     self.assertEqual(testDict,funcList[1].keywordDictionary)
+
+    #     self.assertTrue(funcList[7].method == "*sfmt_get_idstring")
+    #     testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 0, 'ut_a Dels': 0}
+    #     self.assertEqual(testDict,funcList[7].keywordDictionary)
+
+    #     self.assertTrue(funcList[11].method ==  "sfmt_fill_array32")
+    #     testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 3, 'ut_a Dels': 0}
+    #     self.assertEqual(testDict,funcList[11].keywordDictionary)
+
+    #     self.assertTrue(funcList[12].method ==  "sfmt_fill_array64")
+    #     testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 3, 'ut_a Dels': 0}
+    #     self.assertEqual(testDict,funcList[12].keywordDictionary)
+
+
+    # def test_parseText_Single31(self):
+    #     self.chunk31.parseText() 
+    #     funcList = self.chunk31.functions
+    #     #self.debugFunctions(funcList)
+    #     self.assertTrue(len(funcList) == 2)
+
+    #     self.assertTrue(funcList[0].method ==  "smp_callin")
+    #     testDict = { 'ut_ad Adds': 0, 'assert Dels': 1, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 0, 'ut_a Dels': 0}
+    #     self.assertEqual(testDict,funcList[0].keywordDictionary)
+
+    #     self.assertTrue(funcList[1].method ==  NON_FUNC)
+    #     testDict = { 'ut_ad Adds': 0, 'assert Dels': 1, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 0, 'ut_a Dels': 0}
+    #     self.assertEqual(testDict,funcList[1].keywordDictionary)
+
+    # def test_parseText_Single32(self):
+    #     self.chunk32.parseText()
+    #     funcList = self.chunk32.functions
+    #     # #self.debugFunctions(funcList)
+    #     self.assertTrue(len(funcList) == 11)
+
+    #     self.assertTrue(funcList[1].method ==  "h264_er_decode_mb")
+    #     testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 1, 'ut_a Dels': 0}
+    #     self.assertEqual(testDict,funcList[1].keywordDictionary)
+
+
+    #     self.assertTrue(funcList[7].method ==  "alloc_picture")
+    #     testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 2, 'ut_a Dels': 0}
+    #     self.assertEqual(testDict,funcList[7].keywordDictionary)
+
+    #     self.assertTrue(funcList[10].method ==  NON_FUNC)
+    #     testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 0, 'ut_a Dels': 0}
+    #     self.assertEqual(testDict,funcList[10].keywordDictionary)
+
+
+    # def test_parseText_Single33(self):
+    #     self.chunk33.parseText()
+    #     #Problems:
+    #     #Also, get a false assert? when we have a function name named assert.
+    #     funcList = self.chunk33.functions
+    #     self.debugFunctions(funcList)
+    #     # print("Length: " + str(len(funcList)))
+    #     self.assertTrue(len(funcList) == 24)
+
+    #     self.assertTrue(funcList[23].method ==  NON_FUNC)
+
+    # def test_parseText_Single35(self):
+    #     self.chunk35.parseText()
+    #     funcList = self.chunk35.functions
+    #     self.debugFunctions(funcList)
+
+    #     self.assertTrue(funcList[-1].method == NON_FUNC)
+    #     testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 0, 'ut_a Dels': 0}
+    #     self.assertEqual(testDict,funcList[-1].keywordDictionary)
+
 
     def test_parseText_Single36(self):
-        self.chunk36.parseText() #Broken like 2 is
-        #BROKEN LIKE 2
+        self.chunk36.parseText() 
         funcList = self.chunk36.functions
         #self.debugFunctions(funcList)
 
         self.assertTrue(len(funcList) == 3) # 2 + 1 Mock
 
         self.assertTrue(funcList[1].method ==  "Patch")
-        #self.assertTrue(len(funcList[1].assertionList) == 5)
+        testDict = { 'ut_ad Adds': 0, 'assert Dels': 5, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 0, 'ut_a Dels': 0}
+        self.assertEqual(testDict,funcList[1].keywordDictionary)
 
-        self.assertTrue(funcList[2].method ==  "NO_FUNC_CONTEXT")
-        #self.assertTrue(len(funcList[2].assertionList) == 1)
+        self.assertTrue(funcList[2].method ==  NON_FUNC)
+        testDict = { 'ut_ad Adds': 0, 'assert Dels': 1, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 0, 'ut_a Dels': 0}
+        self.assertEqual(testDict,funcList[2].keywordDictionary)
 
     def test_parseText_Single37(self):
         self.chunk37.parseText()
@@ -755,54 +793,77 @@ class logChunktest(unittest.TestCase):
         self.chunk41.parseText()
         funcList = self.chunk41.functions
         #self.debugFunctions(funcList)
-        self.assertTrue(len(funcList) == 9)
+        self.assertTrue(len(funcList) == 10)
         self.assertTrue(funcList[0].method == "Mutex")
         self.assertTrue(funcList[4].method == "Mutex")
+        self.assertTrue(funcList[9].method == NON_FUNC)
+        testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 0, 'ut_a Dels': 0}
+        self.assertEqual(testDict, funcList[9].keywordDictionary)
 
     def test_parseText_Single42(self):
         self.chunk42.parseText()
         funcList = self.chunk42.functions
         #self.debugFunctions(funcList)
-        self.assertTrue(len(funcList) == 1)
+        self.assertTrue(len(funcList) == 2)
         self.assertTrue(funcList[0].method == "Benchmark<P_parameter>::saveMatlabGraph")
         testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 1, 'ut_a Dels': 0}
         self.assertEqual(testDict, funcList[0].keywordDictionary)
+        self.assertTrue(funcList[1].method == NON_FUNC)
+        testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 0, 'ut_a Dels': 0}
+        self.assertEqual(testDict, funcList[1].keywordDictionary)
 
     def test_parseText_Single43(self):
         self.chunk43.parseText()
         funcList = self.chunk43.functions
         #self.debugFunctions(funcList)
-        self.assertTrue(len(funcList) == 1)
+        self.assertTrue(len(funcList) == 2)
         self.assertTrue(funcList[0].method == "incr_flush_list_size_in_bytes")
         testDict = { 'ut_ad Adds': 2, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 0, 'ut_a Dels': 0}
         self.assertEqual(testDict, funcList[0].keywordDictionary)
+        self.assertTrue(funcList[1].method == NON_FUNC)
+        testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 0, 'ut_a Dels': 0}
+        self.assertEqual(testDict, funcList[1].keywordDictionary)
 
     def test_parseText_Single44(self):
         self.chunk44.parseText()
         funcList = self.chunk44.functions
         #self.debugFunctions(funcList)
-        self.assertTrue(len(funcList) == 1)
+        self.assertTrue(len(funcList) == 2)
         self.assertTrue(funcList[0].method == "auto_copying_data_provider_t::get_data_into_buffers")
         testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 4, 'ut_a Dels': 0}
         self.assertEqual(testDict, funcList[0].keywordDictionary)
+        self.assertTrue(funcList[1].method == NON_FUNC)
+        testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 0, 'ut_a Dels': 0}
+        self.assertEqual(testDict, funcList[1].keywordDictionary)
 
     def test_parseText_Single45(self): #Not Sure how I want to handle this
         self.chunk45.parseText()
         funcList = self.chunk45.functions 
         #self.debugFunctions(funcList)
-        self.assertTrue(len(funcList) == 1)
+        self.assertTrue(len(funcList) == 2)
         self.assertTrue(funcList[0].method == "Int32BinopInputShapeTester")
         testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 0, 'ut_a Dels': 0}
         self.assertEqual(testDict, funcList[0].keywordDictionary)
+        self.assertTrue(funcList[1].method == NON_FUNC)
+        testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 0, 'ut_a Dels': 0}
+        self.assertEqual(testDict, funcList[1].keywordDictionary)
 
     def test_parseText_Single46(self): #Not Sure how I want to handle this
         self.chunk46.parseText()
         funcList = self.chunk46.functions 
         #self.debugFunctions(funcList)
-        self.assertTrue(len(funcList) == 2)
+        self.assertTrue(len(funcList) == 3)
         self.assertTrue(funcList[0].method == "QuatF::mulP")
+        testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 0, 'ut_a Dels': 0}
+        self.assertEqual(testDict, funcList[0].keywordDictionary)
+
+        self.assertTrue(funcList[1].method == "QuatF::mul")
         testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 1, 'ut_a Dels': 0}
         self.assertEqual(testDict, funcList[1].keywordDictionary)
+
+        self.assertTrue(funcList[2].method == NON_FUNC)
+        testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 0, 'ut_a Dels': 0}
+        self.assertEqual(testDict, funcList[2].keywordDictionary)
 
     def test_parseText_Single47(self): #Not Sure how I want to handle this
         self.chunk47.parseText()
@@ -817,10 +878,14 @@ class logChunktest(unittest.TestCase):
         self.chunk48.parseText()
         funcList = self.chunk48.functions 
         #self.debugFunctions(funcList)
-        self.assertTrue(len(funcList) == 4)
+        self.assertTrue(len(funcList) == 5)
         self.assertTrue(funcList[0].method == "&=")
         testDict = { 'ut_ad Adds': 0, 'assert Dels': 1, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 0, 'ut_a Dels': 0}
         self.assertEqual(testDict, funcList[0].keywordDictionary)
+
+        self.assertTrue(funcList[4].method == NON_FUNC)
+        testDict = { 'ut_ad Adds': 0, 'assert Dels': 0, 'ut_ad Dels': 0, 'ut_a Adds': 0, 'assert Adds': 0, 'ut_a Dels': 0}
+        self.assertEqual(testDict, funcList[4].keywordDictionary)
 
 
     def test_parseText_Single49(self): #Not Sure how I want to handle this
@@ -901,10 +966,14 @@ class logChunktest(unittest.TestCase):
         self.chunk55.parseText()
         funcList = self.chunk55.functions 
         #self.debugFunctions(funcList)
-        self.assertTrue(len(funcList) == 1)
+        self.assertTrue(len(funcList) == 2)
         self.assertTrue(funcList[0].method == "boss_jaraxxusAI")
         self.assertTrue(funcList[0].total_add == 1)
         self.assertTrue(funcList[0].total_del == 1)
+
+        self.assertTrue(funcList[1].method == NON_FUNC)
+        self.assertTrue(funcList[1].total_add == 1)
+        self.assertTrue(funcList[1].total_del == 1)
 
 
 

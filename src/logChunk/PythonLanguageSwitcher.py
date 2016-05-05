@@ -79,16 +79,18 @@ class PythonLanguageSwitcher(languageSwitcher.languageSwitcher):
 
     def parseFunctionName(self, fullName):
         #def name(): #I think it should be fine to return what falls in between the def and the first "("
-        increaseIndicies = [next.start() for next in re.finditer('\(', fullName)]
         defLoc = fullName.find("def")
+        name = fullName[defLoc:]
+        increaseIndicies = [next.start() for next in re.finditer('\(', name)]
+        
         if(defLoc == -1):
             raise ValueError("1. Function Name to parse is malformed.", fullName)
         if(len(increaseIndicies) == 0):
             raise ValueError("2. Function Name to parse is malformed.", fullName)
-        if(defLoc >= increaseIndicies[0]):
-            raise ValueError("3. Function Name to parse is malformed.", fullName)
+        #if(defLoc >= increaseIndicies[0]):
+        #    raise ValueError("3. Function Name to parse is malformed.", fullName)
 
-        return fullName[:increaseIndicies[0]].split(" ")[-1]
+        return name[:increaseIndicies[0]].split(" ")[-1]
 
     def getBlockCommentStart(self, line):
         start = line.find(PythonBlockComments[0])

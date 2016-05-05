@@ -146,10 +146,10 @@ class logChunktest(unittest.TestCase):
 
         self.chunkb5.parseText()
         funcList = self.chunkb5.functions
-        self.debugFunctions(funcList)
+        #self.debugFunctions(funcList)
 
 
-        self.assertTrue(len(funcList) == 1)
+        self.assertTrue(len(funcList) == 2)
         self.assertTrue(funcList[0].method=="copy")
         self.assertTrue(funcList[0].total_add == 19)
         self.assertTrue(funcList[0].total_del == 5)
@@ -157,6 +157,11 @@ class logChunktest(unittest.TestCase):
         testdict= {'throw  Adds': 0, 'catch Dels': 0, 'try Adds': 0, 'try Dels': 0, 'exception Dels': 0, 'raise Adds': 0, 'catch Adds': 0, 'finally Dels': 0, 'finally Adds': 0, 'throw  Dels': 0, 'exception Adds': 1, 'raise Dels': 0, 'for Adds': 0,'for Dels': 0,'while Adds': 0,'while Dels': 0}
 
         self.assertEqual(testdict,funcList[0].keywordDictionary)
+
+        self.assertTrue(funcList[1].method==NON_FUNC) #The add del count here is a bit off due to the way we change code that has been uncommented
+        testdict= {'throw  Adds': 0, 'catch Dels': 0, 'try Adds': 0, 'try Dels': 0, 'exception Dels': 0, 'raise Adds': 0, 'catch Adds': 0, 'finally Dels': 0, 'finally Adds': 0, 'throw  Dels': 0, 'exception Adds': 0, 'raise Dels': 0, 'for Adds': 0,'for Dels': 0,'while Adds': 0,'while Dels': 0}
+
+        self.assertEqual(testdict,funcList[1].keywordDictionary)
 
     def test_parseText_Block6(self):
 

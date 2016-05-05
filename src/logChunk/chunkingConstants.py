@@ -32,6 +32,8 @@ TOTALDEL = 5
 
 #Label for structures found outside of a function
 MOCK = "NO_FUNC_CONTEXT"
+NON_FUNC = "GITCPROC_NON_FUNCTION"
+
 
 #Label for a chunk with a parse error (this is to prevent crashes)
 CHUNK_ERROR = "ERROR_IN_CHUNK"
