@@ -1025,7 +1025,7 @@ class logChunk:
                 else:
                     #TODO: What do we do on a S_SIMUL???
                     #Decrease scope of one to decrease first, then do function update???
-                    self.sT.scopeDecrease(line, lineType, -1, True)
+                    self.sT.decreaseScope(line, lineType, -1, True)
                     try:
                         (phase, line, lineType, lineNum, functionName, classContext, funcStart, startFlag, ftotal_add, ftotal_del) = self.checkForFunctionName(phase, line, lineType, lineNum, functionName, classContext, funcStart, startFlag, ftotal_add, ftotal_del)
                     except UnsupportedScopeException:

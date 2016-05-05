@@ -3,16 +3,20 @@ import os
 import copy
 from git import *
 
+
 sys.path.append("../util")
 
 import Util
+import LanguageSwitcherFactory
 from ghLogDb import ghLogDb
 from dumpLogs import dumpLogs
+from Config import Config
+
 
 
 LOG_FILE = "all_log.txt"
 
-def dumpLog(projPath):
+def dumpLog(projPath, languages):
 
     if not os.path.isdir(projPath):
         print("!! Please provide a valid directory")
@@ -25,15 +29,17 @@ def dumpLog(projPath):
         print("%s exists!!" % (log_file))
         return
     '''
+    extSet = LanguageSwitcherFactory.LanguageSwitcherFactory.getExtensions(languages)
+    #print(extSet)
+    all_extn = ""
+    #for e in Util.cpp_extension:
+    for e in extSet:
+        all_extn += " \\*"  + e
+        all_extn += " \\*"  + e.upper()
     with Util.cd(projPath):
-        all_extn = ""
-        #TODO: Language Switching Behavior:
-        #1. Did the user specify a language set -> select all languages of that type currently supported.
-        #2. Select extensions for all languages currently supported.
-        for e in Util.cpp_extension:
-            all_extn += " \\*"  + e
-            all_extn += " \\*"  + e.upper()
 
+        #TODO: Determine what log command is appropriate on a per language basis to provide sufficient context
+        #but also minimize the amount of logs unnecessarily processed.
         #logCmd = "git log --date=short --no-merges -U1 -- " + all_extn + " > all_log.txt"
         #logCmd = "git log --date=short -U1000 --function-context -- " + all_extn + " > " + LOG_FILE
         #Assert Replication Command
@@ -41,8 +47,9 @@ def dumpLog(projPath):
 
         #os.system("git stash save --keep-index; git pull")
         #print(logCmd)
+        #Remove the old logs.
         try:
-            os.system("rm all_log.txt")
+            os.system("rm " + LOG_FILE)
         except:
             print("Rm failed.")
             pass
@@ -50,6 +57,7 @@ def dumpLog(projPath):
 
 
 
+#This seems deprecated relative to ghProc.py
 def processLog(projPath):
 
     if not os.path.isdir(projPath):
@@ -66,7 +74,7 @@ def processLog(projPath):
     ghDb.processLog()
 
 
-def getGitLog(project):
+def getGitLog(project, languages):
 
     # dl = dumpLogs()
     # dl.cleanDb()
@@ -79,7 +87,7 @@ def getGitLog(project):
         #  continue
         proj_path = os.path.join(project, p)
         print proj_path
-        dumpLog(proj_path)
+        dumpLog(proj_path, languages)
         #processLog(proj_path)
 
 
@@ -95,12 +103,18 @@ def main():
     if(len(sys.argv) == 3):
         config_file = sys.argv[2]
 
+    cfg = Config(config_file)
+    log_config = cfg.ConfigSectionMap("Log")
+    try:
+        langs = log_config['languages'].split(",")
+    except:
+        langs = [] #Treat empty as showing all supported languages.
 
     if not os.path.isdir(project):
         print("!! Please provide a valid directory")
         return
 
-    getGitLog(project)
+    getGitLog(project, langs)
     #processLog(project)
     print "Done!!"
 
