@@ -237,13 +237,14 @@ class Sha:
 
 class ghLogDb:
 
-    def __init__(self, logFile):
+    def __init__(self, logFile, password = ""):
 
         self.log_file = logFile
         self.project_name = None
         self.curr_method = None
         self.cur_lang = None
         self.shas = []
+        self.dbPass = password
     
 
     def __str__(self):
@@ -421,7 +422,7 @@ class ghLogDb:
         print("---------- %s ------------\n" % (self.project_name))
 
         if(Util.DATABASE == 1):
-            dl = dumpLogs()
+            dl = dumpLogs(self.dbPass)
 
         if(Util.CSV==1):
             if not os.path.isdir("../Results"):

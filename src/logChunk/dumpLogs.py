@@ -12,9 +12,10 @@ import Util
 
 class dumpLogs:
 
-    def __init__(self, configFile=Util.CONFIG):
+    def __init__(self, password, configFile=Util.CONFIG):
 
         self.cfg = Config(configFile)
+        self.dbPass = password
         self.connectDb()
         #self.cleanDb()
 
@@ -25,7 +26,7 @@ class dumpLogs:
         logging.debug("Database configuration = %r\n", self.db_config)
         self.dbCon = DatabaseCon(self.db_config['database'], self.db_config['user'], \
                                  self.db_config['host'], self.db_config['port'], \
-                                 self.db_config['password'])
+                                 self.dbPass)
 
 
     def cleanDb(self):

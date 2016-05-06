@@ -11,10 +11,10 @@ DEBUGLITE = 1
 DATABASE = 1
 CSV=0
 LOGTIME = 1
-#CONFIG = "../util/sample_conf.ini" #Location of the configuration file.
-CONFIG = "../util/assert_conf.ini" #Location of the configuration file.
+CONFIG = "../util/sample_conf.ini" #Location of the configuration file.
+#CONFIG = "../util/assert_conf.ini" #Location of the configuration file.
 
-supportedLanguages = ["C", "C++", "Java"]
+supportedLanguages = ["C", "C++", "Java", "Python"]
 
 class cd:
     """Context manager for changing the current working directory"""

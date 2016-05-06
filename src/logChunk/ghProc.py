@@ -32,7 +32,7 @@ def dumpLog(projPath):
         print logCmd
         os.system(logCmd)
 
-def processLog(projPath):
+def processLog(projPath, password = ""):
 
     
     log_file = projPath + os.sep + LOG_FILE
@@ -43,7 +43,7 @@ def processLog(projPath):
     else:
         print("Going to process %s " % (log_file))
     
-    ghDb = ghLogDb(log_file)
+    ghDb = ghLogDb(log_file, password)
     ghDb.processLog()
 
 def checkProj(project):
@@ -68,10 +68,18 @@ def main():
     print "Utility to process github logs"
 
     if len(sys.argv) < 2:
-        print "!!! Usage: python ghProc.py project"
+        print "!!! Usage: python ghProc.py project [password]"
         sys.exit()
 
     project = str(sys.argv[1])
+
+    if(Util.DATABASE):
+        if(len(sys.argv) < 3):
+            print("Database output selected, please input the password after the project")
+            sys.exit()
+
+        password = str(sys.argv[2])
+
 
     if checkProj(project) == False:
         print("!! Please provide a valid directory")
@@ -81,7 +89,7 @@ def main():
         start = datetime.datetime.now()
 
     #dumpLog(project)
-    processLog(project)
+    processLog(project, password)
     print "!! Done"
 
     if(Util.LOGTIME):
