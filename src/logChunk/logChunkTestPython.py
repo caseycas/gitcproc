@@ -54,6 +54,8 @@ class logChunktest(unittest.TestCase):
         self.chunk12 = logChunk.logChunk(self.readHelper("testfiles/Python/testChunk12.txt"), "Python", "../util/sample_confPy.ini")
         self.chunk13 = logChunk.logChunk(self.readHelper("testfiles/Python/testChunk13.txt"), "Python", "../util/sample_confPy.ini")
         self.chunk14 = logChunk.logChunk(self.readHelper("testfiles/Python/testChunk14.txt"), "Python", "../util/sample_confPy.ini")
+        self.chunk15 = logChunk.logChunk(self.readHelper("testfiles/Python/testChunk15.txt"), "Python", "../util/sample_confPy.ini")
+        self.chunk16 = logChunk.logChunk(self.readHelper("testfiles/Python/testChunk16.txt"), "Python", "../util/sample_confPy.ini")
 
     def test_isFunction(self):
         self.assertTrue(self.testChunk.isFunction(self.method1))
@@ -312,6 +314,22 @@ class logChunktest(unittest.TestCase):
 
        testDict = {'print Adds': 1, 'print Dels': 0, 'if Dels': 1, 'if Adds': 1}
        self.assertEqual(testDict,funcList[0].keywordDictionary)
+
+    def test_parseText15(self):
+       #This was a crashing bug in an eariler version, but it also demonstrates
+       #Issue #8 (block overcounting)
+       #I'll leave it as a check for the crashing bug for now, but we should update it when
+       #we're ready to try and fix the overcounting.
+       self.chunk15.parseText()
+       funcList = self.chunk15.functions
+       self.debugFunctions(funcList)
+
+    def test_parseText16(self):
+       #Weird indenting here, again, I'm just trying to make sure it doesn't crash...
+       self.chunk16.parseText()
+       funcList = self.chunk16.functions
+       self.debugFunctions(funcList)
+
 
 
 

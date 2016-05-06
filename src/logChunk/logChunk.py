@@ -982,6 +982,7 @@ class logChunk:
             line = self.removeStrings(line)
             line = line.replace("\\", "") #Remove backslashes.
             line = line.replace("^M", "")
+            line = line.rstrip() #Remove whitespace at the end
 
 
             
@@ -1051,8 +1052,8 @@ class logChunk:
                 elif(sResult == scopeTracker.S_SIMUL):
                     #TODO: This line does not behave correctly....
                     #Decrease scope of one to decrease first, then do function update???
-                    self.sT.decreaseScope(line, lineType, -1, True)
                     try:
+                        self.sT.decreaseScope(line, lineType, -1, True)
                         (phase, line, lineType, lineNum, functionName, classContext, funcStart, startFlag, ftotal_add, ftotal_del) = self.checkForFunctionName(phase, line, lineType, lineNum, functionName, classContext, funcStart, startFlag, ftotal_add, ftotal_del)
                     except UnsupportedScopeException:
                         continue

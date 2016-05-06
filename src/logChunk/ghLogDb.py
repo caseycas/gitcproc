@@ -29,7 +29,7 @@ ERR_STR  = '\\berror\\b|\\bbug\\b|\\bfix\\b|\\bfixing\\b|\\bfixups\\b|\\bfixed\\
 
 
 def timeout(signum, frame):
-    raise TimeExceededError("Timed Out")
+    raise TimeExceededError.TimeExceededError("Timed Out")
 
 def toStr(text):
     try:
@@ -459,7 +459,7 @@ class ghLogDb:
         for l in inf:
 
             try:
-                signal.alarm(30)
+                signal.alarm(0)
 
                 sha  = self.isSha(l)
                 line = l
@@ -563,7 +563,7 @@ class ghLogDb:
                     else: #Then we reached a content line.
                         self.processPatch(fullLine, patchObj, curLogChunk)
 
-            except TimeExceededError:
+            except TimeExceededError.TimeExceededError:
                 print("Line Timed out, moving to next.")
                 continue
 

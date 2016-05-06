@@ -5,6 +5,7 @@ sys.path.append("../util")
 
 import Util
 import UnsupportedLanguageException
+from UnsupportedScopeException import *
 from chunkingConstants import *
 from scopeTracker import *
 
@@ -82,13 +83,16 @@ class PythonScopeTracker(scopeTracker):
 
         assert(self.indentToken != "")
         if(self.indentToken == "\t"): 
-            assert(" " not in whiteSpace)
+            if(" " in whiteSpace):
+                raise UnsupportedScopeException("Spaces found in tab indented python file.")
+            #assert(" " not in whiteSpace) #Make an error for this...
         else: #I have discovered real code that is mixing these, let's try replace tabs with spaces....
             #assert("\t" not in whiteSpace)
             if("\t" in whiteSpace):
                 #I don't know if this is technically correct, but the code shouldn't be doing this anyway.
                 #I'm looking at you ansible
                 whiteSpace.replace("\t",self.indentToken) 
+                #whiteSpace.replace("\t","        ") #I think tabs are replaced by 8 spaces... 
 
         return len(re.findall(self.indentToken, whiteSpace))
 
@@ -321,7 +325,9 @@ class PythonScopeTracker(scopeTracker):
                     oldChange -= 1
                     self.decreaseOldIndent()
             elif(oldChange < 0):
-                assert(oldChange == -1) #Only permitted one increase at a time.
+                if(oldChange != -1):
+                    raise UnsupportedScopeException("Python scope increased by more than 1")
+                #assert(oldChange == -1) #Only permitted one increase at a time.
                 #This needs to be tuned for a block or func change
                 #if(funcOldLine != -1):
                 #    self.increaseOldIndent(stackValue, FUNC, lineDiff)
@@ -332,7 +338,9 @@ class PythonScopeTracker(scopeTracker):
                     newChange -= 1
                     self.decreaseNewIndent()
             elif(newChange < 0):
-                assert(newChange == -1) #Only permitted one increase at a time.
+                if(newChange != -1):
+                    raise UnsupportedScopeException("Python scope increased by more than 1")
+                #assert(newChange == -1) #Only permitted one increase at a time.
                 #This needs to be tuned for a block or func change
                 self.increaseNewIndent(stackValue, changeType, lineDiff) #TODO lineDiff = ??
 
