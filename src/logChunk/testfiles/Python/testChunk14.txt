@@ -3,7 +3,7 @@
      print('Error: %s is required for operation.' % (SW_REPORT), file=sys.stderr)
      sys.exit(1)
  
- +print("Test")
++print("Test")
  # Pre-startup work
  if not os.path.exists(CACHE_DIR):
      os.mkdir(CACHE_DIR)

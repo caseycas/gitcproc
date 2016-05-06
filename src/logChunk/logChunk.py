@@ -734,7 +734,7 @@ class logChunk:
                             raise UnsupportedScopeException("This ordering of scope changes is not yet supported.")
 
                         if(Util.DEBUG):
-                            print("Scope Increase")
+                            print("Scope Increase!!!!!")
                         #Here we update the scopeTracker for our block keywords if we have seen
                         #a block keyword followed by a scope increase either on the same line or
                         #on the line immediately following it.
@@ -799,7 +799,11 @@ class logChunk:
 
                         if(lineType != OTHER):
                             #Search for single line keywords BEFORE the scope decrease if in non decrease first language.
-                            keywordDictionary = self.parseLineForKeywords(sT.beforeDecrease(line), lineType, singleKeyWordList, keywordDictionary)
+                            if(not sT.changeScopeFirst()):
+                                keywordDictionary = self.parseLineForKeywords(sT.beforeDecrease(line), lineType, singleKeyWordList, keywordDictionary)
+                            else:
+                                keywordDictionary = self.parseLineForKeywords(line, lineType, singleKeyWordList, keywordDictionary)
+
 
                         if(sT.getBlockContext(lineType) != [] and lineType!=OTHER):
                             if(Util.DEBUG):
@@ -814,7 +818,7 @@ class logChunk:
                             print("Removed!!!!" + str(sT.getBlockContext(lineType)))
                 else: #A SIMUL change!!!
                     if(sT.changeScopeFirst()): #Shouldn't be possible in bracket based languages.
-                        assert(sT.isScopeIncrease(line, lineType) == scopeTracker.S_SIMUL)
+                        assert(sT.isScopeIncrease(line, lineType) == scopeTracker.S_SIMUL or sT.isScopeDecrease(line, lineType) == scopeTracker.S_SIMUL)
                         #Get function context first
                         if(sT.getFuncContext(lineType) != ""):
                             shortFunctionName = sT.getFuncContext(lineType) #Get the functional context
@@ -834,10 +838,10 @@ class logChunk:
                             foundBlock=self.getBlockPattern(line,blockKeyWordList)
                             if(foundBlock!=None):
                                 if(Util.DEBUG):
-                                    print("Block start found (1): " + foundBlock)
+                                    print("Block start found (SIMUL): " + foundBlock)
                                 sT.increaseScope(foundBlock, line, lineType, scopeTracker.SBLOCK, 0, True) #This shouldn't set the block yet.
-                                #Reset block after this line.
-                                reset = True
+                                blockKeywordType = lineType
+                                blockKeywordLine = lineNum
                             else:
                                 sT.increaseScope(line, line, lineType, scopeTracker.GENERIC, -1, True)
 
@@ -859,8 +863,6 @@ class logChunk:
                                 print("Current block context: " + str(sT.getBlockContext(lineType)))
                             keywordDictionary = self.parseLineForKeywords(line, lineType, blockKeyWordList, keywordDictionary, sT.getBlockContext(lineType))
 
-                        #Scope Decrease Relative to one...
-                        #Scope Increase Relative to another...
         else: # Still want to check for a block context opening
             #LIMITATION: Let's force the scope increase associated with a block to be
             #either on the same line or on the line immediately following.  We'll ignore

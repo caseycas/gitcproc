@@ -304,7 +304,7 @@ class logChunktest(unittest.TestCase):
     def test_parseText14(self):
        self.chunk14.parseText()
        funcList = self.chunk14.functions
-       self.debugFunctions(funcList)
+       #self.debugFunctions(funcList)
        self.assertTrue(len(funcList) == 1)
        self.assertTrue(funcList[0].method == NON_FUNC)
        self.assertTrue(funcList[0].total_add == 2)

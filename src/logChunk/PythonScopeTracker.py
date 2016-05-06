@@ -49,9 +49,10 @@ class PythonScopeTracker(scopeTracker):
             return [INCREASE]
         elif(decVal == S_YES):
             return [DECREASE] #Report all numbers of scope decreases equally.
-        elif(incVal == S_SIMUL):
-            print(incVal)
-            print(decVal)
+        elif(incVal == S_SIMUL or decVal == S_SIMUL):
+            if(Util.DEBUG):
+                print(incVal)
+                print(decVal)
             #assert(decVal == S_SIMUL) #This isn't true necessarily
             return [S_SIMUL]
         else:
@@ -287,9 +288,17 @@ class PythonScopeTracker(scopeTracker):
         else:
             assert("Not a valid line type")
 
-    #Handle the scope change for a line where we have simultaneously a scope increase and a scope decrease
-    #depending on if you are measuring from the old stack or the new stack.    
+    #Handle the scope change for a line where we have difference kinds of scope changes
+    #depending on if you are measuring from the old stack or the new stack.
+    #This covers the following cases:
+    #1. Increase relative to old, Decrease relative to new 
+    #2. Increase relative to old, no change with new
+    #3. No change to old, decrease relative to new
+    #4. No change to old, increase relative to new
+    #5. Decrease relative to old, no change with new
+    #6. Decrease relative to old, increase relative to new
     def simulScopeChange(self, stackValue, lineType, changeType, depth, lineDiff):
+            #Error, in that this isn't behaving correctly in 3, 5? when there's a block keyword on the line...
             oldChange = len(self.oldVerStack) - depth
             newChange = len(self.newVerStack) - depth
             #if(not ((oldChange < 0 and newChange > 0) or (oldChange > 0 and newChange < 0))):
@@ -303,6 +312,7 @@ class PythonScopeTracker(scopeTracker):
                 print("Func New Line: " + str(self.funcNewLine))
                 print("Block Old Line: " + str(self.blockOldLine))
                 print("Block New Line: " + str(self.blockNewLine))
+                print("Arguments: " + " ".join([str(stackValue), str(lineType), str(changeType), str(depth), str(lineDiff)]))
                 print("STACKVALUES")
                 self.printScope()
             #    #assert(0)
@@ -617,8 +627,12 @@ class PythonScopeTracker(scopeTracker):
         print(self.oldVerStack)
         print("Old Func Cache:")
         print(self.lastOldFuncContext)
+        print("Old Block Keyword:")
+        print(self.oldBlockKeyword)
         print("New Stack:")
         print(self.newVerStack)
         print("New Func Cache:")
         print(self.lastNewFuncContext)
+        print("New Block Keyword:")
+        print(self.newBlockKeyword)
         print("------------------<Scope Obj>------------------")
