@@ -33,4 +33,9 @@ install:
 
 script:
   # Your test script goes here
-  - python ./logChunkTest.py
+  - python ./scopeTrackerTest.py
+  - python ./logChunkTestC.py
+  - python ./logChunkTestJAVA.py
+  - python ./logChunkTestPython.py
+  - python ./ghLogDbTest.py
+  - python ./ghLogDbTestPython.py
