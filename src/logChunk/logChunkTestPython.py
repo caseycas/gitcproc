@@ -56,6 +56,7 @@ class logChunktest(unittest.TestCase):
         self.chunk14 = logChunk.logChunk(self.readHelper("testfiles/Python/testChunk14.txt"), "Python", "../util/sample_confPy.ini")
         self.chunk15 = logChunk.logChunk(self.readHelper("testfiles/Python/testChunk15.txt"), "Python", "../util/sample_confPy.ini")
         self.chunk16 = logChunk.logChunk(self.readHelper("testfiles/Python/testChunk16.txt"), "Python", "../util/sample_confPy.ini")
+        self.chunk17 = logChunk.logChunk(self.readHelper("testfiles/Python/testChunk17.txt"), "Python", "../util/sample_confPy.ini")
 
     def test_isFunction(self):
         self.assertTrue(self.testChunk.isFunction(self.method1))
@@ -328,6 +329,11 @@ class logChunktest(unittest.TestCase):
        #Weird indenting here, again, I'm just trying to make sure it doesn't crash...
        self.chunk16.parseText()
        funcList = self.chunk16.functions
+       self.debugFunctions(funcList)
+
+    def test_parseText17(self):
+       self.chunk17.parseText()
+       funcList = self.chunk17.functions
        self.debugFunctions(funcList)
 
 
