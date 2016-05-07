@@ -966,7 +966,7 @@ class logChunk:
             startFlag=0
             lineNum += 1
                 
-            if(Util.DEBUGLITE==1):
+            if(Util.DEBUG==1):
                 try:
                     print("The real line: " + line)
                 except:
