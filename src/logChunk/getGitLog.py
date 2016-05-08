@@ -43,10 +43,17 @@ def dumpLog(projPath, languages):
         #logCmd = "git log --date=short --no-merges -U1 -- " + all_extn + " > all_log.txt"
         #logCmd = "git log --date=short -U1000 --function-context -- " + all_extn + " > " + LOG_FILE
         #Assert Replication Command
-        logCmd = "git log --date=short --no-merges -U1000 --function-context -- " + all_extn + " > " + LOG_FILE
+        #Python and Java
+        #logCmd = "git log --date=short --no-merges -U1 --function-context -- " + all_extn + " > " + LOG_FILE
+        #C and C++ and Python
+        if(".c" in extSet or ".cpp" in extSet or ".py" in extSet): 
+            #This will still fail on really big files.... (could we see what the biggest file is and use that?)
+            logCmd = "git log --date=short --no-merges -U99999 --function-context -- " + all_extn + " > " + LOG_FILE
+        else: #Java
+            logCmd = "git log --date=short --no-merges -U1 --function-context -- " + all_extn + " > " + LOG_FILE
 
         #os.system("git stash save --keep-index; git pull")
-        #print(logCmd)
+        print(logCmd)
         #Remove the old logs.
         try:
             os.system("rm " + LOG_FILE)

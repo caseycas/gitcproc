@@ -335,6 +335,7 @@ class logChunktest(unittest.TestCase):
        self.chunk17.parseText()
        funcList = self.chunk17.functions
        self.debugFunctions(funcList)
+       self.assertTrue(funcList[0].method != CHUNK_ERROR)
 
 
 
