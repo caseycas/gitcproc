@@ -39,6 +39,7 @@ class logChunk:
         self.keyWordList = self.readKeywords([])
 
         self.lineCount = 0
+        self.warning = False #If we encounter a scoping error not deemed to critical, just alert on all functions past the error point
 
     #list of strings --> boolean
     #Returns true if the string conforms to the pattern <keyword>,[included/excluded],[single,block]
@@ -127,6 +128,7 @@ class logChunk:
         self.header = "" #What is the name given after '@@' in log
         self.sT = None
         self.langSwitch = None
+        self.warning = False
 
     # -- -> Boolean
     #Return true if any function in this chunk has type MOCK
@@ -183,7 +185,7 @@ class logChunk:
             keywordDictionary = self.getEmptyKeywordDict()
         (added, deleted) = self.getLineCountOutsideFunc()
         if(added > 0 or deleted > 0):
-            return PatchMethod(NON_FUNC, 0, 0, added, deleted, keywordDictionary)
+            return PatchMethod(NON_FUNC, 0, 0, added, deleted, keywordDictionary, self.warning)
         else:
             return None
 
@@ -674,7 +676,7 @@ class logChunk:
             #We use shortFunctionName, which is the string that matched our expected
             #function pattern regex
             try:
-                funcToAdd = PatchMethod(self.langSwitch.parseFunctionName(shortFunctionName), funcStart, funcEnd, ftotal_add, ftotal_del,keywordDictionary)
+                funcToAdd = PatchMethod(self.langSwitch.parseFunctionName(shortFunctionName), funcStart, funcEnd, ftotal_add, ftotal_del,keywordDictionary, self.warning)
             except ValueError: #Catch error and pass up to parseText.
                 raise ValueError("Function Name Parse Error")
             #Add assertions from current function
@@ -966,7 +968,7 @@ class logChunk:
             startFlag=0
             lineNum += 1
                 
-            if(Util.DEBUGLITE==1):
+            if(Util.DEBUG==1):
                 try:
                     print("The real line: " + line)
                 except:
@@ -1014,7 +1016,8 @@ class logChunk:
                 self.sT.setContinuationFlag(newStatus)
             except InvalidCodeException:
                 #continue #If the code seems invalid, just skip the line.
-                return self.markChunkAsError()
+                self.markAllWithWarning()
+                continue
             except NotImplementedError:
                 pass
 
@@ -1042,7 +1045,8 @@ class logChunk:
                     try:
                         (phase, line, lineType, lineNum, functionName, classContext, funcStart, startFlag, ftotal_add, ftotal_del) = self.checkForFunctionName(phase, line, lineType, lineNum, functionName, classContext, funcStart, startFlag, ftotal_add, ftotal_del)
                     except UnsupportedScopeException:
-                        return self.markChunkAsError()
+                        self.markAllWithWarning()
+                        continue
                     except AssertionError:
                         return self.markChunkAsError()
                 elif(sResult == scopeTracker.S_NO): #No scope change to cut off, so add the whole line instead
@@ -1059,7 +1063,8 @@ class logChunk:
                         self.sT.decreaseScope(line, lineType, -1, True)
                         (phase, line, lineType, lineNum, functionName, classContext, funcStart, startFlag, ftotal_add, ftotal_del) = self.checkForFunctionName(phase, line, lineType, lineNum, functionName, classContext, funcStart, startFlag, ftotal_add, ftotal_del)
                     except UnsupportedScopeException:
-                        return self.markChunkAsError()
+                        self.markAllWithWarning()
+                        continue
                     except AssertionError:
                         return self.markChunkAsError()
                     pass
@@ -1073,7 +1078,8 @@ class logChunk:
                     elif(phase == LOOKFORNAME):
                         (foundBlock, blockKeywordLine, blockKeywordType, shortFunctionName, outsideFuncKeywordDictionary, self.sT, backTrack) = self.updateScopeAndKeywords(phase, line, lineType, lineNum, self.sT, foundBlock, blockKeywordLine, blockKeywordType, shortFunctionName, singleKeyWordList, blockKeyWordList, outsideFuncKeywordDictionary)
                 except UnsupportedScopeException:
-                    return self.markChunkAsError()
+                    self.markAllWithWarning()
+                    continue
                 except AssertionError:
                     return self.markChunkAsError()
 
@@ -1093,7 +1099,8 @@ class logChunk:
                 try:
                     (foundBlock, blockKeywordLine, blockKeywordType, shortFunctionName, keywordDictionary, self.sT, backTrack) = self.updateScopeAndKeywords(phase, line, lineType, lineNum, self.sT, foundBlock, blockKeywordLine, blockKeywordType, shortFunctionName, singleKeyWordList, blockKeyWordList, keywordDictionary)
                 except UnsupportedScopeException:
-                    return self.markChunkAsError()
+                    self.markAllWithWarning()
+                    continue
                 except AssertionError:
                     return self.markChunkAsError()
 
@@ -1121,7 +1128,7 @@ class logChunk:
             shortFunctionName = self.sT.getFuncContext(ADD)
             funcEnd = lineNum
             try:
-                funcToAdd = PatchMethod(self.langSwitch.parseFunctionName(shortFunctionName), funcStart, funcEnd, ftotal_add, ftotal_del,keywordDictionary)
+                funcToAdd = PatchMethod(self.langSwitch.parseFunctionName(shortFunctionName), funcStart, funcEnd, ftotal_add, ftotal_del,keywordDictionary,self.warning)
             except ValueError:
                 return self.markChunkAsError()
 
@@ -1131,7 +1138,7 @@ class logChunk:
             shortFunctionName = self.sT.getFuncContext(REMOVE)
             funcEnd = lineNum
             try:
-                funcToAdd = PatchMethod(self.langSwitch.parseFunctionName(shortFunctionName), funcStart, funcEnd, ftotal_add, ftotal_del,keywordDictionary)
+                funcToAdd = PatchMethod(self.langSwitch.parseFunctionName(shortFunctionName), funcStart, funcEnd, ftotal_add, ftotal_del,keywordDictionary,self.warning)
             except ValueError:
                 return self.markChunkAsError()
 
@@ -1166,6 +1173,12 @@ class logChunk:
         #We don't trust the results of parsing this chunk, so return a general error statement.
         self.total_add = 0
         self.total_del = 0
-        self.functions = [PatchMethod(CHUNK_ERROR, 0, 0, 0, 0, self.getEmptyKeywordDict())]
+        self.functions = [PatchMethod(CHUNK_ERROR, 0, 0, 0, 0, self.getEmptyKeywordDict(), True)]
         return self
+
+    def markAllWithWarning(self):
+        if(Util.DEBUG or Util.DEBUGLITE):
+            print("Posting a warning about the Items in the chunk.")
+
+        self.warning = True
 
