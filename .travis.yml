@@ -25,6 +25,7 @@ install:
   - export PYTHONPATH=$PYTHONPATH:./src/util/
   - export PYTHONPATH=$PYTHONPATH:./src/logChunk/
   - pip install psycopg2
+  - pip install nltk
 
 
   
