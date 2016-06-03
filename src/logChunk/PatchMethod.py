@@ -31,7 +31,7 @@ class PatchMethod:
         retStr += "\t\ttotal_add   = %d\n" % (self.total_add)
         retStr += "\t\ttotal_del   = %d\n" % (self.total_del)
         retStr += "\t\tkeywordDictonary   = %s\n" % (self.keywordDictionary)
-        retStr += "\t\terror/warning   = %b\n" % (self.warning)
+        retStr += "\t\terror/warning   = %s\n" % (self.warning)
 
         return retStr
 
