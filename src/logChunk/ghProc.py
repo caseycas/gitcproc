@@ -16,7 +16,7 @@ sys.path.append("../util")
 import Util
 from ghLogDb import ghLogDb
 
-LOG_FILE = "all_log.txt"
+LOG_FILE = "all_changed_log_java.txt"
 
 def dumpLog(projPath):
 
@@ -89,7 +89,8 @@ def main():
         start = datetime.datetime.now()
 
     #dumpLog(project)
-    processLog(project, password)
+    #processLog(project, password)
+    processLog(project)
     print "!! Done"
 
     if(Util.LOGTIME):

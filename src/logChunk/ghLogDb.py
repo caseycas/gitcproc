@@ -89,11 +89,12 @@ class Patch:
         language = toStr(self.language)
         fileName = toStr(self.file_name)
         isTest   = toStr(self.is_test)
-        isExceptionPatch=toStr(self.isExceptionPatch)
+        #isExceptionPatch=toStr(self.isExceptionPatch)
 
 
         for m in self.methods:
-            patchStr = (",").join((project, sha, language, fileName, isTest, isExceptionPatch, m.methodToCsv()))
+            # patchStr = (",").join((project, sha, language, fileName, isTest, isExceptionPatch, m.methodToCsv()))
+            patchStr = (",").join((project, sha, language, fileName, isTest, m.methodToCsv()))
             inf2.write(patchStr+"\n")
             fPtrPatchSummary.write(patchStr+"\n")
 
@@ -444,7 +445,7 @@ class ghLogDb:
                 listToDict[str(keyword)+" Adds"]=0
                 listToDict[str(keyword)+" Dels"]=0
 
-            inf2.write("project, sha, language, file_name, is_test, method_name,total_add,total_del,%s\n"%",".join(listToDict.keys()))
+            inf2.write("project, sha, language, file_name, is_test, method_name,total_add,total_del,%s\n"%",".join(sorted(listToDict.keys())))
 
         inf = codecs.open(self.log_file, "r", "iso-8859-1")
 

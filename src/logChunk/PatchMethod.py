@@ -56,11 +56,16 @@ class PatchMethod:
 
     def dictToCsv(self):
         dictStr=""
-        for key, value in self.keywordDictionary.iteritems():
-            if dictStr=="":
-                dictStr= dictStr+toStr(value)
+        # for key, value in self.keywordDictionary.iteritems():
+        #     if dictStr=="":
+        #         dictStr= dictStr+toStr(value)
+        #     else:
+        #         dictStr= dictStr+","+ toStr(value)
+        for key in sorted(self.keywordDictionary.keys()):
+            if dictStr == "":
+                dictStr = dictStr+toStr(self.keywordDictionary[key])
             else:
-                dictStr= dictStr+","+ toStr(value)
+                dictStr = dictStr+"," + toStr(self.keywordDictionary[key])
             # if dictStr=="":
             #   dictStr= dictStr+(",").join((str(value)))
             # else:

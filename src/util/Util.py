@@ -8,11 +8,11 @@ import shutil
 SEP = '__'
 DEBUG = 0
 DEBUGLITE = 1
-DATABASE = 1
-CSV=0
+DATABASE = 0
+CSV=1
 LOGTIME = 1
-#CONFIG = "../util/sample_conf.ini"
-CONFIG = "../util/sample_confPy.ini" #Location of the configuration file.
+CONFIG = "../util/sample_conf2.ini"
+#CONFIG = "../util/sample_confPy.ini" #Location of the configuration file.
 #CONFIG = "../util/assert_conf.ini" #Location of the configuration file.
 
 supportedLanguages = ["C", "C++", "Java", "Python"]
