@@ -36,8 +36,8 @@ def main():
   for keyword in keywords:
       listToDict[str(keyword)+" Adds"]=0
       listToDict[str(keyword)+" Dels"]=0
-  fPtrPatchSummary.write("project, sha, language, file_name, is_test,bracket_diff,isExceptionPatch, method_name,total_add,total_del,uniqueExcepAdd,uniqueExcepDel,%s\n"%",".join(listToDict.keys()))
-
+  #fPtrPatchSummary.write("project, sha, language, file_name, is_test,bracket_diff,isExceptionPatch, method_name,total_add,total_del,uniqueExcepAdd,uniqueExcepDel,%s\n"%",".join(listToDict.keys()))
+  fPtrPatchSummary.write("project, sha, language, file_name, is_test, method_name,total_add,total_del,%s\n"%",".join(sorted(listToDict.keys())))
   fPtrChangeSummary.close()
   fPtrPatchSummary.close()
   fPtrMisMatchSummary.close()
