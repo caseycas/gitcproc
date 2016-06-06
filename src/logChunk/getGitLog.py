@@ -13,7 +13,6 @@ from dumpLogs import dumpLogs
 from Config import Config
 
 
-
 LOG_FILE = "all_log.txt"
 
 def dumpLog(projPath, languages):

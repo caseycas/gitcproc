@@ -15,8 +15,9 @@ sys.path.append("../util")
 
 import Util
 from ghLogDb import ghLogDb
+from getGitLog import LOG_FILE
 
-LOG_FILE = "all_changed_log_java.txt"
+#LOG_FILE = "all_changed_log_java.txt"
 
 def dumpLog(projPath):
 
