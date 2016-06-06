@@ -1040,7 +1040,7 @@ class logChunk:
                         print("Line: \"" + unicode(line, 'utf-8', errors='ignore') + "\"")
 
                 #if(self.sT.isFunctionalScopeChange(line,lineType)):
-                sResult = self.sT.isScopeIncrease(line, lineType)
+                sResult = self.sT.isScopeIncrease(line, lineType) #This is can throw an unsupported scope exception in boto
                 if(sResult == scopeTracker.S_YES): #Problem, in python we can see a function on a line with a scope decrease
                     try:
                         (phase, line, lineType, lineNum, functionName, classContext, funcStart, startFlag, ftotal_add, ftotal_del) = self.checkForFunctionName(phase, line, lineType, lineNum, functionName, classContext, funcStart, startFlag, ftotal_add, ftotal_del)
