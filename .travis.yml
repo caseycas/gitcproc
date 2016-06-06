@@ -27,6 +27,8 @@ install:
   - pip install psycopg2
   - pip install nltk
 
+  #Set up nltk
+  python -m nltk.downloader stopwords
 
   
   # Replace dep1 dep2 ... with your dependencies
@@ -45,4 +47,5 @@ script:
 notifications:
   email:
     - yvsuchak@ucdavis.edu
+	- caseycasal@gmail.com
     
