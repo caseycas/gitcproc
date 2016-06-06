@@ -29,7 +29,6 @@ install:
   #Set up nltk
   - python -m nltk.downloader stopwords
 
-  
   # Replace dep1 dep2 ... with your dependencies
   # - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION dep1 dep2 ...
   # - source activate test-environment
@@ -46,5 +45,5 @@ script:
 notifications:
   email:
     - yvsuchak@ucdavis.edu
-	- caseycasal@gmail.com
+    - caseycasal@gmail.com
     
