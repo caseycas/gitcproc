@@ -90,8 +90,11 @@ def main():
         start = datetime.datetime.now()
 
     #dumpLog(project)
-    #processLog(project, password)
-    processLog(project)
+    if(Util.DATABASE):
+        processLog(project, password)
+    else:
+        processLog(project)
+
     print "!! Done"
 
     if(Util.LOGTIME):

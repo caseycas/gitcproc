@@ -13,7 +13,6 @@ import Util
 class dumpLogs:
 
     def __init__(self, password, configFile=Util.CONFIG):
-
         self.cfg = Config(configFile)
         self.dbPass = password
         self.connectDb()
@@ -21,7 +20,6 @@ class dumpLogs:
 
 
     def connectDb(self):
-
         self.db_config = self.cfg.ConfigSectionMap("Database")
         logging.debug("Database configuration = %r\n", self.db_config)
         self.dbCon = DatabaseCon(self.db_config['database'], self.db_config['user'], \
