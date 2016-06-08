@@ -57,6 +57,7 @@ class logChunktest(unittest.TestCase):
         self.chunk15 = logChunk.logChunk(self.readHelper("testfiles/Python/testChunk15.txt"), "Python", "../util/sample_confPy.ini")
         self.chunk16 = logChunk.logChunk(self.readHelper("testfiles/Python/testChunk16.txt"), "Python", "../util/sample_confPy.ini")
         self.chunk17 = logChunk.logChunk(self.readHelper("testfiles/Python/testChunk17.txt"), "Python", "../util/sample_confPy.ini")
+        self.chunk18 = logChunk.logChunk(self.readHelper("testfiles/Python/testChunk18.txt"), "Python", "../util/sample_confPy.ini")
 
     def test_isFunction(self):
         self.assertTrue(self.testChunk.isFunction(self.method1))
@@ -337,7 +338,11 @@ class logChunktest(unittest.TestCase):
        self.debugFunctions(funcList)
        #self.assertTrue(funcList[0].method != CHUNK_ERROR)
 
-
+    def test_parseText18(self):
+       self.chunk18.parseText()
+       funcList = self.chunk18.functions
+       self.debugFunctions(funcList)
+       #self.assertTrue(funcList[0].method != CHUNK_ERROR)
 
 
 if __name__=="__main__":
