@@ -9,15 +9,15 @@ IndentLanguages = ["Python"]
 
 class ScopeTrackerFactory:
     @staticmethod
-    def createST(languageSwitcher):
+    def createST(languageSwitcher, c_info):
         """
         Create a new scope tracker of the correct type.
         """
         lang = languageSwitcher.getLanguage()
         if(lang in BracketLanguages):
-            return BracketScopeTracker.BracketScopeTracker(lang)
+            return BracketScopeTracker.BracketScopeTracker(lang, c_info)
         elif(lang in IndentLanguages):
-            return PythonScopeTracker.PythonScopeTracker(lang)
+            return PythonScopeTracker.PythonScopeTracker(lang, c_info)
         else:
             raise UnsupportedLanguageException(lang + " is not yet supported.")
         

@@ -1,5 +1,10 @@
+import sys
 import unittest
 import logChunk
+sys.path.append("../util")
+
+import Util
+from Util import ConfigInfo
 from chunkingConstants import *
 from languageSwitcher import *
 
@@ -38,25 +43,28 @@ class logChunktest(unittest.TestCase):
         self.method9 = " def        okay(args = 4):"
 
 
+        c_info = ConfigInfo("../util/sample_confPy.ini")
+
         self.testChunk = logChunk.logChunk("", "Python")
 
-        self.chunk1 = logChunk.logChunk(self.readHelper("testfiles/Python/testChunk1.txt"), "Python", "../util/sample_confPy.ini")
-        self.chunk2 = logChunk.logChunk(self.readHelper("testfiles/Python/testChunk2.txt"), "Python", "../util/sample_confPy.ini")
-        self.chunk3 = logChunk.logChunk(self.readHelper("testfiles/Python/testChunk3.txt"), "Python", "../util/sample_confPy.ini")
-        self.chunk4 = logChunk.logChunk(self.readHelper("testfiles/Python/testChunk4.txt"), "Python", "../util/sample_confPy.ini")
-        self.chunk5 = logChunk.logChunk(self.readHelper("testfiles/Python/testChunk5.txt"), "Python", "../util/sample_confPy.ini")
-        self.chunk6 = logChunk.logChunk(self.readHelper("testfiles/Python/testChunk6.txt"), "Python", "../util/sample_confPy.ini")
-        self.chunk7 = logChunk.logChunk(self.readHelper("testfiles/Python/testChunk7.txt"), "Python", "../util/sample_confPy.ini")
-        self.chunk8 = logChunk.logChunk(self.readHelper("testfiles/Python/testChunk8.txt"), "Python", "../util/sample_confPy.ini")
-        self.chunk9 = logChunk.logChunk(self.readHelper("testfiles/Python/testChunk9.txt"), "Python", "../util/sample_confPy.ini")
-        self.chunk10 = logChunk.logChunk(self.readHelper("testfiles/Python/testChunk10.txt"), "Python", "../util/sample_confPy.ini")
-        self.chunk11 = logChunk.logChunk(self.readHelper("testfiles/Python/testChunk11.txt"), "Python", "../util/sample_confPy.ini")
-        self.chunk12 = logChunk.logChunk(self.readHelper("testfiles/Python/testChunk12.txt"), "Python", "../util/sample_confPy.ini")
-        self.chunk13 = logChunk.logChunk(self.readHelper("testfiles/Python/testChunk13.txt"), "Python", "../util/sample_confPy.ini")
-        self.chunk14 = logChunk.logChunk(self.readHelper("testfiles/Python/testChunk14.txt"), "Python", "../util/sample_confPy.ini")
-        self.chunk15 = logChunk.logChunk(self.readHelper("testfiles/Python/testChunk15.txt"), "Python", "../util/sample_confPy.ini")
-        self.chunk16 = logChunk.logChunk(self.readHelper("testfiles/Python/testChunk16.txt"), "Python", "../util/sample_confPy.ini")
-        self.chunk17 = logChunk.logChunk(self.readHelper("testfiles/Python/testChunk17.txt"), "Python", "../util/sample_confPy.ini")
+        self.chunk1 = logChunk.logChunk(self.readHelper("testfiles/Python/testChunk1.txt"), "Python", c_info)
+        self.chunk2 = logChunk.logChunk(self.readHelper("testfiles/Python/testChunk2.txt"), "Python", c_info)
+        self.chunk3 = logChunk.logChunk(self.readHelper("testfiles/Python/testChunk3.txt"), "Python", c_info)
+        self.chunk4 = logChunk.logChunk(self.readHelper("testfiles/Python/testChunk4.txt"), "Python", c_info)
+        self.chunk5 = logChunk.logChunk(self.readHelper("testfiles/Python/testChunk5.txt"), "Python", c_info)
+        self.chunk6 = logChunk.logChunk(self.readHelper("testfiles/Python/testChunk6.txt"), "Python", c_info)
+        self.chunk7 = logChunk.logChunk(self.readHelper("testfiles/Python/testChunk7.txt"), "Python", c_info)
+        self.chunk8 = logChunk.logChunk(self.readHelper("testfiles/Python/testChunk8.txt"), "Python", c_info)
+        self.chunk9 = logChunk.logChunk(self.readHelper("testfiles/Python/testChunk9.txt"), "Python", c_info)
+        self.chunk10 = logChunk.logChunk(self.readHelper("testfiles/Python/testChunk10.txt"), "Python", c_info)
+        self.chunk11 = logChunk.logChunk(self.readHelper("testfiles/Python/testChunk11.txt"), "Python", c_info)
+        self.chunk12 = logChunk.logChunk(self.readHelper("testfiles/Python/testChunk12.txt"), "Python", c_info)
+        self.chunk13 = logChunk.logChunk(self.readHelper("testfiles/Python/testChunk13.txt"), "Python", c_info)
+        self.chunk14 = logChunk.logChunk(self.readHelper("testfiles/Python/testChunk14.txt"), "Python", c_info)
+        self.chunk15 = logChunk.logChunk(self.readHelper("testfiles/Python/testChunk15.txt"), "Python", c_info)
+        self.chunk16 = logChunk.logChunk(self.readHelper("testfiles/Python/testChunk16.txt"), "Python", c_info)
+        self.chunk17 = logChunk.logChunk(self.readHelper("testfiles/Python/testChunk17.txt"), "Python", c_info)
+        self.chunk18 = logChunk.logChunk(self.readHelper("testfiles/Python/testChunk18.txt"), "Python", c_info)
 
     def test_isFunction(self):
         self.assertTrue(self.testChunk.isFunction(self.method1))
@@ -337,7 +345,11 @@ class logChunktest(unittest.TestCase):
        self.debugFunctions(funcList)
        #self.assertTrue(funcList[0].method != CHUNK_ERROR)
 
-
+    def test_parseText18(self):
+       self.chunk18.parseText()
+       funcList = self.chunk18.functions
+       self.debugFunctions(funcList)
+       #self.assertTrue(funcList[0].method != CHUNK_ERROR)
 
 
 if __name__=="__main__":

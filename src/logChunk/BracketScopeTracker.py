@@ -13,7 +13,7 @@ class BracketScopeTracker(scopeTracker):
     #The language tells how the scope changes so we can tell when a block or function ends.
     #For example in C/C++ and Java, a { signifies a increase in code block depth.
     #In python however, 4 spaces are used.
-    def __init__(self, language):
+    def __init__(self, language, c_info):
         #These are pseudo stacks implemented as lists that track the current 
         #number of open scopes (brackets, tabs, etc), each change gets its own
         #entry, which is then deleted when we see a matching closing entry
@@ -26,6 +26,7 @@ class BracketScopeTracker(scopeTracker):
         self.lastNewBlockContext = []
         self.language = language
         self.isContinuation = False
+        self.config_info = c_info
 
 
     def clearScope(self):
@@ -144,7 +145,7 @@ class BracketScopeTracker(scopeTracker):
         for i in range(0, line.count("}")):
             if(self.newVerStack != []):
                 removed = self.newVerStack.pop()
-                if(Util.DEBUG):
+                if(self.config_info.DEBUG):
                     print("Removing: " + str(removed))
                     print("Context: " + str(self.lastNewBlockContext))
                 if(removed[LABELINDEX] == FUNC):
@@ -152,7 +153,7 @@ class BracketScopeTracker(scopeTracker):
                 elif(removed[LABELINDEX] == SBLOCK):
                     self.lastNewBlockContext.remove(removed[LINEINDEX])
             else:#Bracket overclosing -> estimating...
-                if(Util.DEBUG):
+                if(self.config_info.DEBUG):
                     print("Popped from empty new Stack.")
                 break
 
@@ -161,7 +162,7 @@ class BracketScopeTracker(scopeTracker):
         for i in range(0, line.count("}")):
             if(self.oldVerStack != []):
                 removed = self.oldVerStack.pop()
-                if(Util.DEBUG):
+                if(self.config_info.DEBUG):
                     print("Removing: " + str(removed))
                     print("Context: " + str(self.lastOldBlockContext))
                 if(removed[LABELINDEX] == FUNC):
@@ -169,7 +170,7 @@ class BracketScopeTracker(scopeTracker):
                 elif(removed[LABELINDEX] == SBLOCK):
                     self.lastOldBlockContext.remove(removed[LINEINDEX])
             else:#Bracket overclosing -> estimating...
-                if(Util.DEBUG):
+                if(self.config_info.DEBUG):
                     print("Popped from empty new Stack.")
                 break
 

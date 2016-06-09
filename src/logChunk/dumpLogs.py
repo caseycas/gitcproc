@@ -12,8 +12,9 @@ import Util
 
 class dumpLogs:
 
-    def __init__(self, password, configFile=Util.CONFIG):
-        self.cfg = Config(configFile)
+    def __init__(self, password, c_info):
+        self.config_info = c_info
+        self.cfg = Config(self.config_info.CONFIG)
         self.dbPass = password
         self.connectDb()
         #self.cleanDb()
@@ -75,7 +76,7 @@ class dumpLogs:
 
         sql_command = "INSERT INTO " + table + titleString + " VALUES (" + methodChange + ")"
 
-        if(Util.DEBUG):
+        if(self.config_info.DEBUG):
             print(sql_command)
 
         self.dbCon.insert(sql_command)

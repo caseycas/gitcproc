@@ -27,7 +27,7 @@ class scopeTracker(object):
     #The language tells how the scope changes so we can tell when a block or function ends.
     #For example in C/C++ and Java, a { signifies a increase in code block depth.
     #In python however, indentation is used.
-    def __init__(self, language):
+    def __init__(self, language, c_info):
         #These are pseudo stacks implemented as lists that track the current 
         #number of open scopes (brackets, tabs, etc), each change gets its own
         #entry, which is then deleted when we see a matching closing entry
@@ -44,6 +44,7 @@ class scopeTracker(object):
             raise UnsupportedLanguageException(language + "is not yet supported.")
 
         self.isContinuation = NOT_CONTINUATION #Flag for if the last line parsed is going to wrap to the next line.
+        self.config_info = c_info
 
     def clearScope(self):
         self.oldVerStack = []

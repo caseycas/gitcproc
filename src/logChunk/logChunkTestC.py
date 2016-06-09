@@ -1,6 +1,12 @@
+import sys
 import unittest
 import logChunk
 from chunkingConstants import *
+
+sys.path.append("../util")
+
+import Util
+from Util import ConfigInfo
 
 class logChunktest(unittest.TestCase):
 
@@ -61,8 +67,10 @@ class logChunktest(unittest.TestCase):
         self.method22 = " c_type jl_unbox_##j_type(jl_value_t *v)  {"
         self.method23 = "auto f = via(&x).then([]{"
 
-        self.testChunk = logChunk.logChunk("", "C++")
-        self.testChunk_C = logChunk.logChunk("", "C")
+        c_info = ConfigInfo("../util/sample_conf.ini")
+
+        self.testChunk = logChunk.logChunk("", "C++",c_info)
+        self.testChunk_C = logChunk.logChunk("", "C",c_info)
 
         self.javaMethod1 = "public static Intent createIntent(Context context, String username, String password) {"
         self.javaMethod2 = " public <V> V post(final String uri, final Object params, final Type type) \n throws IOException {"
@@ -73,61 +81,61 @@ class logChunktest(unittest.TestCase):
 
 
         #Read in the single tests
-        self.chunk1 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk1.txt"), "C++", "../util/sample_conf.ini") #Check C++
-        self.chunk2 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk2.txt"), "C", "../util/sample_conf.ini") #Check C
-        self.chunk3 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk3.txt"), "C++", "../util/sample_conf.ini") #Check C++
+        self.chunk1 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk1.txt"), "C++", c_info) #Check C++
+        self.chunk2 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk2.txt"), "C", c_info) #Check C
+        self.chunk3 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk3.txt"), "C++", c_info) #Check C++
         #self.chunk4 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk4.txt")) #Nope
         #self.chunk5 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk5.txt")) #Nope
-        self.chunk6 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk6.txt"), "C++", "../util/sample_conf.ini") #Check C++
-        self.chunk7 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk7.txt"), "C++", "../util/sample_conf.ini") #Check C++
-        self.chunk8 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk8.txt"), "C++", "../util/sample_conf.ini") #Check C
-        self.chunk9 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk9.txt"), "C++", "../util/sample_conf.ini") #Check C++
-        self.chunk10 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk10.txt"), "C++", "../util/sample_conf.ini") #Check C++
-        self.chunk11 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk11.txt"), "C++", "../util/sample_conf.ini") #Check C++
-        self.chunk12 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk12.txt"), "C++", "../util/sample_conf.ini") #Check C++
-        self.chunk13 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk13.txt"), "C++", "../util/sample_conf.ini") #Check C++
-        self.chunk14 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk14.txt"), "C++","../util/sample_conf.ini") #Check C++
-        self.chunk15 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk15.txt"), "C++","../util/sample_conf.ini") #Check C++
+        self.chunk6 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk6.txt"), "C++", c_info) #Check C++
+        self.chunk7 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk7.txt"), "C++", c_info) #Check C++
+        self.chunk8 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk8.txt"), "C++", c_info) #Check C
+        self.chunk9 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk9.txt"), "C++", c_info) #Check C++
+        self.chunk10 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk10.txt"), "C++", c_info) #Check C++
+        self.chunk11 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk11.txt"), "C++", c_info) #Check C++
+        self.chunk12 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk12.txt"), "C++", c_info) #Check C++
+        self.chunk13 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk13.txt"), "C++", c_info) #Check C++
+        self.chunk14 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk14.txt"), "C++",c_info) #Check C++
+        self.chunk15 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk15.txt"), "C++",c_info) #Check C++
         #self.chunk16 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk16.txt")) #Nope
         #self.chunk17 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk17.txt")) #Nope
         #self.chunk18 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk18.txt")) #Nope
         #self.chunk19 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk19.txt")) #Nope
         #self.chunk20 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk20.txt")) #Nope
-        self.chunk21 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk21.txt"), "C++","../util/sample_conf.ini") #Check C++ 
-        self.chunk22 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk22.txt"), "C++","../util/sample_conf.ini") #Check C++
-        self.chunk23 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk23.txt"), "C++","../util/sample_conf.ini") #Check C++
-        self.chunk24 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk24.txt"), "C++","../util/sample_conf.ini") #Check C++
-        self.chunk25 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk25.txt"), "C","../util/sample_conf.ini") #Check C
+        self.chunk21 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk21.txt"), "C++",c_info) #Check C++ 
+        self.chunk22 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk22.txt"), "C++",c_info) #Check C++
+        self.chunk23 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk23.txt"), "C++",c_info) #Check C++
+        self.chunk24 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk24.txt"), "C++",c_info) #Check C++
+        self.chunk25 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk25.txt"), "C",c_info) #Check C
         #self.chunk26 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk26.txt")) #Nope
-        self.chunk27 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk27.txt"), "C","../util/sample_conf.ini") #Check C
+        self.chunk27 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk27.txt"), "C",c_info) #Check C
         #self.chunk28 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk28.txt")) #Nope
-        self.chunk29 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk29.txt"), "C","../util/sample_conf.ini") #Check C
+        self.chunk29 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk29.txt"), "C",c_info) #Check C
         #self.chunk30 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk30.txt")) #Maybe?
-        self.chunk31 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk31.txt"), "C++","../util/sample_conf.ini") #Check C++
-        self.chunk32 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk32.txt"), "C++","../util/sample_conf.ini") #Check C++
-        self.chunk33 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk33.txt"), "C++","../util/sample_conf.ini") #Check C++
+        self.chunk31 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk31.txt"), "C++",c_info) #Check C++
+        self.chunk32 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk32.txt"), "C++",c_info) #Check C++
+        self.chunk33 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk33.txt"), "C++",c_info) #Check C++
         #self.chunk34 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk34.txt")) #Nope
-        self.chunk35 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk35.txt"), "C","../util/sample_conf.ini") #Check C
-        self.chunk36 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk36.txt"), "C++","../util/sample_conf.ini") #Check C++
-        self.chunk37 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk37.txt"), "C++","../util/sample_conf.ini") #Check C++
-        self.chunk38 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk38.txt"), "C++","../util/sample_conf.ini") #Check C++
-        self.chunk39 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk39.txt"), "C","../util/sample_conf.ini") #C
-        self.chunk40 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk40.txt"), "C","../util/sample_conf.ini") #Check C
-        self.chunk41 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk41.txt"), "C++","../util/sample_conf.ini") #Check C++
-        self.chunk42 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk42.txt"), "C++","../util/sample_conf.ini") # C++
-        self.chunk43 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk43.txt"), "C","../util/sample_conf.ini") #Check C
-        self.chunk44 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk44.txt"), "C++","../util/sample_conf.ini") # C++
-        self.chunk45 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk45.txt"), "C++","../util/sample_conf.ini") # C++ 
-        self.chunk46 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk46.txt"), "C++","../util/sample_conf.ini") # C++
-        self.chunk47 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk47.txt"), "C++","../util/sample_conf.ini") # C++
-        self.chunk48 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk48.txt"), "C++","../util/sample_conf.ini") # C++
-        self.chunk49 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk49.txt"), "C++","../util/sample_conf.ini") # C++
-        self.chunk50 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk50.txt"), "C","../util/sample_conf.ini") # C
-        self.chunk51 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk51.txt"), "C++","../util/sample_conf.ini")
-        self.chunk52 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk52.txt"), "C++","../util/sample_conf.ini")
-        self.chunk53 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk53.txt"), "C++","../util/sample_conf.ini")
-        self.chunk54 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk54.txt"), "C++","../util/sample_conf.ini")
-        self.chunk55 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk55.txt"), "C++","../util/sample_conf.ini")
+        self.chunk35 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk35.txt"), "C",c_info) #Check C
+        self.chunk36 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk36.txt"), "C++",c_info) #Check C++
+        self.chunk37 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk37.txt"), "C++",c_info) #Check C++
+        self.chunk38 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk38.txt"), "C++",c_info) #Check C++
+        self.chunk39 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk39.txt"), "C",c_info) #C
+        self.chunk40 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk40.txt"), "C",c_info) #Check C
+        self.chunk41 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk41.txt"), "C++",c_info) #Check C++
+        self.chunk42 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk42.txt"), "C++",c_info) # C++
+        self.chunk43 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk43.txt"), "C",c_info) #Check C
+        self.chunk44 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk44.txt"), "C++",c_info) # C++
+        self.chunk45 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk45.txt"), "C++",c_info) # C++ 
+        self.chunk46 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk46.txt"), "C++",c_info) # C++
+        self.chunk47 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk47.txt"), "C++",c_info) # C++
+        self.chunk48 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk48.txt"), "C++",c_info) # C++
+        self.chunk49 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk49.txt"), "C++",c_info) # C++
+        self.chunk50 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk50.txt"), "C",c_info) # C
+        self.chunk51 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk51.txt"), "C++",c_info)
+        self.chunk52 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk52.txt"), "C++",c_info)
+        self.chunk53 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk53.txt"), "C++",c_info)
+        self.chunk54 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk54.txt"), "C++",c_info)
+        self.chunk55 = logChunk.logChunk(self.readHelper("testfiles/Single/testChunk55.txt"), "C++",c_info)
 
 
 
