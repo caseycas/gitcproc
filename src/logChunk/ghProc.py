@@ -82,7 +82,7 @@ def main():
             print("Database output selected, please input the password after the project")
             sys.exit()
 
-        password = str(sys.argv[2])
+        password = str(sys.argv[3])
 
 
     if checkProj(project) == False:
@@ -93,6 +93,7 @@ def main():
         start = datetime.datetime.now()
 
     #dumpLog(project)
+    print("Password:"  + password)
     if(config_info.DATABASE):
         parseFinish = processLog(project, config_info, password)
     else:

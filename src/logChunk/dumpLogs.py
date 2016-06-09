@@ -51,6 +51,19 @@ class dumpLogs:
         self.dbCon.commit()
         self.dbCon.close()
 
+    # #TODO: Improve security here for possible injections?
+    # def createSummaryTable(self):
+    #     schema = self.db_config['schema']
+    #     table = schema + "." + self.db_config['table_change_summary']
+
+
+    #     sql_command = "CREATE TABLE " + table + " (project character varying(500) NOT NULL, sha text NOT NULL, author character varying(500), commit_date date, is_bug boolean, CONSTRAINT change_summary_pkey PRIMARY KEY (project, sha)) WITH (OIDS=FALSE);
+    #     self.dbCon.
+    #     sql_command = "ALTER TABLE logchunktool.change_summary OWNER TO " + user + ";"
+    #     sql_command = "GRANT ALL ON TABLE logchunktool.change_summary TO " + user + ";"
+
+
+
     def dumpSummary(self, summaryStr):
 
         schema = self.db_config['schema']

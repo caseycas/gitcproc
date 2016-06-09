@@ -33,6 +33,23 @@ class DatabaseCon:
         #  #raise
             return
 
+    # def create(self, sql_command):
+    #     '''
+    #     Create an new SQL table if it does not already exist.
+    #     '''
+
+    #     logging.debug("Executing SQL command = %s\n", sql_command)
+    #     cur = self.conn.cursor()
+    #     try:
+    #         cur.execute("select exists(select * from information_schema.tables where table_name=%s)", ('mytable',))
+    #         cur.fetchone()[0]
+    #         cur.execute(sql_command)
+    #         rows = cur.fetchall()
+    #         return rows
+    #     except:
+    #         print(sql_command)
+    #         raise
+
     def execute(self, sql_command):
         logging.debug("Executing SQL command = %s\n", sql_command)
         cur = self.conn.cursor()
