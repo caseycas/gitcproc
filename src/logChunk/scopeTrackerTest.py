@@ -2,13 +2,20 @@ import unittest
 import scopeTracker
 import ScopeTrackerFactory
 import LanguageSwitcherFactory
+import sys
 from chunkingConstants import *
+
+sys.path.append("../util")
+
+import Util
+from Util import ConfigInfo
 
 class logChunktest(unittest.TestCase):
 
     def setUp(self):
         self.langSwitch = LanguageSwitcherFactory.LanguageSwitcherFactory.createLS("C")
-        self.sT = ScopeTrackerFactory.ScopeTrackerFactory.createST(self.langSwitch)
+        c_info = ConfigInfo("../util/sample_conf.ini")
+        self.sT = ScopeTrackerFactory.ScopeTrackerFactory.createST(self.langSwitch, c_info)
 
     def test_scopeOrder(self):
         line = "} catch(Exception e) {"
