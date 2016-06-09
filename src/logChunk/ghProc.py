@@ -46,7 +46,7 @@ def processLog(projPath, c_info, password = ""):
         print("Going to process %s " % (log_file))
     
     ghDb = ghLogDb(log_file, c_info, password)
-    ghDb.processLog()
+    return ghDb.processLog()
 
 def checkProj(project):
 
@@ -94,9 +94,9 @@ def main():
 
     #dumpLog(project)
     if(config_info.DATABASE):
-        processLog(project, config_info, password)
+        parseFinish = processLog(project, config_info, password)
     else:
-        processLog(project, config_info)
+        parseFinish = processLog(project, config_info)
 
     print "!! Done"
 
@@ -104,8 +104,11 @@ def main():
         end = datetime.datetime.now()
         print("Project: " + project)
         print("Start time: " + str(start))
+        print("Parse Finish time:" + str(parseFinish))
         print("End time: " + str(end))
-        print("Process time: " + str(end-start))
+        print("Parse time: " + str(parseFinish - start))
+        print("Write time: " + str(end - parseFinish))
+        print("Total time: " + str(end-start))
 
 
 if __name__ == '__main__':

@@ -585,6 +585,8 @@ class ghLogDb:
         #if shaObj != None:
         #    shaObj.patches.append(patchObj)
 
+        parseFinish = datetime.now()
+
         for s in self.shas:
             #s.printSha()
             if s != None:
@@ -615,6 +617,8 @@ class ghLogDb:
 
         print("Sha's processed:")
         print(len(self.shas))
+
+        return parseFinish
 
 
 #---------test-----------#
