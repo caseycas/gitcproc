@@ -9,7 +9,6 @@ sys.path.append("../util")
 import Util
 import LanguageSwitcherFactory
 from ghLogDb import ghLogDb
-from dumpLogs import dumpLogs
 from Config import Config
 
 
@@ -82,9 +81,6 @@ def processLog(projPath):
 
 def getGitLog(project, languages):
 
-    # dl = dumpLogs()
-    # dl.cleanDb()
-
     projects = os.listdir(project)
     count = 0
     for p in projects:
@@ -100,14 +96,12 @@ def getGitLog(project, languages):
 def main():
     print "==== Utility to process Github logs ==="
 
-    if len(sys.argv) < 2:
-        print "!!! Usage: python ghProc.py project [config_file]"
+    if len(sys.argv) < 3:
+        print "!!! Usage: python ghProc.py project config_file"
         sys.exit()
 
     project = sys.argv[1]
-    config_file = Util.CONFIG
-    if(len(sys.argv) == 3):
-        config_file = sys.argv[2]
+    config_file = sys.argv[2]        
 
     cfg = Config(config_file)
     log_config = cfg.ConfigSectionMap("Log")

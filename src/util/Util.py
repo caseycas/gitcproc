@@ -3,19 +3,28 @@ import sys
 import os.path
 import errno
 import shutil
+from distutils import util
+from Config import Config
 
-#Options flags
-SEP = '__'
-DEBUG = 0
-DEBUGLITE = 1
-DATABASE = 0
-CSV=1
-LOGTIME = 1
-CONFIG = "../util/sample_conf2.ini"
-#CONFIG = "../util/sample_confPy.ini" #Location of the configuration file.
-#CONFIG = "../util/assert_conf.ini" #Location of the configuration file.
 
 supportedLanguages = ["C", "C++", "Java", "Python"]
+
+class ConfigInfo:
+    def __init__(self, newFile):
+        self.setConfigFile(newFile)
+
+
+    def setConfigFile(self, newFile):
+        self.CONFIG = newFile
+        cfg = Config(self.CONFIG)
+        option_flags = cfg.ConfigSectionMap("Flags")
+        self.SEP = option_flags['sep']
+        self.DEBUG = bool(util.strtobool(option_flags['debug']))
+        self.DEBUGLITE = bool(util.strtobool(option_flags['debuglite']))
+        self.DATABASE = bool(util.strtobool(option_flags['database']))
+        self.CSV = bool(util.strtobool(option_flags['csv']))
+        self.LOGTIME = bool(util.strtobool(option_flags['logtime']))
+
 
 class cd:
     """Context manager for changing the current working directory"""

@@ -2,6 +2,7 @@ import sys
 
 sys.path.append("../util")
 import Util
+from Util import ConfigInfo
 import unittest
 import ghLogDb
 
@@ -10,29 +11,31 @@ class ghLogDbTest(unittest.TestCase):
 
     def setUp(self):
  
+        c_info = ConfigInfo("../util/sample_conf.ini")
+        c_info2 = ConfigInfo("../util/javatest.ini")
         Util.DATABASE = 0
-        self.testCommit1 = ghLogDb.ghLogDb("testfiles/ghLogDbTest/TestCommit1.txt")
-        self.testCommit2 = ghLogDb.ghLogDb("testfiles/ghLogDbTest/TestCommit2.txt")
-        self.testCommit3 = ghLogDb.ghLogDb("testfiles/ghLogDbTest/TestCommit3.txt")
-        self.testCommit4 = ghLogDb.ghLogDb("testfiles/ghLogDbTest/TestCommit4.txt")
-        self.testCommit5 = ghLogDb.ghLogDb("testfiles/ghLogDbTest/TestCommit5.txt")
+        self.testCommit1 = ghLogDb.ghLogDb("testfiles/ghLogDbTest/TestCommit1.txt",c_info)
+        self.testCommit2 = ghLogDb.ghLogDb("testfiles/ghLogDbTest/TestCommit2.txt",c_info)
+        self.testCommit3 = ghLogDb.ghLogDb("testfiles/ghLogDbTest/TestCommit3.txt",c_info)
+        self.testCommit4 = ghLogDb.ghLogDb("testfiles/ghLogDbTest/TestCommit4.txt",c_info)
+        self.testCommit5 = ghLogDb.ghLogDb("testfiles/ghLogDbTest/TestCommit5.txt",c_info)
      
-        self.testCommit7 = ghLogDb.ghLogDb("testfiles/ghLogDbTest/TestCommit7.txt")
-        #self.testCommit8 = ghLogDb.ghLogDb("testfiles/ghLogDbTest/TestCommit8.txt") #Broken, but I don't think its fixable. Fault of git logger
-        self.testCommit9 = ghLogDb.ghLogDb("testfiles/ghLogDbTest/TestCommit9.txt")
-        self.testCommit10 = ghLogDb.ghLogDb("testfiles/ghLogDbTest/TestCommit10.txt")
-        self.testCommit11 = ghLogDb.ghLogDb("testfiles/ghLogDbTest/TestCommit11.txt")
-        self.testCommit12 = ghLogDb.ghLogDb("testfiles/ghLogDbTest/TestCommit12.txt")
-        self.testCommit13 = ghLogDb.ghLogDb("testfiles/ghLogDbTest/TestCommit13.txt")
-        self.testCommit14 = ghLogDb.ghLogDb("testfiles/ghLogDbTest/TestCommit14.txt")
-        self.testCommit15 = ghLogDb.ghLogDb("testfiles/ghLogDbTest/TestCommit15.txt")
+        self.testCommit7 = ghLogDb.ghLogDb("testfiles/ghLogDbTest/TestCommit7.txt",c_info)
+        #self.testCommit8 = ghLogDb.ghLogDb("testfiles/ghLogDbTest/TestCommit8.txt",c_info) #Broken, but I don't think its fixable. Fault of git logger
+        self.testCommit9 = ghLogDb.ghLogDb("testfiles/ghLogDbTest/TestCommit9.txt",c_info)
+        self.testCommit10 = ghLogDb.ghLogDb("testfiles/ghLogDbTest/TestCommit10.txt",c_info)
+        self.testCommit11 = ghLogDb.ghLogDb("testfiles/ghLogDbTest/TestCommit11.txt",c_info)
+        self.testCommit12 = ghLogDb.ghLogDb("testfiles/ghLogDbTest/TestCommit12.txt",c_info)
+        self.testCommit13 = ghLogDb.ghLogDb("testfiles/ghLogDbTest/TestCommit13.txt",c_info)
+        self.testCommit14 = ghLogDb.ghLogDb("testfiles/ghLogDbTest/TestCommit14.txt",c_info)
+        self.testCommit15 = ghLogDb.ghLogDb("testfiles/ghLogDbTest/TestCommit15.txt",c_info)
 
         #self.testCommit13.processLog() #Make sure there is no crash -> Hangs a long time
 
-        self.testCommitb1=ghLogDb.ghLogDb("testfiles/ghLogDbTestBlock/TestCommit1.txt")
+        self.testCommitb1=ghLogDb.ghLogDb("testfiles/ghLogDbTestBlock/TestCommit1.txt",c_info2)
 
     def test_Commit1(self):
-        self.testCommit1.processLog("../util/sample_conf.ini")
+        self.testCommit1.processLog()
         shas = self.testCommit1.shas
         #self.assertTrue(len(shas) == 1) #Just 1 commit.
         self.assertTrue(shas[0].author == "Liu Liu")
@@ -82,7 +85,7 @@ class ghLogDbTest(unittest.TestCase):
         self.assertTrue(len(methods)==1)
 
     def test_Commit2(self):
-        self.testCommit2.processLog("../util/sample_conf.ini")
+        self.testCommit2.processLog()
         shas = self.testCommit2.shas
         #self.assertTrue(len(shas) == 1) #Just 1 commit.
         self.assertTrue(shas[0].author == "Liu Liu")
@@ -121,7 +124,7 @@ class ghLogDbTest(unittest.TestCase):
         self.assertEqual(testDict,methods[1].keywordDictionary)
 
     def test_Commit3(self):
-        self.testCommit3.processLog("../util/sample_conf.ini")
+        self.testCommit3.processLog()
         shas = self.testCommit3.shas
         #self.assertTrue(len(shas) == 1) #Just 1 commit.
         self.assertTrue(shas[0].author == "Liu Liu")
@@ -151,7 +154,7 @@ class ghLogDbTest(unittest.TestCase):
         self.assertEqual(testDict,methods[1].keywordDictionary)
 
     def test_Commit4(self):
-        self.testCommit4.processLog("../util/sample_conf.ini")
+        self.testCommit4.processLog()
         shas = self.testCommit4.shas
         #self.assertTrue(len(shas) == 1) #Just 1 commit.
         self.assertTrue(shas[0].author == "Liu Liu")
@@ -198,7 +201,7 @@ class ghLogDbTest(unittest.TestCase):
         self.assertEqual(testDict,methods[3].keywordDictionary)
 
     def test_Commit5(self):
-        self.testCommit5.processLog("../util/sample_conf.ini")
+        self.testCommit5.processLog()
         shas = self.testCommit5.shas
         #self.assertTrue(len(shas) == 1) #Just 1 commit.
         self.assertTrue(shas[0].author == "Lars Op den Kamp")
@@ -222,7 +225,7 @@ class ghLogDbTest(unittest.TestCase):
         self.assertTrue(len(methods) == 9)
 
     def test_Commit7(self):
-        self.testCommit7.processLog("../util/sample_conf.ini")
+        self.testCommit7.processLog()
         shas = self.testCommit7.shas
         #self.assertTrue(len(shas) == 1) #Just 1 commit.
         self.assertTrue(shas[0].author == "Dmitry Lenev")
@@ -266,7 +269,7 @@ class ghLogDbTest(unittest.TestCase):
 #        self.assertEqual(testDict,methods[3].keywordDictionary)
 
     def test_commit9(self):
-        self.testCommit9.processLog("../util/sample_conf.ini")
+        self.testCommit9.processLog()
         shas = self.testCommit9.shas
         #self.assertTrue(len(shas) == 1)
         self.assertTrue(shas[0].author == "davi@mysql.com/endora.local") #It doesn't recognize this?
@@ -283,7 +286,7 @@ class ghLogDbTest(unittest.TestCase):
         self.assertEqual(testDict,methods[8].keywordDictionary)
 
     def test_commit10(self):
-        self.testCommit10.processLog("../util/sample_conf.ini")
+        self.testCommit10.processLog()
         shas = self.testCommit10.shas
         #self.assertTrue(len(shas) == 1)
         self.assertTrue(shas[0].author == "Liu Liu")
@@ -303,13 +306,13 @@ class ghLogDbTest(unittest.TestCase):
         self.assertTrue(methods[0].method == "GITCPROC_NON_FUNCTION")
 
     def test_commmit11(self):
-        self.testCommit11.processLog("../util/sample_conf.ini") #Make sure there is no crash
+        self.testCommit11.processLog() #Make sure there is no crash
 
     def test_commmit12(self):
-        self.testCommit12.processLog("../util/sample_conf.ini") #Make sure there is no crash
+        self.testCommit12.processLog() #Make sure there is no crash
 
     def test_commmit14(self):
-        self.testCommit14.processLog("../util/sample_conf.ini") #This was not being written out. Why?
+        self.testCommit14.processLog() #This was not being written out. Why?
         shas = self.testCommit14.shas
         self.assertTrue(len(shas) == 1)
         self.assertTrue(shas[0].author == "Jonathan Tang")
@@ -324,11 +327,11 @@ class ghLogDbTest(unittest.TestCase):
         self.assertEqual(testDict,methods[0].keywordDictionary)
 
     def test_commmit15(self):
-        self.testCommit15.processLog("../util/sample_conf.ini") #Make sure there is no crash -> Currently crashing
+        self.testCommit15.processLog() #Make sure there is no crash
 
 
     def test_Commitb1(self):
-        self.testCommitb1.processLog("../util/javatest.ini")
+        self.testCommitb1.processLog()
         shas = self.testCommitb1.shas
         #self.assertTrue(len(shas) == 1) #Just 1 commit.
         self.assertTrue(shas[0].author == "Kevin Sawicki")

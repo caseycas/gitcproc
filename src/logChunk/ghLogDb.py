@@ -9,7 +9,6 @@ from datetime import datetime, timedelta
 sys.path.append("../util")
 
 from dumpLogs import dumpLogs
-from logChunk import logChunk
 from PatchMethod import PatchMethod
 import TimeExceededError
 from chunkingConstants import *
@@ -238,7 +237,7 @@ class Sha:
 
 class ghLogDb:
 
-    def __init__(self, logFile, password = ""):
+    def __init__(self, logFile, c_info, password = ""):
 
         self.log_file = logFile
         self.project_name = None
@@ -246,6 +245,8 @@ class ghLogDb:
         self.cur_lang = None
         self.shas = []
         self.dbPass = password
+        self.config_info = c_info #configuration info and options
+
     
 
     def __str__(self):
@@ -260,7 +261,7 @@ class ghLogDb:
         sha = None
         if line.startswith("commit") and is_sha:
             sha = is_sha.group(0)
-            if (Util.DEBUG == 1 or Util.DEBUGLITE == 1):
+            if (self.config_info.DEBUG or self.config_info.DEBUGLITE):
                 print("COMMIT: " + sha)
         return sha
 
@@ -358,13 +359,13 @@ class ghLogDb:
             pass
 
         elif line.startswith("@@ "):
-            if Util.DEBUG == 1: 
+            if(self.config_info.DEBUG): 
                 print("New @@: " + line)
                 print("HEADER: " + curLogChunk.header)
             #Parse the previous chunk and store the results.
             if(curLogChunk.header != ""): #If there is an existing chunk to parse
                 self.processLastChunk(patchObj, curLogChunk)
-            if Util.DEBUG == 1:
+            if(self.config_info.DEBUG):
                 print("Resetting.")
             curLogChunk.reset()
             curLogChunk.setLang("." + self.cur_lang) #DOUBLE CHECK ME!
@@ -413,7 +414,9 @@ class ghLogDb:
         #    print "Processing timed out. Skipping Chunk"
 
 
-    def processLog(self, config = Util.CONFIG):
+    def processLog(self, config = ""):
+        if(config == ""):
+            config = self.config_info.CONFIG
 
         signal.signal(signal.SIGALRM, timeout)
 
@@ -422,10 +425,10 @@ class ghLogDb:
         self.project_name = os.path.basename(project1)
         print("---------- %s ------------\n" % (self.project_name))
 
-        if(Util.DATABASE == 1):
-            dl = dumpLogs(self.dbPass)
+        if(self.config_info.DATABASE):
+            dl = dumpLogs(self.dbPass, self.config_info)
 
-        if(Util.CSV==1):
+        if(self.config_info.CSV):
             if not os.path.isdir("../Results"):
                 os.mkdir("../Results")
             inf1=open("../Results/"+str(self.project_name)+"ChangeSummary.csv",'a')
@@ -438,7 +441,7 @@ class ghLogDb:
 
             lst=[]
             listToDict={}
-            mockChunk=logChunk("", "C") #TODO: This is C specific,  Why is this C specific?
+            mockChunk=logChunk("", "C", self.config_info) #TODO: This is C specific,  Why is this C specific?
             lst = mockChunk.readKeywords(lst)
             keywords= [k[0] for k in lst if k[1] == INCLUDED]
             for keyword in keywords:
@@ -455,7 +458,7 @@ class ghLogDb:
         log_mssg = ""
         is_no_prev_ver = False
         is_no_next_ver = False
-        curLogChunk = logChunk("", "C", config)
+        curLogChunk = logChunk("", "C", self.config_info)
         linenum = 0
 
         for l in inf:
@@ -467,7 +470,7 @@ class ghLogDb:
                 line = l
 
 
-                #if(Util.DEBUGLITE):
+                #if(self.config_info.DEBUGLITE):
                 #    try:
                 #        print(line)
                 #    except:
@@ -476,18 +479,18 @@ class ghLogDb:
                 if sha:
                     #Reverting back to version that outputs at the end...
                     #if(shaObj != None):
-                    #    if(Util.DEBUGLITE):
+                    #    if(self.config_info.DEBUGLITE):
                     #        print("Writing Sha:" + sha)
 
-                    #    if(Util.DATABASE):            
+                    #    if(self.config_info.DATABASE):            
                     #        shaObj.dumpSha(dl)
-                    #    elif(Util.CSV):
+                    #    elif(self.config_info.CSV):
                     #        shaObj.shaToCsv(inf1,inf2,fPtrChangeSummary,fPtrPatchSummary)
                     #    else:
                     #        shaObj.printSha()
           
                     shaObj = Sha(self.project_name, sha)
-                    #if(Util.DEBUGLITE): #Save for testing.
+                    #if(self.config_info.DEBUGLITE): #Save for testing.
                     self.shas.append(shaObj) #This will become very memory intensive in large git logs.
                     
                     is_diff = False
@@ -526,13 +529,13 @@ class ghLogDb:
                         if(patchObj != None):
                             #If there is an existing chunk to parse, process it
                             if(curLogChunk.header != ""):
-                                if Util.DEBUG == 1: 
+                                if(self.config_info.DEBUG): 
                                     print("New diff with previous version: " + line)
                                     print("HEADER: " + curLogChunk.header)
                                 self.processLastChunk(patchObj, curLogChunk)
                             
                             #Reset the current chunk obj
-                            if Util.DEBUG == 1:
+                            if (self.config_info.DEBUG):
                                 print("Resetting.")
                             curLogChunk.reset()
                             curLogChunk.setLang("." + self.cur_lang) #DOUBLE CHECK ME!
@@ -550,12 +553,12 @@ class ghLogDb:
                         #Finish the changes to the old patch object
                         if(patchObj != None):
                             if(curLogChunk.header != ""): #If there is an existing chunk
-                                if Util.DEBUG == 1: 
+                                if (self.config_info.DEBUG): 
                                     print("New diff with no previous version: " + line)
                                     print("HEADER: " + curLogChunk.header)
                                 self.processLastChunk(patchObj, curLogChunk)
 
-                                if Util.DEBUG == 1:
+                                if (self.config_info.DEBUG):
                                     print("Resetting.")
                                 curLogChunk.reset()
                                 curLogChunk.setLang("." + self.cur_lang) #DOUBLE CHECK ME!
@@ -574,7 +577,7 @@ class ghLogDb:
 
         #Make sure to get the last patch in the file!
         if(curLogChunk.header != ""): #If there is an existing chunk to parse
-            if Util.DEBUG == 1: 
+            if(self.config_info.DEBUG): 
                 print("Last Patch: " + line)
                 print("HEADER: " + curLogChunk.header)
             self.processLastChunk(patchObj, curLogChunk)
@@ -585,25 +588,25 @@ class ghLogDb:
         for s in self.shas:
             #s.printSha()
             if s != None:
-               if(Util.DATABASE):            
+               if(self.config_info.DATABASE):            
                    s.dumpSha(dl)
-               elif(Util.CSV):
+               elif(self.config_info.CSV):
                    s.shaToCsv(inf1,inf2,fPtrChangeSummary,fPtrPatchSummary)
                else:
                    s.printSha()
 
 
         #Write out last sha.
-        #if(shaObj != None and Util.DATABASE):
-        #    if(Util.DEBUGLITE):
+        #if(shaObj != None and self.config_info.DATABASE):
+        #    if(self.config_info.DEBUGLITE):
         #        print("Writing to db.")
         #    shaObj.dumpSha(dl)
 
-        if(Util.DATABASE == 1):
+        if(self.config_info.DATABASE):
             print("Closing Time.")
             dl.close()
         
-        if(Util.CSV == 1):
+        if(self.config_info.CSV):
             shaObj.shaToCsv(inf1,inf2,fPtrChangeSummary,fPtrPatchSummary)
             inf1.close()
             inf2.close()

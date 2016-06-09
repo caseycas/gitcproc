@@ -1,6 +1,11 @@
+import sys
 import unittest
 import logChunk
 from chunkingConstants import *
+sys.path.append("../util")
+
+import Util
+from Util import ConfigInfo
 
 class logChunktest(unittest.TestCase):
 
@@ -32,20 +37,21 @@ class logChunktest(unittest.TestCase):
         self.javaMethod6 = " public JMethod implementMethod(GeneratedClassHolder holder, List<ExecutableElement> methods, String methodName, String returnType, String... parameterTypes) {"
         self.javaMethod7 = "ProgrammerInterview pInstance = new    ProgrammerInterview() {\npublic void read() {"
 
-        self.testChunk2 = logChunk.logChunk("", "Java")
+        c_info = ConfigInfo("../util/javatest.ini")
+        self.testChunk2 = logChunk.logChunk("", "Java", c_info)
 
         #Read in the block tests
-        self.chunkb1 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk1.txt"), "Java", "../util/javatest.ini")
-        self.chunkb2 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk2.txt"), "Java", "../util/javatest.ini")
-        self.chunkb3 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk3.txt"), "Java", "../util/javatest.ini")
-        self.chunkb4 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk4.txt"), "Java", "../util/javatest.ini")
-        self.chunkb5 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk5.txt"), "Java", "../util/javatest.ini")
-        self.chunkb6 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk6.txt"), "Java", "../util/javatest.ini")
-        self.chunkb7 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk7.txt"), "Java", "../util/javatest.ini")
-        self.chunkb8 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk8.txt"), "Java", "../util/javatest.ini")
-        self.chunkb9 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk9.txt"), "Java", "../util/javatest.ini")
-        self.chunkb10 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk10.txt"), "Java", "../util/javatest.ini")
-        self.chunkb11 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk11.txt"), "Java", "../util/javatest.ini")
+        self.chunkb1 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk1.txt"), "Java", c_info)
+        self.chunkb2 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk2.txt"), "Java", c_info)
+        self.chunkb3 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk3.txt"), "Java", c_info)
+        self.chunkb4 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk4.txt"), "Java", c_info)
+        self.chunkb5 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk5.txt"), "Java", c_info)
+        self.chunkb6 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk6.txt"), "Java", c_info)
+        self.chunkb7 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk7.txt"), "Java", c_info)
+        self.chunkb8 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk8.txt"), "Java", c_info)
+        self.chunkb9 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk9.txt"), "Java", c_info)
+        self.chunkb10 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk10.txt"), "Java", c_info)
+        self.chunkb11 = logChunk.logChunk(self.readHelper("testfiles/Block/testChunk11.txt"), "Java", c_info)
 
 
     def test_FunctionNameParseJAVA(self):

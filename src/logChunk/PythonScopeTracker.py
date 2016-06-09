@@ -16,7 +16,7 @@ from scopeTracker import *
 
 #Redo with a polymorphic solution for the languages
 class PythonScopeTracker(scopeTracker):
-    def __init__(self, language):
+    def __init__(self, language, c_info):
         #These are pseudo stacks implemented as lists that track the current 
         #number of open scopes (brackets, tabs, etc), each change gets its own
         #entry, which is then deleted when we see a matching closing entry
@@ -39,6 +39,7 @@ class PythonScopeTracker(scopeTracker):
         self.isContinuation = NOT_CONTINUATION
         self.shiftStart = False
         self.startType = OTHER
+        self.config_info = c_info
 
     #String -> list
     #Returns a list giving the sequence of scope changes in this line.
@@ -51,7 +52,7 @@ class PythonScopeTracker(scopeTracker):
         elif(decVal == S_YES):
             return [DECREASE] #Report all numbers of scope decreases equally.
         elif(incVal == S_SIMUL or decVal == S_SIMUL):
-            if(Util.DEBUG):
+            if(self.config_info.DEBUG):
                 print(incVal)
                 print(decVal)
             #assert(decVal == S_SIMUL) #This isn't true necessarily
@@ -73,7 +74,7 @@ class PythonScopeTracker(scopeTracker):
 
     def indentDepth(self, whiteSpace):
         #Make sure there is no mixing of tabs and spaces
-        if(Util.DEBUG):
+        if(self.config_info.DEBUG):
             try:
                 print("Indent Token: \"" + self.indentToken + "\"")
                 print("WhiteSpace: \"" + whiteSpace + "\"")
@@ -134,7 +135,7 @@ class PythonScopeTracker(scopeTracker):
 
     #Returns true if this line contains an decreased level of scope.
     def isScopeDecrease(self, line, lineType):
-        if(Util.DEBUG):
+        if(self.config_info.DEBUG):
             print("IN isScopeDecrease")
             print("Indent Token: \"" + self.indentToken + "\"")
             print("Line: \"" + line + "\"")
@@ -149,7 +150,7 @@ class PythonScopeTracker(scopeTracker):
 
         indent = re.match(r"\s*", line).group() 
         depth = self.indentDepth(indent)
-        if(Util.DEBUG):
+        if(self.config_info.DEBUG):
             print("Depth:" + str(depth))
             print("Line: \"" + line + "\"")
             print("Old Stack: " + str(self.oldVerStack))
@@ -162,7 +163,7 @@ class PythonScopeTracker(scopeTracker):
         elif(lineType == OTHER): #Can these be different?
             oldDiff = len(self.oldVerStack) > depth
             newDiff = len(self.newVerStack) > depth
-            if(Util.DEBUG):
+            if(self.config_info.DEBUG):
                 print("Old Diff:" + str(oldDiff))
                 print("New Diff:" + str(newDiff))
             if(oldDiff != newDiff): #Scope is decreasing from the perspective of one stack and increasing from the other.
@@ -184,7 +185,7 @@ class PythonScopeTracker(scopeTracker):
         function line itself.  (Thought:  Maybe need to do this on a scope decrease as well.)
         """
         if(funcIdentFunc(functionName + " " + line) != ""):
-            if(Util.DEBUG):
+            if(self.config_info.DEBUG):
                 print("Function Name Found before scope INCREASE")
             if(lineType == ADD):
                 self.funcNewLine = 1
@@ -210,7 +211,7 @@ class PythonScopeTracker(scopeTracker):
         #What if we have a class name?
         #TODO: In Simul cases, I don't think this function is behaving correctly, its non
         #increase counterpart is likely also not behaving correctly.
-        if(Util.DEBUG):
+        if(self.config_info.DEBUG):
             print("Handle Ending")
             print("FunctionName: " + functionName)
             print("Line: " + line)
@@ -218,7 +219,7 @@ class PythonScopeTracker(scopeTracker):
             print("New Context:" + self.lastNewFuncContext)
 
         if(funcIdentFunc(functionName) != ""): #This is the line containing the followup
-            if(Util.DEBUG):
+            if(self.config_info.DEBUG):
                 print("1")
             if(lineType == ADD):
                 self.funcNewLine = 1
@@ -240,18 +241,18 @@ class PythonScopeTracker(scopeTracker):
             #Issue is that we are counting this line as the function start in this case
             self.shiftStart = True
             self.startType = lineType
-            if(Util.DEBUG):
+            if(self.config_info.DEBUG):
                 print("2")
             if(lineType == ADD):
-                if(Util.DEBUG):
+                if(self.config_info.DEBUG):
                     print("Changing function new Line to 0")
                 self.funcNewLine = 0
             elif(lineType == REMOVE):
-                if(Util.DEBUG):
+                if(self.config_info.DEBUG):
                     print("Changing function Old Line to 0")
                 self.funcOldLine = 0
             elif(lineType == OTHER):
-                if(Util.DEBUG):
+                if(self.config_info.DEBUG):
                     print("Changing function Old and New Line to 0")
                 #TODO:Something about these flags needs to be different for SIMUL I think...
                 self.funcNewLine = 0
@@ -260,7 +261,7 @@ class PythonScopeTracker(scopeTracker):
                  assert("Not a valid line type")
             return functionName + " " + line
         else: #This is not a function
-            if(Util.DEBUG):
+            if(self.config_info.DEBUG):
                 print("3")
             if(lineType == ADD):
                 self.funcNewLine = -1
@@ -306,7 +307,7 @@ class PythonScopeTracker(scopeTracker):
             oldChange = len(self.oldVerStack) - depth
             newChange = len(self.newVerStack) - depth
             #if(not ((oldChange < 0 and newChange > 0) or (oldChange > 0 and newChange < 0))):
-            if(Util.DEBUG):
+            if(self.config_info.DEBUG):
                 print("SIMUL SCOPE CHANGE:")
                 print("Line: " + stackValue)
                 print("Depth: " + str(depth))
@@ -345,14 +346,14 @@ class PythonScopeTracker(scopeTracker):
                 self.increaseNewIndent(stackValue, changeType, lineDiff) #TODO lineDiff = ??
 
             #if(not ((oldChange < 0 and newChange > 0) or (oldChange > 0 and newChange < 0))):
-            if(Util.DEBUG):
+            if(self.config_info.DEBUG):
                 print("SIMUL SCOPE CHANGE:")
                 print("STACKVALUES")
                 self.printScope()
 
 
     def increaseNewIndent(self, stackValue, changeType, lineDiff):
-        if(Util.DEBUG):
+        if(self.config_info.DEBUG):
             print("New Indent Increase")
             print("Adding: " + str(stackValue))
             print("Type: " + str(changeType))
@@ -399,18 +400,18 @@ class PythonScopeTracker(scopeTracker):
         else:
             assert("Not a valid change type.")
 
-        if(Util.DEBUG):
+        if(self.config_info.DEBUG):
             print("Stack (After): " + str(self.newVerStack))
 
     def increaseOldIndent(self, stackValue, changeType, lineDiff):
-        if(Util.DEBUG):
+        if(self.config_info.DEBUG):
             print("Old Indent Increase")
             print("Adding: " + str(stackValue))
             print("Type: " + str(changeType))
             print("Stack: " + str(self.oldVerStack))
 
         if(changeType == GENERIC):
-            if(Util.DEBUG):
+            if(self.config_info.DEBUG):
                 print("GENERIC!")
                 print("Func Old Line: " + str(self.funcOldLine))
                 print("Block Old Line: " + str(self.blockOldLine))
@@ -428,12 +429,12 @@ class PythonScopeTracker(scopeTracker):
         elif(changeType == FUNC):
             #Mark that we've seen the function... 
             if(self.funcOldLine == 0): #Func line that is indented
-                if(Util.DEBUG):
+                if(self.config_info.DEBUG):
                     print("Changing Old Line to 1")
                 self.oldVerStack.append((self.indentToken, GENERIC))
                 self.lastOldFuncContext = stackValue
                 self.funcOldLine = 1
-                if(Util.DEBUG):
+                if(self.config_info.DEBUG):
                     print("Func Old Line: " + str(self.funcOldLine))
             elif(self.funcOldLine == 1): #Indent after a func line
                 self.oldVerStack.append((self.lastOldFuncContext, FUNC))
@@ -458,14 +459,14 @@ class PythonScopeTracker(scopeTracker):
         else:
             assert("Not a valid change type.")
 
-        if(Util.DEBUG):
+        if(self.config_info.DEBUG):
             print("Stack (After): " + str(self.oldVerStack))
 
     #string, [ADD|REMOVE|OTHER], [GENERIC|FUNC|BLOCK] -> --
     #Increase the depth of our tracker and add in function or block contexts if they have been discovered.
     #Error when doing a block, we have sent just the keyword. We need the whole line for the unmodified version....
     def increaseScope(self, stackValue, line, lineType, changeType, lineDiff = -1, isSimul = False):
-        if(Util.DEBUG): 
+        if(self.config_info.DEBUG): 
             try:
                 print("Scope Increasing Line: " + line)
             except:
@@ -494,7 +495,7 @@ class PythonScopeTracker(scopeTracker):
     def decreaseNewIndent(self):
         if(self.newVerStack != []):
             removed = self.newVerStack.pop()
-            if(Util.DEBUG):
+            if(self.config_info.DEBUG):
                 print("Removing: " + str(removed))
                 #print("Context: " + str(self.lastNewBlockContext))
                 print("Stack: " + str(self.newVerStack))
@@ -503,14 +504,14 @@ class PythonScopeTracker(scopeTracker):
             #elif(removed[LABELINDEX] == SBLOCK):
             #    self.lastNewBlockContext.remove(removed[LINEINDEX])
         else:#Bracket overclosing -> estimating...
-            if(Util.DEBUG):
+            if(self.config_info.DEBUG):
                 print("Popped from empty new Stack.")
 
     #Remove indents from the old stack and update the functional and block caches accordingly
     def decreaseOldIndent(self):
         if(self.oldVerStack != []):
             removed = self.oldVerStack.pop()
-            if(Util.DEBUG):
+            if(self.config_info.DEBUG):
                 print("Removing: " + str(removed))
                 #print("Context: " + str(self.lastOldBlockContext))
                 print("Stack: " + str(self.oldVerStack))
@@ -520,7 +521,7 @@ class PythonScopeTracker(scopeTracker):
                 #self.lastOldBlockContext.remove(removed[LINEINDEX])
                 #print("Current block context: " + str(self.lastOldBlockContext))
         else:#Bracket overclosing -> estimating...
-            if(Util.DEBUG):
+            if(self.config_info.DEBUG):
                 print("Popped from empty old Stack.")
 
     #string, [ADD|REMOVE|OTHER] -> --
