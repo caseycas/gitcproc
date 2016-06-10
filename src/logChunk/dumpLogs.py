@@ -19,6 +19,22 @@ class dumpLogs:
         self.connectDb()
         #self.cleanDb()
 
+    @staticmethod
+    def getFullTitleString(keywordDictionary):
+        '''
+        Create a string specifying not only the database column names
+        but also their types.  This is used when automatically creating
+        the database table.
+        '''
+
+        dictStr = "(project character varying(500), sha text, language character varying(500)," + \
+            " file_name text, is_test boolean, method_name text"
+        for key, value in keywordDictionary.iteritems():
+            dictStr= dictStr+", "+ str(key).replace(" ", "_").lower() + " integer" #ToStr will add ' around the strings...
+
+        dictStr += ", total_adds integer, total_dels integer, warning_alert boolean)"
+
+        return dictStr
 
     def connectDb(self):
         self.db_config = self.cfg.ConfigSectionMap("Database")
@@ -51,17 +67,28 @@ class dumpLogs:
         self.dbCon.commit()
         self.dbCon.close()
 
-    # #TODO: Improve security here for possible injections?
-    # def createSummaryTable(self):
-    #     schema = self.db_config['schema']
-    #     table = schema + "." + self.db_config['table_change_summary']
+     #TODO: Improve security here for possible injections?
+    def createSummaryTable(self):
+        schema = self.db_config['schema']
+        table = schema + "." + self.db_config['table_change_summary']
+        user = self.db_config['user']
 
+        sql_command = "CREATE TABLE IF NOT EXISTS " + table + " (project character varying(500) NOT NULL," + \
+            " sha text NOT NULL, author character varying(500), commit_date date, is_bug boolean,"+ \
+            " CONSTRAINT change_summary_pkey PRIMARY KEY (project, sha)) WITH (OIDS=FALSE);"
+        self.dbCon.create(sql_command)
+        #self.dbCon.create("ALTER TABLE " + table + " OWNER TO " + user + ";")
+        #self.dbCon.create("GRANT ALL ON TABLE " + table + " TO " + user + ";")
 
-    #     sql_command = "CREATE TABLE " + table + " (project character varying(500) NOT NULL, sha text NOT NULL, author character varying(500), commit_date date, is_bug boolean, CONSTRAINT change_summary_pkey PRIMARY KEY (project, sha)) WITH (OIDS=FALSE);
-    #     self.dbCon.
-    #     sql_command = "ALTER TABLE logchunktool.change_summary OWNER TO " + user + ";"
-    #     sql_command = "GRANT ALL ON TABLE logchunktool.change_summary TO " + user + ";"
+    def createMethodChangesTable(self, titleString):
+        schema = self.db_config['schema']
+        table = schema + "." + self.db_config['table_method_detail']
+        user = self.db_config['user']
 
+        sql_command = "CREATE TABLE IF NOT EXISTS " + table + titleString + " WITH (OIDS=FALSE);"
+        self.dbCon.create(sql_command)
+        #self.dbCon.create("ALTER TABLE " + table + " OWNER TO " + user + ";")
+        #self.dbCon.create("GRANT ALL ON TABLE " + table + " TO " + user + ";")
 
 
     def dumpSummary(self, summaryStr):

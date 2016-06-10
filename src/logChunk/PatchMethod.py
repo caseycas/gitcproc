@@ -54,6 +54,21 @@ class PatchMethod:
     
         return dictStr
 
+    def getFullTitleString(self):
+        '''
+        Create a string specifying not only the database column names
+        but also their types.  This is used when automatically creating
+        the database table.
+        '''
+        dictStr = "(project character varying(500), sha text, language character varying(500)," + \
+            " file_name text, is_test boolean, method_name text"
+        for key, value in self.keywordDictionary.iteritems():
+            dictStr= dictStr+", "+ str(key).replace(" ", "_").lower() + "integer" #ToStr will add ' around the strings...
+
+        dictStr += ", total_adds integer, total_dels integer, warning_alert boolean)"
+    
+        return dictStr
+
     def dictToCsv(self):
         dictStr=""
         # for key, value in self.keywordDictionary.iteritems():

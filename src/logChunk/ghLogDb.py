@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 sys.path.append("../util")
 
 from dumpLogs import dumpLogs
+from Config import Config
 from PatchMethod import PatchMethod
 import TimeExceededError
 from chunkingConstants import *
@@ -50,6 +51,12 @@ class Patch:
         self.is_test    = False
         self.methods  = []
         self.isExceptionPatch=False #TODO: Change
+
+    def getFullTitleString(self):
+        if(methods != []):
+            return methods[0].getFullTitleString()
+        else:
+            return ""
 
     #Deprecated
     def addMethod(self, methodName):
@@ -127,8 +134,18 @@ class Sha:
         self.patches    = []
 
     def __str__(self):
-
         return self.printSha()
+
+    def getFullTitleString(self):
+        title = ""
+        i = 0
+        if(patches != []):
+            #Iterate until we find a patch that contains a method.
+            while(title == "" and i < len(patches)): 
+                title = patches[i].getFullTitleString()
+                i += 1
+
+        return title
 
     def dumpSha(self, dumpLogDb):
 
@@ -217,10 +234,8 @@ class Sha:
                         if ((word not in stoplist)) ]
         bug_desc = ' '.join([x for x in imp_words])
         
-        #This is hard coded and should be modified in the future.
-        if(self.project == 'v8'):
-            if "bug= " in bug_desc or "bug=none" in bug_desc:
-               return isBug
+        if "bug= " in bug_desc or "bug=none" in bug_desc:
+            return isBug
         
         if re.search(ERR_STR, '\b'+bug_desc+'\b', re.IGNORECASE):
             isBug = True
@@ -587,15 +602,27 @@ class ghLogDb:
 
         parseFinish = datetime.now()
 
-        for s in self.shas:
-            #s.printSha()
-            if s != None:
-               if(self.config_info.DATABASE):            
-                   s.dumpSha(dl)
-               elif(self.config_info.CSV):
-                   s.shaToCsv(inf1,inf2,fPtrChangeSummary,fPtrPatchSummary)
-               else:
-                   s.printSha()
+        if(self.shas != []): #If the log wasn't empty...
+            #Create the change summary table and the method change table now if necessary
+            if(self.config_info.DATABASE):
+                cfg = Config(self.config_info.CONFIG)
+                keywordFile = cfg.ConfigSectionMap("Keywords")
+                full_title = dumpLogs.getFullTitleString(curLogChunk.getEmptyKeywordDict())
+
+                dl.createSummaryTable()
+
+                if(full_title != ""): #Check if the changes table exists and create it if we have a title.
+                    dl.createMethodChangesTable(full_title)
+
+            for s in self.shas:
+                #s.printSha()
+                if s != None:
+                   if(self.config_info.DATABASE):            
+                       s.dumpSha(dl)
+                   elif(self.config_info.CSV):
+                       s.shaToCsv(inf1,inf2,fPtrChangeSummary,fPtrPatchSummary)
+                   else:
+                       s.printSha()
 
 
         #Write out last sha.
