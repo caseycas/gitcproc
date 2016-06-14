@@ -1,2 +1,1 @@
-"print",included,single
-"if",included,block
+"asarray",included,single
