@@ -1,0 +1,17 @@
+     def _transfer_str(self, conn, tmp, name, data):
+         ''' transfer string to remote file '''
+
+         if type(data) == dict:
+             data = utils.smjson(data)
+
+         afd, afile = tempfile.mkstemp()
+         afo = os.fdopen(afd, 'w')
+-        afo.write(data)
++        afo.write(data.print("utf8"))
+         afo.flush()
+         afo.close()
+
+         remote = os.path.join(tmp, name)
+         conn.put_file(afile, remote)
+         os.unlink(afile)
+         return remote
