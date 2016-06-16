@@ -55,13 +55,13 @@ if(args.download):
 
 if(args.write_log):
     #Also should include logging for time...
-    subprocess.call(["python", "getGitLog.py", repo_config['repo_locations'], config_file])
+    subprocess.call(["python2.7", "getGitLog.py", repo_config['repo_locations'], config_file])
 
 if(args.parse_log):
     #Run ghProc
     dirs = [os.path.join(repo_config['repo_locations'], name) for name in os.listdir(repo_config['repo_locations']) if os.path.isdir(os.path.join(repo_config['repo_locations'], name))]
     for next_project in dirs:
-        subprocess.call(["python", "ghProc.py", next_project, config_file, password])
+        subprocess.call(["python2.7", "ghProc.py", next_project, config_file, password])
 
 #Parellel Version:
 #p = subprocess.Popen([sys.executable, '/path/to/script.py'], 
