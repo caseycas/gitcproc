@@ -59,9 +59,10 @@ if(args.write_log):
 
 if(args.parse_log):
     #Run ghProc
-    dirs = [os.path.join(repo_config['repo_locations'], name) for name in os.listdir(repo_config['repo_locations']) if os.path.isdir(os.path.join(repo_config['repo_locations'], name))]
-    for next_project in dirs:
-        subprocess.call(["python", "ghProc.py", next_project, config_file, password])
+    dirs_and_names = [(os.path.join(repo_config['repo_locations'], name), name) for name in os.listdir(repo_config['repo_locations']) if os.path.isdir(os.path.join(repo_config['repo_locations'], name))]
+    for next_project, name in dirs_and_names:
+        #subprocess.call(["python", "ghProc.py", next_project, config_file, password])
+        subprocess.call(["nohup", "sh", "run.sh", next_project, name, config_file, password]) 
 
 #Parellel Version:
 #p = subprocess.Popen([sys.executable, '/path/to/script.py'], 
