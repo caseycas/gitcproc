@@ -255,7 +255,7 @@ class logChunk:
     def keywordMatch(self, keyword, line):
         if(keyword.startswith('\"') and keyword.endswith('\"')):
             exactMatch = "(^|\W+)" + keyword[1:-1] + "(\W+|$)"
-            return (keyword[1:-1],re.match(exactMatch, line) != None)
+            return (keyword[1:-1],re.search(exactMatch, line) != None)
         else:
             return (keyword, keyword in line.lower())
 
@@ -1190,4 +1190,3 @@ class logChunk:
             print("Posting a warning about the Items in the chunk.")
 
         self.warning = True
-

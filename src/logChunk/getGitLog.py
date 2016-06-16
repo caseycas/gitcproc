@@ -35,6 +35,10 @@ def dumpLog(projPath, languages):
         all_extn += " \\*"  + e
         all_extn += " \\*"  + e.upper()
     with Util.cd(projPath):
+        #I think there are some problems here that are making us trace some unnecessary changes:
+        #I'm going to list some of the optional commands that I think may be relevant (b/c I'm seeing)
+        #cases were we measure commits that seem to just be file renames or moves, and I think this is
+        #adding a significant amount of additional work.  Also, why are we ignoring merge commits?
 
         #TODO: Determine what log command is appropriate on a per language basis to provide sufficient context
         #but also minimize the amount of logs unnecessarily processed.

@@ -64,6 +64,7 @@ if(args.parse_log):
         #subprocess.call(["python", "ghProc.py", next_project, config_file, password])
         subprocess.call(["nohup", "sh", "run.sh", next_project, name, config_file, password]) 
 
+
 #Parellel Version:
 #p = subprocess.Popen([sys.executable, '/path/to/script.py'], 
 #                                    stdout=subprocess.PIPE, 
