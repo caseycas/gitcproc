@@ -7,6 +7,11 @@ It also analyzes commit messages to estimate if the commits were bug fixing or n
 Currently, we have designed it to work with C/C++/Java/Python, but we have designed the framework to be extensible
 to other languages with the concept of scope.
 
+#Video Demo
+
+There is a video walkthrough of running the tool on a simple example at: https://youtu.be/shugzDjxj0w
+
+
 #Required Libraries
 GitCProc runs on python 2.7 and requires the following libraries:
 -psycopg2
