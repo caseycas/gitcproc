@@ -94,7 +94,6 @@ def main():
 
     #dumpLog(project)
     if(config_info.DATABASE):
-        print("Password:"  + password)
         parseFinish = processLog(project, config_info, password)
     else:
         parseFinish = processLog(project, config_info)
