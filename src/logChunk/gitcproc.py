@@ -49,7 +49,7 @@ if(args.download):
         subprocess.call(["mkdir", "-p", repo_config['repo_locations']])
 
     #Invoke the Java Downloads
-    subprocess.call(["java", "-jar", "../../bin/githubCloner.jar", repo_config['repo_url_file'], repo_config['repo_locations'], "0", str(count)])
+    subprocess.call(["java", "-jar", "../../bin/callclone.jar", repo_config['repo_url_file'], repo_config['repo_locations'], "0", str(count), config_info.SEP])
 
 if(args.write_log):
     #Also should include logging for time...

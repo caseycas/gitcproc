@@ -11,7 +11,6 @@ to other languages with the concept of scope.
 
 There is a video walkthrough of running the tool on a simple example at: https://youtu.be/shugzDjxj0w
 
-
 #Required Libraries
 GitCProc runs on python 2.7 and requires the following libraries:
 -psycopg2
@@ -22,6 +21,11 @@ GitCProc runs on python 2.7 and requires the following libraries:
 The python script src/logChunk/installDependencies.py will install these for you.  Be aware that psycopg2 requires postgres to be installed on your machine with necessary supporting libraries.  For Ubuntu, make sure you have libpq-dev installed.
 
 If you wish to output your results to a database instead of a csv file, you will need a postgres server installed.
+
+#Branches
+
+The master branch is under active development.  If you are interested in the exact version submitted to the FSE demo track,
+see the tool-demo branch.
 
 #Running Instructions
 

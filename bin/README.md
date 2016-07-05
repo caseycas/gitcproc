@@ -1,0 +1,2 @@
+githubCloner.jar is an older version that had the directory seperator hardcoded to ___.  Its validity checking is less strict than callclone.jar. However, it is a jar on which I have downloaded 10,000's of projects. callclone.jar has not been tested to
+that extent yet.
