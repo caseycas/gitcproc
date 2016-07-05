@@ -10,6 +10,7 @@ import Util
 import LanguageSwitcherFactory
 from ghLogDb import ghLogDb
 from Config import Config
+from Util import ConfigInfo
 
 
 LOG_FILE = "all_log.txt"
@@ -83,16 +84,34 @@ def processLog(projPath):
     ghDb.processLog()
 
 
-def getGitLog(project, languages):
+def getGitLog(project, languages, config_info):
+    #Get the which subset of projects to run on.
+    repo_config = config_info.cfg.ConfigSectionMap("Repos")
+    project_set = set()
+    
+    '''
+    Iterate over the projects to write the file for.
+    '''
+    try:
+        with open(repo_config['repo_url_file'], 'r') as f:
+            for line in f:
+                project_set.add(line.strip().replace("/", config_info.SEP))
+    except:
+        if(config_info.DEBUG or config_info.DEBUGLITE):
+            print("Error reading in the project list file, writing logs to all projects.")
+
 
     projects = os.listdir(project)
-    count = 0
+    if(len(project_set) == 0):
+        project_set = projects
+
     for p in projects:
-        count += 1
-        #if not p == 'gcc':
-        #  continue
+        print(p)
+        if(p not in project_set): # User has specified only a subset of the downloaded projects should be processed for logs
+            continue
         proj_path = os.path.join(project, p)
-        print proj_path
+        if(config_info.DEBUGLITE or config_info.DEBUG):
+            print proj_path
         dumpLog(proj_path, languages)
         #processLog(proj_path)
 
@@ -105,10 +124,11 @@ def main():
         sys.exit()
 
     project = sys.argv[1]
-    config_file = sys.argv[2]        
+    config_file = sys.argv[2]      
 
-    cfg = Config(config_file)
-    log_config = cfg.ConfigSectionMap("Log")
+
+    config_info = ConfigInfo(config_file)  
+    log_config = config_info.cfg.ConfigSectionMap("Log")
     try:
         langs = log_config['languages'].split(",")
     except:
@@ -118,7 +138,7 @@ def main():
         print("!! Please provide a valid directory")
         return
 
-    getGitLog(project, langs)
+    getGitLog(project, langs, config_info)
     #processLog(project)
     print "Done!!"
 

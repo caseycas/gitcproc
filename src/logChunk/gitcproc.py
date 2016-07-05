@@ -34,9 +34,7 @@ if(config_info.DATABASE and args.parse_log): #If we have database output selecte
 else:
     password = ""
 
-
-cfg = Config(config_file)
-repo_config = cfg.ConfigSectionMap("Repos")
+repo_config = config_info.cfg.ConfigSectionMap("Repos")
 
 if(args.download):
     count = sum(1 for line in open(repo_config['repo_url_file'])) #Default is to read all of them in.
@@ -58,9 +56,24 @@ if(args.write_log):
     subprocess.call(["python", "getGitLog.py", repo_config['repo_locations'], config_file])
 
 if(args.parse_log):
+    project_set = set()
+    if(not os.path.isfile(repo_config['repo_url_file'])):
+        print(repo_config['repo_url_file'] + ", the file containing the list of projects to download,")
+        print("cannot be found.  Make sure your path and name are correct.")
+    else:
+        try:
+            with open(repo_config['repo_url_file'], 'r') as f:
+                for line in f:
+                    project_set.add(line.strip().replace("/", config_info.SEP))
+        except:
+            if(config_info.DEBUG or config_info.DEBUGLITE):
+                print("Can't read in repo file, parsing all projects in the directory.")
+
     #Run ghProc
     dirs_and_names = [(os.path.join(repo_config['repo_locations'], name), name) for name in os.listdir(repo_config['repo_locations']) if os.path.isdir(os.path.join(repo_config['repo_locations'], name))]
     for next_project, name in dirs_and_names:
+        if(len(project_set) != 0 and name not in project_set):
+            continue
         #subprocess.call(["python", "ghProc.py", next_project, config_file, password])
         subprocess.call(["nohup", "sh", "run.sh", next_project, name, config_file, password]) 
 
