@@ -10,14 +10,19 @@ from Config import Config
 supportedLanguages = ["C", "C++", "Java", "Python"]
 
 class ConfigInfo:
+    '''
+    This class contains information about the config file
+    while providing options to directly access the flags
+    section of the .ini file.
+    '''
     def __init__(self, newFile):
         self.setConfigFile(newFile)
 
 
     def setConfigFile(self, newFile):
         self.CONFIG = newFile
-        cfg = Config(self.CONFIG)
-        option_flags = cfg.ConfigSectionMap("Flags")
+        self.cfg = Config(self.CONFIG)
+        option_flags = self.cfg.ConfigSectionMap("Flags")
         self.SEP = option_flags['sep']
         self.DEBUG = bool(util.strtobool(option_flags['debug']))
         self.DEBUGLITE = bool(util.strtobool(option_flags['debuglite']))
