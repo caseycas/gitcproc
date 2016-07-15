@@ -446,13 +446,13 @@ class ghLogDb:
         if(self.config_info.CSV):
             if not os.path.isdir("../Results"):
                 os.mkdir("../Results")
-            inf1=open("../Results/"+str(self.project_name)+"ChangeSummary.csv",'a')
-            fPtrChangeSummary=open("../Results/"+"ChangeSummary.csv",'a')
+            inf1=open("../Results/"+str(self.project_name)+"ChangeSummary.csv",'w')
+            fPtrChangeSummary=open("../Results/"+"ChangeSummary.csv",'w')
 
             inf1.write("project,sha,author,commit_date,is_bug\n")
 
-            inf2=open("../Results/"+str(self.project_name)+"PatchSummary.csv",'a')
-            fPtrPatchSummary=open("../Results/"+"PatchSummary.csv",'a')
+            inf2=open("../Results/"+str(self.project_name)+"PatchSummary.csv",'w')
+            fPtrPatchSummary=open("../Results/"+"PatchSummary.csv",'w')
 
             lst=[]
             listToDict={}
@@ -636,7 +636,6 @@ class ghLogDb:
             dl.close()
         
         if(self.config_info.CSV):
-            shaObj.shaToCsv(inf1,inf2,fPtrChangeSummary,fPtrPatchSummary)
             inf1.close()
             inf2.close()
             fPtrChangeSummary.close()
