@@ -43,6 +43,7 @@ script:
   - python ./logChunkTestPython.py
   - python ./ghLogDbTest.py
   - python ./ghLogDbTestPython.py
+  - python ./gitcprocTest.py
 notifications:
   email:
     - yvsuchak@ucdavis.edu
