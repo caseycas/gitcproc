@@ -11,6 +11,10 @@ to other languages with the concept of scope.
 
 There is a video walkthrough of running the tool on a simple example at: https://youtu.be/shugzDjxj0w
 
+#Walkthrough
+
+There is also a text version of the video walkthrough in the file "ExampleWalkthrough".
+
 #Required Libraries
 GitCProc runs on python 2.7 and requires the following libraries:
 -psycopg2

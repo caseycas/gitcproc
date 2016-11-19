@@ -1,0 +1,28 @@
+We demonstrate extracting try/catch blocks from a small Java project into a postgresSQL database, stored locally. We assume an installation of PostgreSQL, Java, Python, and the required li- braries. For this demonstration we will interact with the Post- greSQL database via pg3admin. Below we provide a textual walk- through of this task, but we will include a video demo shortly that will be linked in the README at www.github.com/caseycas/ gitcproc.
+
+1. Assume we have a database called caseycas. Create a new schema in the database, called java_error_handlers to store our logs.
+	• In pg3admin, we right click on the Schemas tab in the Object browser, and select New Schema...
+	• We fill in the name section with java_error_handlers, and the owner section with our username, in this case caseycas, then hit okay. We are now done with the database setup.
+
+2. Create a new config.ini file, called demo_conf.ini. We will store this in gitcproc/src/util for the moment.
+
+3. Open the config.ini file and fill in the sections. "Walkthrough.ini" shows an example configuration for this task. [Database] hosts our database connection information, with our database name, username, host, listening port, schema and output table names. [Repos] contains the file name of our list of projects to down- load and the storage location where they will be downloaded. [Keywords] links to our keyword file. [Log] is where we specify what languages to parse. [Flags] includes several flags for our output types and debug level. There we have DATABASE set to 1 for output, and the DEBUG and DE- BUGLITE options set to 0. A more detailed explanation of each variable in the file can be found in the README file in our repository: www.github.com/caseycas/gitcproc.
+
+4. Save the changes to .ini file.
+
+5. Create the file demoKeywords.txt in gitcproc/src/logChunk. This is the keywords file linked in the [Keywords] section of the .ini file. Note that all paths in the .ini are relative to where you execute the main script from, which is currently gitcproc/src/logChunk.
+	• Fill in the first line with "try", included, block
+	• Fill in the second line with "catch", included, block
+
+6. Save the keywords file.
+
+7. Create the repository file. For this demo’s time purposes, we will study just one project, the language Clojure, which is implemented partially in Java. Add the line clojure/clojure.
+
+8. Save the repository file.
+
+9. Now, we can run the tool. The master script, gitcproc.py is located in gitcproc/src/logChunk. The script has several options, detailed in the README or by supplying the script with the -h option. We will run the tool with the command python gitcproc.py -d -wl -pl ../util/demo_conf.ini. This will download the project, write out the git log, parse it and put it into the database. After a few seconds, the tool will prompt you to input your database password.
+
+10. Once the tool finishes running (it should take no longer than a few minutes), we can check the results in the tables the tool created. The table name provided under the .ini option table_change_summary: contains commit level information; the table name listed under table_method_detail: contains the changes to functions and aggregated blocks of non change functions.
+
+	• Try running the sql command "SELECT * FROM java_error_handlers.method_change_detail WHERE try_adds > 0 or try_dels > 0". This will show all func- tion changes where code inside a Java try block was modified.
+	• The data can now be used to discover the evolution of try/catch code in the Clojure project.
