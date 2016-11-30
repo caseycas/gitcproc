@@ -1,0 +1,30 @@
+commit b80e1fe4b14654d943e2f8b060b0bc56e18b4757
+Author: Nicola Mometto <brobronsa@gmail.com>
+Date:   2016-10-07
+
+    CLJ-1242: equals doesn't throw on sorted collections
+    
+    Signed-off-by: Stuart Halloway <stu@cognitect.com>
+
+diff --git a/src/jvm/clojure/lang/PersistentTreeMap.java b/src/jvm/clojure/lang/PersistentTreeMap.java
+index adbbb97..7c792bb 100644
+--- a/src/jvm/clojure/lang/PersistentTreeMap.java
++++ b/src/jvm/clojure/lang/PersistentTreeMap.java
+@@ -96,2 +96,18 @@ public boolean containsKey(Object key){
+ 
++public boolean equals(Object obj){
++    try {
++        return super.equals(obj);
++    } catch (ClassCastException e) {
++        return false;
++    }
++}
++
++public boolean equiv(Object obj){
++    try {
++        return super.equiv(obj);
++    } catch (ClassCastException e) {
++        return false;
++    }
++}
++
