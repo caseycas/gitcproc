@@ -10,6 +10,7 @@ to other languages with the concept of scope.
 #Video Demo
 
 There is a video walkthrough of running the tool on a simple example at: https://youtu.be/shugzDjxj0w
+A shortened version can be found here: https://youtu.be/5sOUoMHuP9s
 
 #Walkthrough
 
