@@ -1,0 +1,56 @@
+RUN apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8
+
+RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ precise-pgdg main" > /etc/apt/sources.list.d/pgdg.list
+
+
+RUN apt-get update --fix-missing
+
+
+RUN apt-get install -q -y \
+	unzip \
+	wget \
+	git \
+	mercurial \
+	python-dev \
+	cmake \
+	subversion \
+	python-pip \
+	build-essential \
+	git-core \
+	pkg-config \
+    curl \
+    vim \
+	default-jdk \
+    postgresql \
+    postgresql-contrib
+
+
+RUN git clone https://github.com/caseycas/gitcproc /home/gitcproc
+WORKDIR /home/gitcproc
+
+#Set up a database in postgresql? Or do this in the docker.
+
+#Install needed python libraries
+RUN pip2 install --upgrade pip
+RUN pip2 install nltk GitPython PyYAML
+RUN python -m nltk.downloader stopwords
+RUN python -m nltk.downloader wordnet
+RUN pip2 install psycopg2
+
+USER postgres
+
+RUN    /etc/init.d/postgresql start &&\
+    psql --command "CREATE USER gitcproc WITH SUPERUSER PASSWORD 'gitcproc';" &&\
+    createdb -O gitcproc gitcproc
+
+RUN echo "host all  all    0.0.0.0/0  md5" >> /etc/postgresql/9.6/main/pg_hba.conf
+
+RUN echo "listen_addresses='*'" >> /etc/postgresql/9.6/main/postgresql.conf
+
+USER root
+
+#CMD ["/usr/lib/postgresql/9.6/bin/postgres", "-D", "/var/lib/postgresql/9.6/main", "-c", "config_file=/etc/postgresql/9.6/main/postgresql.conf"]
+
+ENTRYPOINT ["/bin/bash"]
+
+
