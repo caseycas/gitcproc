@@ -20,12 +20,12 @@ There is also a text version of the video walkthrough in the file "ExampleWalkth
 A docker to handle the installation of these libraries and install postgres can be obtained
 with:
 
-`
+```
 docker pull caseycas/gitcproc-docker
 docker tag caseycas/gitcproc-docker gitcproc-docker
 docker run --name gitcproc-docker -e POSTGRES_PASSWORD=postgres -d gitcproc-docker
 docker exec -it gitcproc-docker bash
-`
+```
 
 An example project and search can be run in the docker with (password prompt needs 'postgres'):
 This should take about a minute to run.
