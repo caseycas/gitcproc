@@ -125,11 +125,12 @@ sends the output to your choosen format.
 # Running Tests
 This repository is set up to run travis CI on each commit at: https://travis-ci.org/caseycas/gitcproc
 
-The test scripts are as follows
+The test scripts are as follows:
+```
 src/logChunk/logChunkTestC.py
 src/logChunk/logChunkTestJAVA.py
 src/logChunk/logChunkTestPython
 src/logChunk/ghLogDbTest.py
 src/logChunk/ghLogDbTestPython.py
 src/logChunk/scopeTrackerTest.py
-
+```
