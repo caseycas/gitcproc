@@ -29,13 +29,14 @@ docker exec -it gitcproc-docker bash
 
 An example project and search can be run in the docker with (password prompt needs 'postgres'):
 This should take about a minute to run.
-`
+
+```
 cd src/logChunk/
 python gitcproc.py -d -pl -wl ../util/docker_conf.ini
 psql -U postgres
 SELECT * FROM public.change_summary limit 5;
 SELECT * FROM public.method_change_detail limit 5;
-`
+```
 
 #Required Libraries
 GitCProc runs on python 2.7 and requires the following libraries:
