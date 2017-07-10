@@ -4,8 +4,7 @@ It takes git diff logs as input and produces a table mapping the additions and d
 a 4-tuple (project, sha, file, function/method) specifying the commit and location in the code of changed elements.
 It also analyzes commit messages to estimate if the commits were bug fixing or not.
 
-Currently, we have designed it to work with C/C++/Java/Python, but we have designed the framework to be extensible
-to other languages with the concept of scope.
+Currently, we have designed it to work with C/C++/Java/Python, but we have designed the framework to be extensible to other languages that make use of the concept of scope and source blocks.
 
 #Video Demo
 
@@ -15,6 +14,28 @@ A shortened version can be found here: https://youtu.be/5sOUoMHuP9s
 #Walkthrough
 
 There is also a text version of the video walkthrough in the file "ExampleWalkthrough".
+
+# Docker
+
+A docker to handle the installation of these libraries and install postgres can be obtained
+with:
+
+`
+docker pull caseycas/gitcproc-docker
+docker tag caseycas/gitcproc-docker gitcproc-docker
+docker run --name gitcproc-docker -e POSTGRES_PASSWORD=postgres -d gitcproc-docker
+docker exec -it gitcproc-docker bash
+`
+
+An example project and search can be run in the docker with (password prompt needs 'postgres'):
+This should take about a minute to run.
+`
+cd src/logChunk/
+python gitcproc.py -d -pl -wl ../util/docker_conf.ini
+psql -U postgres
+SELECT * FROM public.change_summary limit 5;
+SELECT * FROM public.method_change_detail limit 5;
+`
 
 #Required Libraries
 GitCProc runs on python 2.7 and requires the following libraries:

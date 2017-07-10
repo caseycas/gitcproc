@@ -43,9 +43,12 @@ RUN echo "===> clean up..."  && \
     apt-get clean  && \
     rm -rf /var/lib/apt/lists/*
 
+RUN echo "Reset."
 
+#Get the project
 RUN git clone https://github.com/caseycas/gitcproc /home/gitcproc
 WORKDIR /home/gitcproc
+RUN git pull
 
 #Set up a database in postgresql? Or do this in the docker.
 
