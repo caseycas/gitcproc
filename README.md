@@ -6,12 +6,12 @@ It also analyzes commit messages to estimate if the commits were bug fixing or n
 
 Currently, we have designed it to work with C/C++/Java/Python, but we have designed the framework to be extensible to other languages that make use of the concept of scope and source blocks.
 
-#Video Demo
+# Video Demo
 
 There is a video walkthrough of running the tool on a simple example at: https://youtu.be/shugzDjxj0w
 A shortened version can be found here: https://youtu.be/5sOUoMHuP9s
 
-#Walkthrough
+# Walkthrough
 
 There is also a text version of the video walkthrough in the file "ExampleWalkthrough".
 
@@ -38,7 +38,7 @@ SELECT * FROM public.change_summary limit 5;
 SELECT * FROM public.method_change_detail limit 5;
 ```
 
-#Required Libraries
+# Required Libraries
 GitCProc runs on python 2.7 and requires the following libraries:
 -psycopg2
 -nltk
@@ -49,12 +49,8 @@ The python script src/logChunk/installDependencies.py will install these for you
 
 If you wish to output your results to a database instead of a csv file, you will need a postgres server installed.
 
-#Branches
 
-The master branch is under active development.  If you are interested in the exact version submitted to the FSE demo track,
-see the tool-demo branch.
-
-#Running Instructions
+# Running Instructions
 
 The master script is located at src/logChunk/gitcproc.py, which depends on 3 input files to run.
 
@@ -126,7 +122,7 @@ The config file is mandantory, and option -d runs the project download step,
 sends the output to your choosen format.
 
 
-#Running Tests
+# Running Tests
 This repository is set up to run travis CI on each commit at: https://travis-ci.org/caseycas/gitcproc
 
 The test scripts are as follows
@@ -137,10 +133,3 @@ src/logChunk/ghLogDbTest.py
 src/logChunk/ghLogDbTestPython.py
 src/logChunk/scopeTrackerTest.py
 
-
-#Upcoming Features
-* Extensions to further languages
-* Better authorship recording (author + committer)
-* More output formatting features
-* Graphical/web interface
-* ...
