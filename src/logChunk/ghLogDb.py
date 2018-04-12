@@ -128,6 +128,7 @@ class Sha:
         self.file_name  = None
         self.function   = None
         self.author     = None
+        self.author_email = None
         self.date       = None
         self.is_bug     = False
         self.log        = None
@@ -152,10 +153,11 @@ class Sha:
         project = toStr(self.project)
         sha     = toStr(self.sha)
         author  = toStr(self.author)
+        author_email = toStr(self.author_email)
         commit_date = toStr(self.date)
         log     = toStr(self.log)
         is_bug  = toStr(self.is_bug)
-        shaStr = (",").join((project,sha,author,commit_date,is_bug))
+        shaStr = (",").join((project,sha,author,author_email,commit_date,is_bug))
 
         dumpLogDb.dumpSummary(shaStr)
 
@@ -167,7 +169,7 @@ class Sha:
         table = schema + "." + self.db_config['table_change_summary']
 
         sql_command = "INSERT INTO " + table + \
-                      "(project, sha, author, commit_date, is_bug)" + \
+                      "(project, sha, author, author_email, commit_date, is_bug)" + \
                       "VALUES (" + summaryStr + ")"
 
     def shaToCsv(self,inf1,inf2,fPtrChangeSummary,fPtrPatchSummary):
@@ -175,12 +177,13 @@ class Sha:
         project = toStr(self.project).replace(","," ")
         sha     = toStr(self.sha)
         author  = toStr(self.author).replace(","," ")
+        author_email = toStr(self.author_email).replace(",", " ")
         commit_date = toStr(self.date)
         log     = toStr(self.log)
         is_bug  = toStr(self.is_bug)
 
 
-        shaStr = (",").join((project,sha,author,commit_date,is_bug))
+        shaStr = (",").join((project,sha,author,author_email,commit_date,is_bug))
 
         inf1.write(shaStr+"\n")
         fPtrChangeSummary.write(shaStr+"\n")
@@ -193,6 +196,7 @@ class Sha:
         retStr += "project     = %s\n" % (self.project)
         retStr += "sha         = %s\n" % (self.sha)
         retStr += "author      = %s\n" % (self.author)
+        retStr += "author_email= %s\n" % (self.author_email)
         retStr += "commit date = %s\n" % (self.date)
         retStr += "log         = %s\n" % (self.log)
         retStr += "is_bug      = %s\n" % (self.is_bug)
@@ -286,7 +290,9 @@ class ghLogDb:
         is_auth = re.search(EMAIL, line, re.IGNORECASE)
         if line.startswith("Author:") and is_auth:
             author = is_auth.group(0)
-            shaObj.author =  line.split(author)[0].split("Author:")[1]
+            shaObj.author = line.split(author)[0].split("Author:")[1] 
+            shaObj.author_email = author
+            print("Email: "  + shaObj.author_email)
             shaObj.author = shaObj.author.strip()
 
             return True
@@ -449,7 +455,7 @@ class ghLogDb:
             inf1=open("../Results/"+str(self.project_name)+"ChangeSummary.csv",'w')
             fPtrChangeSummary=open("../Results/"+"ChangeSummary.csv",'w')
 
-            inf1.write("project,sha,author,commit_date,is_bug\n")
+            inf1.write("project,sha,author,author_email,commit_date,is_bug\n")
 
             inf2=open("../Results/"+str(self.project_name)+"PatchSummary.csv",'w')
             fPtrPatchSummary=open("../Results/"+"PatchSummary.csv",'w')

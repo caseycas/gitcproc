@@ -24,7 +24,7 @@ def main():
             os.mkdir("../Results")
 
   fPtrChangeSummary=open("../Results/"+"ChangeSummary.csv",'w')
-  fPtrChangeSummary.write("project,sha,author,commit_date,is_bug\n")
+  fPtrChangeSummary.write("project,sha,author,author_email,commit_date,is_bug\n")
   fPtrPatchSummary=open("../Results/"+"PatchSummary.csv",'w')
   fPtrMisMatchSummary=open("../Results/"+"MisMatchSummary.csv",'w')
   fPtrMisMatchSummary.write("project,Total,Match,MisMatch,Exception,matchException,misMatchException\n")

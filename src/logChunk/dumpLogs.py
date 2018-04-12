@@ -74,7 +74,8 @@ class dumpLogs:
         user = self.db_config['user']
 
         sql_command = "CREATE TABLE IF NOT EXISTS " + table + " (project character varying(500) NOT NULL," + \
-            " sha text NOT NULL, author character varying(500), commit_date date, is_bug boolean,"+ \
+            " sha text NOT NULL, author character varying(500), author_email character varying(500)," + \
+            " commit_date date, is_bug boolean,"+ \
             " CONSTRAINT change_summary_pkey PRIMARY KEY (project, sha)) WITH (OIDS=FALSE);"
         self.dbCon.create(sql_command)
         #self.dbCon.create("ALTER TABLE " + table + " OWNER TO " + user + ";")
@@ -97,7 +98,7 @@ class dumpLogs:
         table = schema + "." + self.db_config['table_change_summary']
 
         sql_command = "INSERT INTO " + table + \
-                      "(project, sha, author, commit_date, is_bug)" + \
+                      "(project, sha, author, author_email, commit_date, is_bug)" + \
                       " VALUES (" + summaryStr + ")"
 
         #print sql_command
